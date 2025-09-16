@@ -1,0 +1,33 @@
+<div class="fixed top-4 right-4 z-50 space-y-2">
+  <% flash.each do |type, message| %>
+    <% next if message.blank? %>
+    <% color = case type.to_s
+              when "notice" then "bg-green-50 text-green-800 ring-green-200"
+              when "alert"  then "bg-red-50 text-red-800 ring-red-200"
+              else                 "bg-blue-50 text-blue-800 ring-blue-200"
+              end %>
+    <div
+      data-controller="flash"
+      data-flash-timeout-value="5000"
+      data-flash-auto-hide-value="true"
+      data-action="mouseenter->flash#pause mouseleave->flash#resume"
+      role="alert"
+      aria-live="polite"
+      class="relative rounded-md p-3 ring-1 shadow-sm opacity-0 translate-y-2 scale-95 <%= color %>">
+      <div class="pr-8">
+        <%= message %>
+      </div>
+      <button
+        type="button"
+        class="absolute top-2 right-2 inline-flex items-center justify-center rounded-md p-1 text-current/70 hover:text-current focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        aria-label="Close alert"
+        title="Close"
+        data-action="flash#close">
+        <!-- Heroicon: x-mark -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4">
+          <path fill-rule="evenodd" d="M6.225 4.811a.75.75 0 011.06 0L12 9.525l4.715-4.714a.75.75 0 111.06 1.06L13.06 10.586l4.715 4.715a.75.75 0 11-1.06 1.06L12 11.646l-4.715 4.715a.75.75 0 11-1.06-1.06l4.714-4.715-4.714-4.714a.75.75 0 010-1.061z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Mark" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="<%= authenticated? ? 'bg-gray-50 h-screen flex' : 'bg-gray-50' %>">
+      <% if authenticated? %>
+        <%= render "shared/flash" %>
+        <!-- Sidebar -->
+        <div class="w-64 bg-gradient-to-b from-violet-600 to-purple-700 text-white flex flex-col">
+          <!-- Brand -->
+          <div class="px-6 py-4 flex items-center">
+            <div class="h-8 w-8 bg-white rounded-lg flex items-center justify-center"></div>
+            <span class="ml-3 text-lg font-semibold">Mark</span>
+          </div>
+          <!-- Nav -->
+          <nav class="flex-1 px-4 pb-4 space-y-1">
+            <%= link_to account_dashboard_path(account_id: Current.account&.id),
+                  class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 #{'bg-violet-500 bg-opacity-75' if Current.account && request.path == account_dashboard_path(account_id: Current.account.id)}" do %>
+              <span>Dashboard</span>
+            <% end %>
+          </nav>
+        </div>
+
+        <!-- Right column -->
+        <div class="flex-1 flex flex-col">
+          <!-- Top bar -->
+          <div class="bg-white border-b">
+            <div class="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-end">
+              <div class="ml-3">
+                <%= button_to "Sign out", session_path, method: :delete,
+                      class: "inline-flex items-center px-3 py-1 text-sm font-medium rounded-md text-gray-700 hover:text-gray-900" %>
+              </div>
+            </div>
+          </div>
+          <%= render "shared/flash" %>
+          <!-- Page content -->
+          <main class="flex-1 overflow-y-auto">
+            <div class="py-6">
+              <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-4">
+                <%= yield %>
+              </div>
+            </div>
+          </main>
+        </div>
+      <% else %>
+        <%= yield %>
+      <% end %>
+  </body>
+</html>

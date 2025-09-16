@@ -1,0 +1,40 @@
+<div class="signin-container min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="signin-form max-w-md w-full space-y-8">
+    <%= render "shared/flash" %>
+    <div>
+      <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
+        <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+        </svg>
+      </div>
+      <h2 class="signin-title mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+        Sign in to your account
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600">
+        Welcome back! Please sign in to continue.
+      </p>
+    </div>
+
+    <%= form_with url: session_path, method: :post, local: true, class: "mt-8 space-y-6" do |f| %>
+      <div>
+        <%= f.label :email_address, "Email", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.email_field :email_address, required: true, autofocus: true,
+              class: "signin-input appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 transition duration-150 ease-in-out sm:text-sm" %>
+      </div>
+
+      <div>
+        <%= f.label :password, "Password", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.password_field :password, required: true,
+              class: "signin-input appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 transition duration-150 ease-in-out sm:text-sm" %>
+      </div>
+
+      <div>
+        <%= f.submit "Sign in",
+              class: "signin-button group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out" %>
+      </div>
+    <% end %>
+    <div class="mt-4 text-sm text-gray-500">
+      <%= link_to "Forgot password?", new_password_path, class: "text-gray-700 underline hover:no-underline" %>
+    </div>
+  </div>
+</div>

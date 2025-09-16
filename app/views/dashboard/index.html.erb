@@ -1,0 +1,14 @@
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div class="rounded-lg border bg-white p-4 shadow-sm">
+    <h2 class="text-sm font-medium text-gray-500">Account</h2>
+    <p class="mt-1 text-xl font-semibold text-gray-900"><%= Current.account&.name || "none" %></p>
+  </div>
+  <div class="rounded-lg border bg-white p-4 shadow-sm">
+    <h2 class="text-sm font-medium text-gray-500">Users</h2>
+    <p class="mt-1 text-xl font-semibold text-gray-900"><%= User.where(account: Current.account).count if Current.account %></p>
+  </div>
+  <div class="rounded-lg border bg-white p-4 shadow-sm">
+    <h2 class="text-sm font-medium text-gray-500">Status</h2>
+    <p class="mt-1 text-xl font-semibold text-gray-900">OK</p>
+  </div>
+</div>

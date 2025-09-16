@@ -1,0 +1,4 @@
+CREATE DATABASE mark_production;
+CREATE DATABASE mark_production_cache;
+CREATE DATABASE mark_production_queue;
+CREATE DATABASE mark_production_cable;
