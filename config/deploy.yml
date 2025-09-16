@@ -8,7 +8,7 @@ image: panaet780/mark
 servers:
   web:
     hosts:
-      - 81.200.145.15
+      - 185.247.185.69
   # job:
   #   hosts:
   #     - 192.168.0.1
@@ -108,7 +108,7 @@ builder:
 accessories:
   postgres:
     image: postgres:15
-    host: 81.200.145.15
+    host: 185.247.185.69
     # Change to 3306 to expose port to the world instead of just local network.
     port: "127.0.0.1:5432:5432"
     env:
