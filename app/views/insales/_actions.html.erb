@@ -1,0 +1,10 @@
+<div class="space-x-1">
+  <% if current_account&.insales&.exists? %>
+    <% rec = current_account.insales.first %>
+    <%= link_to "Edit", edit_account_insale_path(current_account, rec), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700", data: { turbo_frame: "offcanvas", turbo_prefetch: false } %>
+    <%= link_to "Check integration", check_account_insales_path(current_account), data: { turbo_stream: true }, class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+    <%= link_to "Add order webhook", add_order_webhook_account_insales_path(current_account), data: { turbo_stream: true }, class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+  <% else %>
+    <%= link_to "New", new_account_insale_path(current_account), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700", data: { turbo_frame: 'offcanvas', turbo_prefetch: false } %>
+  <% end %>
+</div>

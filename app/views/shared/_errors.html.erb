@@ -1,0 +1,13 @@
+<%# Generic error renderer. Pass object: @model or f.object %>
+<% if object && object.errors.any? %>
+  <div class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+    <div class="font-semibold mb-1">
+      <%= pluralize(object.errors.count, "error") %> prohibited this record from being saved:
+    </div>
+    <ul class="list-disc pl-5 space-y-1">
+      <% object.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

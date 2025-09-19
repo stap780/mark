@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "bundle-and-migrate-mark",
+			"type": "shell",
+			"command": "bin/bundle && bin/rails db:migrate",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [
+				"$ruby"
+			],
+			"group": "build"
+		}
+	]
+}

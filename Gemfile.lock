@@ -1,3 +1,11 @@
+GIT
+  remote: https://github.com/stap780/insales_api.git
+  revision: ffd221742607949c1f8fccd015b1429a183d065e
+  specs:
+    insales_api (0.2.1)
+      activeresource (>= 3.0.0)
+      activesupport (>= 3.0.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -49,10 +57,18 @@ GEM
       globalid (>= 0.3.6)
     activemodel (8.0.2.1)
       activesupport (= 8.0.2.1)
+    activemodel-serializers-xml (1.0.3)
+      activemodel (>= 5.0.0.a)
+      activesupport (>= 5.0.0.a)
+      builder (~> 3.1)
     activerecord (8.0.2.1)
       activemodel (= 8.0.2.1)
       activesupport (= 8.0.2.1)
       timeout (>= 0.4.0)
+    activeresource (6.2.0)
+      activemodel (>= 7.0)
+      activemodel-serializers-xml (~> 1.0)
+      activesupport (>= 7.0)
     activestorage (8.0.2.1)
       actionpack (= 8.0.2.1)
       activejob (= 8.0.2.1)
@@ -361,6 +377,7 @@ DEPENDENCIES
   brakeman
   debug
   importmap-rails
+  insales_api!
   jbuilder
   kamal
   pg (~> 1.1)

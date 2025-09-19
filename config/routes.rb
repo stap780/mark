@@ -18,5 +18,12 @@ Rails.application.routes.draw do
   # Account-scoped routes
   scope "/accounts/:account_id", as: :account do
     get "dashboard", to: "dashboard#index"
+    resources :insales do
+      collection do
+        post :order
+        get :check
+        get :add_order_webhook
+      end
+    end
   end
 end

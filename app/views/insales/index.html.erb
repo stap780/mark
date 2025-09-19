@@ -1,0 +1,18 @@
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-xl font-semibold">Insales</h1>
+  <%= turbo_frame_tag :insales_actions do %>
+    <%= render "actions" %>
+  <% end %>
+</div>
+
+<%= turbo_stream_from [current_account, "insales"] %>
+
+<%= turbo_frame_tag "insales", class: "bg-white rounded-lg shadow divide-y" do %>
+  <div class="grid grid-cols-4 gap-4 p-4 font-medium text-gray-700">
+    <div>API key</div>
+    <div>API password</div>
+    <div>API link</div>
+    <div></div>
+  </div>
+  <%= render @insales %>
+<% end %>
