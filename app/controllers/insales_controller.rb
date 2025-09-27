@@ -4,7 +4,6 @@ class InsalesController < ApplicationController
   before_action :set_insale, only: %i[ show edit update destroy ]
   # Ensure these actions are rendered within a Turbo Frame withount url /new or etc
   before_action :ensure_turbo_frame_response, only: %i[new edit show]
-  extend OffcanvasResponder
   include ActionView::RecordIdentifier
   
   def index
