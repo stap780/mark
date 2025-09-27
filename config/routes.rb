@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  # Admin-only Jobs dashboard
+  if defined?(MissionControl::Jobs::Engine)
+    mount MissionControl::Jobs::Engine, at: "/jobs"
+  end
   resource :session
   resources :passwords, param: :token
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -23,6 +27,34 @@ Rails.application.routes.draw do
         post :order
         get :check
         get :add_order_webhook
+        post :create_xml
+        get :products_search
+        get :xml_source
+        patch :set_product_xml
+        get :items_picker
+      end
+    end
+    resources :swatch_groups do
+      member do
+        get :preview
+        patch :toggle_status
+        # products_picker route no longer used for new groups; kept for compatibility if needed
+        # get :products_picker
+      end
+      collection do
+        post :regenerate_json
+        get :style_selector
+      end
+      resources :swatch_group_products, only: [:create, :update, :destroy] do
+        member do
+          patch :sort
+        end
+      end
+    end
+
+    resources :products do
+      resources :variants do
+        resources :varbinds
       end
     end
   end

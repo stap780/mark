@@ -1,0 +1,19 @@
+<div id="<%= dom_id(variant) %>" class="grid grid-cols-6 gap-4 p-2 items-center border-t">
+  <div class="text-sm">#<%= variant.id %></div>
+  <div>
+    <% if variant.image_link.present? %>
+      <img src="<%= variant.image_link %>" alt="" class="h-10 w-10 object-cover rounded" onerror="this.style.display='none'">
+    <% else %>
+      <div class="h-10 w-10 rounded bg-gray-100"></div>
+    <% end %>
+  </div>
+  <div class="text-sm"><%= variant.sku %></div>
+  <div class="text-sm"><%= variant.barcode %></div>
+  <div class="text-sm"><%= variant.price %></div>
+  <div class="text-right space-x-2 text-sm">
+    <%= link_to 'Edit', edit_account_product_variant_path(current_account, product, variant), data: { turbo_frame: 'offcanvas', turbo_prefetch: false }, class: 'text-violet-700 hover:underline' %>
+    <%= link_to 'Varbinds', account_product_variant_varbinds_path(current_account, product, variant), data: { turbo_frame: 'offcanvas', turbo_prefetch: false }, class: 'text-violet-700 hover:underline' %>
+    <%= link_to 'Delete', account_product_variant_path(current_account, product, variant), data: { turbo_method: :delete, turbo_confirm: 'Delete variant?', turbo_stream: true }, class: 'text-red-600 hover:underline' %>
+  </div>
+</div>
+

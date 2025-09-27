@@ -1,0 +1,28 @@
+<%= render 'shared/offcanvas_inner', title: (field == 'product_page_style' ? 'Product page style' : 'Collection page style') do %>
+  <div data-controller="style-selector" data-style-selector-field-value="<%= field %>">
+    <% SwatchGroup::STYLE_GROUPS.each do |group_label, options| %>
+      <div class="mb-4 border rounded-md">
+        <div class="px-3 py-2 font-medium bg-gray-50 border-b"><%= group_label %></div>
+        <div class="p-3 grid grid-cols-1 gap-2">
+          <% options.each do |label, value| %>
+            <button type="button"
+                    class="flex items-center justify-between w-full rounded-md border px-3 py-2 text-left hover:bg-gray-50 <%= 'ring-2 ring-violet-500' if value == current_value %>"
+                    data-action="click->style-selector#choose"
+                    data-style-selector-value-param="<%= value %>">
+              <span class="text-sm text-gray-800"><%= label %></span>
+              <% if value == current_value %>
+                <span class="text-violet-600 text-xs">Selected</span>
+              <% end %>
+            </button>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="flex justify-end">
+      <button type="button" class="px-3 py-1 rounded-md border text-gray-700 hover:bg-gray-50" data-action="style-selector#close">Cancel</button>
+    </div>
+  </div>
+<% end %>
+
+

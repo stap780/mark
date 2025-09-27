@@ -1,0 +1,49 @@
+<%= form_with model: [current_account, product], class: "space-y-4" do |f| %>
+  <div>
+    <%= f.label :title, class: "block text-sm font-medium text-gray-700" %>
+    <%= f.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
+  </div>
+  <div class="mt-3">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-sm font-medium text-gray-700">Variants</h3>
+      <%# Open offcanvas to add a variant, mirroring dizauto %>
+      <% if product.persisted? %>
+        <% disabled_button = true %>
+        <% if disabled_button %>
+          <%= link_to "New variant", new_account_product_variant_path(current_account, product),
+                class: "inline-flex items-center px-3 py-1 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed pointer-events-none",
+                tabindex: -1, aria: { disabled: true }, 
+                data: { turbo_frame: :offcanvas }  %>
+        <% else %>
+          <%= link_to "New variant", new_account_product_variant_path(current_account, product),
+                class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700",
+                data: { turbo_frame: :offcanvas } %>
+        <% end %>
+      <% end %>
+    </div>
+    <% if product.persisted? %>
+      <%= turbo_stream_from product, :variants %>
+      <%= turbo_frame_tag dom_id(product, :variants), class: "w-full" do %>
+        <div class="grid grid-cols-6 gap-4 p-2 font-medium text-gray-700 border-b">
+          <div>#</div>
+          <div>Image</div>
+          <div>SKU</div>
+          <div>Barcode</div>
+          <div>Price</div>
+          <div></div>
+        </div>
+        <% product.variants.each do |variant| %>
+          <%= render 'variants/variant', variant: variant, product: product %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <div class="text-sm text-gray-500">Save product to manage variants.</div>
+    <% end %>
+  </div>
+  <div>
+    <%= f.submit t(:save), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    <%= link_to t(:back), account_products_path(current_account), class: "inline-flex items-center px-3 py-1 bg-white text-violet-700 border border-violet-600 rounded-md hover:bg-violet-50", data: {turbo: false} %>
+  </div>
+<% end %>
+
+

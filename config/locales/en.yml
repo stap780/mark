@@ -29,3 +29,7 @@
 
 en:
   hello: "Hello world"
+  save: "Save"
+  back: "Back"
+  cancel: "Cancel"
+  update: "Update"

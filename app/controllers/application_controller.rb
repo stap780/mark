@@ -21,6 +21,8 @@ class ApplicationController < ActionController::Base
 
   def ensure_user_in_current_account
     return unless Current.session && Current.account
+    # Allow global admin account to access any account scope
+    return if Current.session.user && Current.session.user.account&.admin?
     # Ensure the authenticated user belongs to the current account
     if Current.session.user.account_id != Current.account.id
       terminate_session

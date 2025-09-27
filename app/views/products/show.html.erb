@@ -1,0 +1,45 @@
+<div class="bg-white rounded-lg shadow p-4 space-y-4">
+  <div class="flex items-center justify-between">
+    <h1 class="text-xl font-semibold"><%= @product.title %></h1>
+    <div class="space-x-2">
+      <%= link_to 'Edit', edit_account_product_path(current_account, @product), class: 'text-violet-700 hover:underline' %>
+      <%= link_to 'Back', account_products_path(current_account), class: 'text-violet-700 hover:underline' %>
+    </div>
+  </div>
+
+  <div>
+    <h2 class="text-lg font-semibold mb-2">Variants</h2>
+    <div class="space-y-2">
+      <% @product.variants.each do |v| %>
+        <div class="p-2 border rounded">
+          <div class="text-sm text-gray-800">#<%= v.id %> • SKU: <%= v.sku %> • Barcode: <%= v.barcode %> • Price: <%= v.price %></div>
+          <div class="text-xs text-gray-600">Image: <%= v.image_link %></div>
+          <div class="mt-1">
+            <%= link_to 'Show', account_variant_path(current_account, v), class: 'text-violet-700 hover:underline text-sm' %>
+          </div>
+        </div>
+      <% end %>
+      <% if @product.variants.empty? %>
+        <div class="text-sm text-gray-500">No variants yet.</div>
+      <% end %>
+    </div>
+  </div>
+
+  <div>
+    <h2 class="text-lg font-semibold mb-2">Varbinds</h2>
+    <div class="space-y-2">
+      <% @product.variants.includes(:varbinds).each do |v| %>
+        <% v.varbinds.each do |b| %>
+          <div class="p-2 border rounded text-sm text-gray-800">
+            Variant #<%= v.id %> → <%= b.varbindable_type %>(<%= b.varbindable_id %>) = <%= b.value %>
+          </div>
+        <% end %>
+      <% end %>
+      <% if @product.variants.joins(:varbinds).none? %>
+        <div class="text-sm text-gray-500">No varbinds yet.</div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+

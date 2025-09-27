@@ -1,0 +1,19 @@
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-xl font-semibold">Products</h1>
+  <%= link_to "New", new_account_product_path(current_account), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+  </div>
+<%= turbo_stream_from "products" %>
+<div class="bg-white rounded-lg shadow divide-y">
+  <div class="grid grid-cols-5 gap-4 p-4 font-medium text-gray-700">
+    <div>Image</div>
+    <div>Title</div>
+    <div>Variants</div>
+    <div></div>
+    <div></div>
+  </div>
+  <%= turbo_frame_tag 'products' do %>
+    <%= render @products %>
+  <% end %>
+</div>
+
+

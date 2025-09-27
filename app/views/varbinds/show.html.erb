@@ -1,0 +1,14 @@
+<div class="bg-white rounded-lg shadow p-4 space-y-2">
+  <div class="text-sm text-gray-700">ID: <%= @varbind.id %></div>
+  <div class="text-sm text-gray-700">Variant: #<%= @varbind.variant_id %> / <%= @varbind.variant.product.title %></div>
+  <div class="text-sm text-gray-700">Type: <%= @varbind.varbindable_type %></div>
+  <div class="text-sm text-gray-700">Bind ID: <%= @varbind.varbindable_id %></div>
+  <div class="text-sm text-gray-700">Value: <%= @varbind.value %></div>
+  <div class="pt-2">
+    <%= link_to 'Edit', edit_account_product_variant_varbind_path(current_account, @product, @variant, @varbind), class: 'text-violet-700 hover:underline' %>
+    <span class="mx-1">|</span>
+    <%= link_to 'Back', account_product_variant_varbinds_path(current_account, @product, @variant), class: 'text-violet-700 hover:underline' %>
+  </div>
+</div>
+
+

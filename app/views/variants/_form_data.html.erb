@@ -1,0 +1,26 @@
+<div class="mt-3">
+  <div class="flex items-center justify-between mb-2">
+    <h3 class="text-sm font-medium text-gray-700">Varbinds</h3>
+    <% if f.object.persisted? %>
+      <%= link_to 'Add varbind', new_account_product_variant_varbind_path(current_account, @product, f.object),
+                  data: { turbo_frame: 'offcanvas', turbo_prefetch: false },
+                  class: 'text-violet-700 text-sm hover:underline' %>
+    <% end %>
+  </div>
+
+  <% if f.object.persisted? %>
+    <%= turbo_stream_from f.object, :varbinds %>
+    <%= turbo_frame_tag dom_id(f.object, :varbinds), class: "space-y-2" do %>
+      <% f.object.varbinds.each do |vb| %>
+        <%= render 'varbinds/varbind', varbind: vb, product: @product, variant: f.object %>
+      <% end %>
+      <% if f.object.varbinds.empty? %>
+        <div class="text-sm text-gray-500">No varbinds yet.</div>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="text-sm text-gray-500">Save variant to manage varbinds.</div>
+  <% end %>
+</div>
+
+

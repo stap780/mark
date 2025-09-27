@@ -1,0 +1,4 @@
+<%= turbo_frame_tag dom_id(@product, dom_id(@variant, dom_id(@varbind))), class: "", data: { }  do %>
+  <%= render "form", product: @product, variant: @variant, varbind: @varbind %>
+<% end %>
+

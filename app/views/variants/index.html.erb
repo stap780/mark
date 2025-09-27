@@ -1,0 +1,29 @@
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-xl font-semibold">Variants</h1>
+  <%= link_to "New", new_account_product_variant_path(current_account, @product), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+  </div>
+
+<div class="bg-white rounded-lg shadow divide-y">
+  <div class="grid grid-cols-5 gap-4 p-4 font-medium text-gray-700">
+    <div>ID</div>
+    <div>Product</div>
+    <div>SKU</div>
+    <div>Barcode</div>
+    <div></div>
+  </div>
+  <% @variants.each do |v| %>
+    <div class="grid grid-cols-5 gap-4 p-4 items-center">
+      <div><%= v.id %></div>
+      <div class="truncate"><%= v.product.title %></div>
+      <div class="truncate"><%= v.sku %></div>
+      <div class="truncate"><%= v.barcode %></div>
+      <div class="space-x-2">
+        <%= link_to "Show", account_product_variant_path(current_account, @product, v), class: "text-violet-700 hover:underline" %>
+        <%= link_to "Edit", edit_account_product_variant_path(current_account, @product, v), class: "text-violet-700 hover:underline" %>
+        <%= link_to "Delete", account_product_variant_path(current_account, @product, v), data: { turbo_method: :delete, turbo_confirm: "Delete variant?" }, class: "text-red-600 hover:underline" %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+

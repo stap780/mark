@@ -15,4 +15,27 @@
     <div></div>
   </div>
   <%= render @insales %>
+
+  <% if Insale.first.product_xml.present? %>
+    <div class="max-w mx-auto my-6 bg-gray-50 rounded-lg shadow border border-gray-200">
+      <div class="p-4 border-b border-gray-100 flex items-center gap-4">
+        <span class="text-gray-600 font-medium">Products XML:</span>
+        <%= link_to Insale.first.product_xml, Insale.first.product_xml, target: "_blank", rel: "noopener", class: "text-violet-700 hover:underline break-all text-sm" %>
+      </div>
+      <div class="p-4 flex flex-col gap-2">
+        <span class="text-gray-600 font-medium">JS Code:</span>
+        <pre class="bg-gray-100 rounded p-3 overflow-x-auto text-xs"><code>
+&lt;script type="text/javascript"&gt;
+  (function() {
+    var scr = document.createElement('script');
+    scr.setAttribute("type","text/javascript");
+    scr.setAttribute("src", 'https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23/scripts/swatch.js?id=<%= current_account.id %>');
+    document.getElementsByTagName("head")[0].appendChild(scr);
+  })();
+&lt;/script&gt;
+        </code></pre>
+      </div>
+    </div>
+  <% end %>
+
 <% end %>

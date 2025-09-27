@@ -1,0 +1,24 @@
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-xl font-semibold">Swatch groups</h1>
+  <div class="flex space-x-2">
+    <%= link_to "Regenerate JSON", regenerate_json_account_swatch_groups_path(current_account), data: { turbo_method: :post }, class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+    <% if (insale = current_account.insales.first)&.swatch_file&.attached? %>
+      <%= link_to "File", insale.s3_url, target: "_blank", rel: "noopener", class: "inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700" %>
+    <% end %>
+  </div>
+  <%= link_to "New", new_account_swatch_group_path(current_account), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+</div>
+
+<%= turbo_stream_from [current_account, :swatch_groups] %>
+
+<div class="bg-white rounded-lg shadow divide-y">
+  <div class="grid grid-cols-4 gap-4 p-4 font-medium text-gray-700">
+    <div>Name</div>
+    <div>Option</div>
+    <div>Status</div>
+    <div></div>
+  </div>
+  <div id="swatch_groups">
+    <%= render @swatch_groups %>
+  </div>
+</div>

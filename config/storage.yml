@@ -6,6 +6,16 @@ local:
   service: Disk
   root: <%= Rails.root.join("storage") %>
 
+timeweb:
+  service: S3
+  access_key_id: <%= Rails.application.credentials.dig(:timeweb, :access_key_id) %>
+  secret_access_key: <%= Rails.application.credentials.dig(:timeweb, :secret_access_key) %>
+  endpoint: "https://s3.twcstorage.ru"
+  region: "ru-1"
+  bucket: "ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23"
+
+
+
 # Use bin/rails credentials:edit to set the AWS secrets (as aws:access_key_id|secret_access_key)
 # amazon:
 #   service: S3

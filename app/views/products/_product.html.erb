@@ -1,0 +1,18 @@
+<% first_variant = product.variants.first %>
+<%= turbo_frame_tag product, class: "grid grid-cols-5 gap-4 p-4 items-center" do %>
+  <div>
+    <% if first_variant&.image_link.present? %>
+      <img src="<%= first_variant.image_link %>" alt="" class="h-10 w-10 object-cover rounded" onerror="this.style.display='none'">
+    <% else %>
+      <div class="h-10 w-10 rounded bg-gray-100"></div>
+    <% end %>
+  </div>
+  <div class="truncate"><%= product.title %></div>
+  <div class="text-sm text-gray-600"><%= product.variants.size %></div>
+  <div class="space-x-2">
+    <%= link_to "Edit", edit_account_product_path(current_account, product), class: "text-violet-700 hover:underline", data: { turbo: false } %>
+  </div>
+  <div>
+    <%= link_to "Delete", account_product_path(current_account, product), data: { turbo_method: :delete, turbo_confirm: "Delete product?" }, class: "text-red-600 hover:underline" %>
+  </div>
+<% end %>

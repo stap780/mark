@@ -34,14 +34,24 @@
           </div>
           <!-- Nav -->
           <nav class="flex-1 px-4 pb-4 space-y-1">
-            <%= link_to account_dashboard_path(account_id: current_account&.id),
-                  class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 #{'bg-violet-500 bg-opacity-75' if Current.account && request.path == account_dashboard_path(account_id: Current.account.id)}" do %>
-              <span>Dashboard</span>
-            <% end %>
-            <%= link_to account_insales_path(account_id: current_account&.id),
-                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 #{'bg-violet-500 bg-opacity-75' if Current.account && request.path.include?('/insales')}" do %>
-              <span>Insales</span>
-            <% end %>
+            <% active_class = "bg-violet-500 bg-opacity-75" %>
+            <%= link_to 'Dashboard', account_dashboard_path(current_account),
+                  class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
+                  hover:bg-violet-500 hover:bg-opacity-75 
+                  #{active_class if request.path == account_dashboard_path(current_account)}"%>
+            <%= link_to "Insales", account_insales_path(current_account),
+                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
+                hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/insales')}" %>
+            <%= link_to "Swatch groups", account_swatch_groups_path(current_account),
+                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
+                hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/swatch_groups')}" %>
+            <%= link_to "Products",account_products_path(account_id: current_account&.id),
+                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
+                hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/products')}"%>
+            <%= link_to "Jobs", "/jobs",
+                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
+                hover:bg-violet-500 hover:bg-opacity-75",
+                data: { turbo: false } if current_account&.admin? %>
           </nav>
         </div>
 
@@ -65,7 +75,7 @@
             </div>
             
             <%= turbo_frame_tag :offcanvas %>
-            
+
           </main>
         </div>
       <% else %>

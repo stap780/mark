@@ -30,6 +30,10 @@ gem "solid_cache"
 gem "solid_queue"
 gem "solid_cable"
 
+# Solid Queue Web UI for monitoring background jobs
+gem "mission_control-jobs"
+
+gem 'aws-sdk-s3', require: false
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
@@ -44,6 +48,8 @@ gem "thruster", require: false
 
 # InSales API client (same as dizauto)
 gem "insales_api", github: "stap780/insales_api"
+
+gem "nokogiri"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
