@@ -1,15 +1,18 @@
 <div class="flex items-center justify-between mb-4">
   <h1 class="text-xl font-semibold">Swatch groups</h1>
   <div class="flex space-x-2">
+    <% if current_account.swatch_groups.exists? %>
     <%= link_to "Regenerate JSON", regenerate_json_account_swatch_groups_path(current_account), 
       data: { turbo_method: :post }, 
-      class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700" 
-      if current_account.swatch_groups.exists? %>
+      class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"%>
+    <% end %>
+    <% if current_account.insales.first.swatch_file.attached? %>
     <%= link_to "File", current_account.insales.first.s3_url, 
       target: "_blank", 
       rel: "noopener", 
       class: "inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700" 
-      if current_account.insales.first.swatch_file.attached? %>
+      %>
+    <% end %>
   </div>
   <%= link_to "New", new_account_swatch_group_path(current_account), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
 </div>
