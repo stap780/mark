@@ -16,7 +16,7 @@
   </div>
   <%= render @insales %>
 
-  <% if Insale.first.product_xml.present? %>
+  <% if current_account.insales.first.product_xml.present? %>
     <div class="max-w mx-auto my-6 bg-gray-50 rounded-lg shadow border border-gray-200">
       <div class="p-4 border-b border-gray-100 flex items-center gap-4">
         <span class="text-gray-600 font-medium">Products XML:</span>
