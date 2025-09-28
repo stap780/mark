@@ -161,12 +161,13 @@ class InsalesController < ApplicationController
       offer_id = node['id'] || node.at('id')&.text
       title = node.at('model')&.text.to_s
       image = node.at('picture')&.text
+      group_id = node.at('group_id')&.text || node['group_id']
       price_text = node.at('price')&.text
       price_value = price_text.to_s.strip
       price = price_value.present? ? price_value.to_d : nil
       next if title.blank?
       next if query.present? && !title.downcase.include?(query)
-      items << { offer_id: offer_id, title: title, image_link: image, price: price }
+      items << { offer_id: offer_id, group_id: group_id, title: title, image_link: image, price: price }
       break if items.size >= 20
     end
     render json: items

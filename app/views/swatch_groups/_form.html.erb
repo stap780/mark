@@ -31,8 +31,8 @@
               <% assigned.each do |sgp| %>
                 <div id="<%= dom_id(sgp) %>" class="flex items-center justify-between p-2 border rounded">
                   <div class="flex items-center space-x-2">
-                    <% v = sgp.product.variants.joins(:varbinds).where(varbinds: { value: sgp.swatch_value }).first %>
-                    <img src="<%= v&.image_link.presence || sgp.product.image_link %>" class="h-8 w-8 object-cover rounded" onerror="this.style.display='none'">
+                    <% v = sgp.product.variants.first %>
+                    <img src="<%= v&.image_link %>" class="h-8 w-8 object-cover rounded" onerror="this.style.display='none'">
                     <div class="text-sm">
                       <div class="font-medium"><%= sgp.product.title %></div>
                       <div class="text-gray-600 text-xs">Value: <%= sgp.swatch_value %>

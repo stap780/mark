@@ -29,15 +29,15 @@ export default class extends Controller {
           <span class="text-sm">${i.title}${i.price ? ` · ${i.price}` : ''}</span>
         </div>
         <button type="button" class="px-2 py-1 text-sm rounded-md border hover:bg-gray-50"
-                data-offer-id="${i.offer_id}" data-title="${i.title}" data-image="${i.image_link}" data-price="${i.price || ''}"
+                data-offer-id="${i.offer_id}" data-group-id="${i.group_id}" data-title="${i.title}" data-image="${i.image_link}" data-price="${i.price || ''}"
                 data-action="click->items-picker#add">Add item</button>
       </div>
     `).join('')
   }
 
   add(event) {
-    const { offerId, title, image, price } = event.currentTarget.dataset
-    const detail = { offer_id: offerId, title: title, image_link: image, price: price }
+    const { offerId, groupId, title, image, price } = event.currentTarget.dataset
+    const detail = { offer_id: offerId, group_id: groupId, title: title, image_link: image, price: price }
     const ev = new CustomEvent('items-bucket:add', { detail, bubbles: true })
     document.dispatchEvent(ev)
   }

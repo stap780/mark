@@ -27,7 +27,7 @@ class SwatchGroupsController < ApplicationController
       redirect_to account_swatch_groups_path(current_account), notice: "Swatch group created."
     else
       @available_products = current_account.products.order(:title)
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -38,7 +38,7 @@ class SwatchGroupsController < ApplicationController
       redirect_to account_swatch_groups_path(current_account), notice: "Swatch group updated."
     else
       @available_products = current_account.products.order(:title)
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -82,7 +82,7 @@ class SwatchGroupsController < ApplicationController
   end
 
   def swatch_group_params
-    params.require(:swatch_group).permit(:name, :option_name, :status, :product_page_style, :collection_page_style, :swatch_image_source, selected_items: [:offer_id, :title, :image_link, :price])
+    params.require(:swatch_group).permit(:name, :option_name, :status, :product_page_style, :collection_page_style, :swatch_image_source, selected_items: [:offer_id, :group_id, :title, :image_link, :price])
   end
 
   # Create/update Product/Variant/Varbind and SwatchGroupProduct for bucketed items
@@ -97,13 +97,16 @@ class SwatchGroupsController < ApplicationController
       price = item["price"].presence
       next if offer_id.blank? || title.blank?
 
-      product = current_account.products.find_or_initialize_by(title: title)
-      product.save! if product.changed?
-
-      # Link variant via Insale varbind when available
+      # Prefer locating an existing product via a variant already bound to this offer_id (Insale varbind)
       insale = current_account.insales.first
       existing_bind = insale ? Varbind.find_by(varbindable: insale, value: offer_id) : nil
       variant = existing_bind&.variant
+
+      # If we found a variant via varbind, take its product; otherwise create/find by title
+      product = variant&.product || current_account.products.find_or_initialize_by(title: title)
+      product.save! if product.changed?
+
+      # Ensure there is a variant and that it is bound to the offer_id
       variant ||= product.variants.joins(:varbinds).find_by(varbinds: { value: offer_id })
       variant ||= product.variants.first_or_initialize
       variant.image_link ||= image
@@ -112,9 +115,9 @@ class SwatchGroupsController < ApplicationController
 
       Varbind.find_or_create_by!(variant: variant, varbindable: (insale || group), value: offer_id)
 
-      group.swatch_group_products.find_or_create_by!(product: product) do |sgp|
-        sgp.swatch_value = insales_file_product_id
-      end
+      sgp = group.swatch_group_products.find_or_initialize_by(product: product)
+      sgp.swatch_value = insales_file_product_id
+      sgp.save! if sgp.changed?
     end
   end
 end
