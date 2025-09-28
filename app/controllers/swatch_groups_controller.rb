@@ -24,7 +24,7 @@ class SwatchGroupsController < ApplicationController
     if @swatch_group.save
       persist_selected_items(@swatch_group, swatch_group_params[:selected_items])
       SwatchJsonGeneratorJob.perform_later(current_account.id)
-      redirect_to account_swatch_groups_path(current_account), notice: 'Swatch group created.'
+      redirect_to account_swatch_groups_path(current_account), notice: "Swatch group created."
     else
       @available_products = current_account.products.order(:title)
       render :new, status: :unprocessable_entity
@@ -35,7 +35,7 @@ class SwatchGroupsController < ApplicationController
     if @swatch_group.update(swatch_group_params.except(:selected_items))
       persist_selected_items(@swatch_group, swatch_group_params[:selected_items])
       SwatchJsonGeneratorJob.perform_later(current_account.id)
-      redirect_to account_swatch_groups_path(current_account), notice: 'Swatch group updated.'
+      redirect_to account_swatch_groups_path(current_account), notice: "Swatch group updated."
     else
       @available_products = current_account.products.order(:title)
       render :edit, status: :unprocessable_entity
@@ -45,7 +45,7 @@ class SwatchGroupsController < ApplicationController
   def destroy
     @swatch_group.destroy
     SwatchJsonGeneratorJob.perform_later(current_account.id)
-    redirect_to account_swatch_groups_path(current_account), notice: 'Swatch group deleted.'
+    redirect_to account_swatch_groups_path(current_account), notice: "Swatch group deleted."
   end
 
   def preview
@@ -53,26 +53,26 @@ class SwatchGroupsController < ApplicationController
   end
 
   def toggle_status
-    @swatch_group.update(status: @swatch_group.active? ? 'inactive' : 'active')
+    @swatch_group.update(status: @swatch_group.active? ? "inactive" : "active")
     redirect_to account_swatch_groups_path(current_account), notice: "Swatch group #{@swatch_group.status}."
   end
 
   def regenerate_json
     SwatchJsonGeneratorJob.perform_later(current_account.id)
-    redirect_to account_swatch_groups_path(current_account), notice: 'JSON regeneration started.'
+    redirect_to account_swatch_groups_path(current_account), notice: "JSON regeneration started."
   end
 
   # Offcanvas for selecting a style for either field
   def style_selector
-    @field = params[:field].in?(%w[product_page_style collection_page_style]) ? params[:field] : 'product_page_style'
+    @field = params[:field].in?(%w[product_page_style collection_page_style]) ? params[:field] : "product_page_style"
     @current_value = params[:current]
-    render partial: 'swatch_groups/style_selector', locals: { field: @field, current_value: @current_value }, layout: false
+    render partial: "swatch_groups/style_selector", locals: { field: @field, current_value: @current_value }, layout: false
   end
 
   # Offcanvas products picker that searches via product_xml
   def products_picker
     @swatch_group = current_account.swatch_groups.find(params[:id])
-    render partial: 'swatch_group_products/picker', layout: false
+    render partial: "swatch_group_products/picker", layout: false
   end
 
   private
@@ -92,6 +92,7 @@ class SwatchGroupsController < ApplicationController
     selected.values.each do |item|
       title = item["title"]
       offer_id = item["offer_id"]
+      insales_file_product_id = item["group_id"]
       image = item["image_link"]
       price = item["price"].presence
       next if offer_id.blank? || title.blank?
@@ -112,7 +113,7 @@ class SwatchGroupsController < ApplicationController
       Varbind.find_or_create_by!(variant: variant, varbindable: (insale || group), value: offer_id)
 
       group.swatch_group_products.find_or_create_by!(product: product) do |sgp|
-        sgp.swatch_value = offer_id
+        sgp.swatch_value = insales_file_product_id
       end
     end
   end

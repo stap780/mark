@@ -67,14 +67,14 @@ class SwatchGroup < ApplicationRecord
   after_create_commit do
     broadcast_prepend_to [account, :swatch_groups],
                         target: "swatch_groups",
-                        partial: 'swatch_groups/swatch_group',
+                        partial: "swatch_groups/swatch_group",
                         locals: { swatch_group: self }
   end
 
   after_update_commit do
     broadcast_replace_to [account, :swatch_groups],
                         target: dom_id(self),
-                        partial: 'swatch_groups/swatch_group',
+                        partial: "swatch_groups/swatch_group",
                         locals: { swatch_group: self }
   end
 

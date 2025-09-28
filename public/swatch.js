@@ -2,10 +2,17 @@
  * Loads swatch JSON for a given account id from S3 and renders swatches
  * Usage: include this script with ?id=<account_id>
  *   <script src="https://.../scripts/swatch.js?id=3" defer></script>
+ * Added debug logging (toggle via ?debug=1 in the script URL)
  */
 
 (function() {
   const S3_BASE = 'https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23';
+  let DEBUG = false;
+
+  function debugLog(){
+    if (!DEBUG) return;
+    try { console.log('[swatch]', ...arguments); } catch(e) { /* noop */ }
+  }
 
   function getAccountIdFromScript() {
     const scripts = document.getElementsByTagName('script');
@@ -15,6 +22,8 @@
         try {
           const url = new URL(src, window.location.origin);
           const id = url.searchParams.get('id');
+          const dbg = url.searchParams.get('debug');
+          if (dbg === '1' || dbg === 'true') DEBUG = true;
           if (id) return id;
         } catch (e) {
           // ignore
@@ -26,6 +35,7 @@
 
   function fetchSwatchJson(accountId) {
     const jsonUrl = `${S3_BASE}/swatches/swatch_${accountId}.json`;
+    debugLog('fetchSwatchJson url=', jsonUrl);
     return fetch(jsonUrl, { credentials: 'omit' }).then(function(res) {
       if (!res.ok) throw new Error('Failed to load swatch json');
       return res.json();
@@ -60,6 +70,7 @@
   function buildSwatchContainer(entry, useStyle, swatchImageSource) {
     const isMobile = window.matchMedia('(max-width: 640px)').matches;
     const size = sizeForStyle(useStyle, isMobile);
+    debugLog('buildSwatchContainer style=', useStyle, 'mobile=', isMobile, 'size=', size, 'swatches=', (entry.swatches||[]).length);
 
     const wrapper = document.createElement('div');
     wrapper.className = 'twc-swatch-container';
@@ -101,45 +112,65 @@
     data.forEach(function(entry) {
       var selector = `[data-product-id="${entry.product_id}"]`;
       var cards = document.querySelectorAll(selector);
-      if (!cards || cards.length === 0) return;
-      var useStyle = entry.collection_page_style || entry.product_page_style;
+      if (!cards || cards.length === 0) { debugLog('renderForCollection no cards for product_id=', entry.product_id); return; }
+      var useStyle = entry.collection_page_style;
       var container = buildSwatchContainer(entry, useStyle, entry.swatch_image_source);
       cards.forEach(function(card) {
         var anchor = card.querySelector('.product-preview__area-photo');
         if (anchor) {
           // Insert a fresh clone per card
           anchor.insertAdjacentElement('afterend', container.cloneNode(true));
+        } else {
+          debugLog('renderForCollection no anchor in card for product_id=', entry.product_id);
         }
       });
     });
   }
 
   function renderForProduct(data) {
-    // Try to infer product id from page if present
-    var pidNode = document.querySelector('[data-product-id]');
-    var pid = pidNode && pidNode.getAttribute('data-product-id');
+    // Mirror collection logic: for each entry, find matching nodes by data-product-id
     data.forEach(function(entry) {
-      if (pid && entry.product_id !== pid) return;
+      var selector = `[data-product-id="${String(entry.product_id)}"]`;
+      var cards = document.querySelectorAll(selector);
+      if (!cards || cards.length === 0) { debugLog('renderForProduct no cards for product_id=', entry.product_id); return; }
       var useStyle = entry.product_page_style || entry.collection_page_style;
       var container = buildSwatchContainer(entry, useStyle, entry.swatch_image_source);
-      var anchor = document.querySelector('.product-preview__area-photo') || document.body;
-      anchor.insertAdjacentElement('afterend', container);
+      cards.forEach(function(card) {
+        var variantsArea = card.querySelector('.product__area-variants');
+        if (variantsArea) {
+          variantsArea.innerHTML = '';
+          variantsArea.appendChild(container.cloneNode(true));
+          debugLog('renderForProduct replaced .product__area-variants for product_id=', entry.product_id);
+        } else {
+          var anchor = card.querySelector('.product-preview__area-photo') || card;
+          anchor.insertAdjacentElement('afterend', container.cloneNode(true));
+          debugLog('renderForProduct inserted after photo for product_id=', entry.product_id);
+        }
+      });
     });
   }
 
   function init() {
     var accountId = getAccountIdFromScript();
-    if (!accountId) return;
+    if (!accountId) { debugLog('init no account id'); return; }
+    debugLog('init accountId=', accountId);
     fetchSwatchJson(accountId).then(function(data) {
-      if (!Array.isArray(data)) return;
-      if (window.location.pathname.includes('collection')) {
+      if (!Array.isArray(data)) { debugLog('json not array'); return; }
+      var path = window.location.pathname;
+      if (path.includes('collection')) {
+        debugLog('page=collection entries=', data.length);
         renderForCollection(data);
-      } else {
+      } else if (path.includes('product')) {
+        debugLog('page=product entries=', data.length);
         renderForProduct(data);
+      } else {
+        // Only operate on collection or product pages
+        debugLog('page ignored path=', path);
+        return;
       }
     }).catch(function(err) {
       // eslint-disable-next-line no-console
-      console.warn('swatch.js:', err);
+      console.warn('swatch.js error:', err);
     });
   }
 
