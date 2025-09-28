@@ -168,8 +168,10 @@ class InsalesController < ApplicationController
       next if title.blank?
       next if query.present? && !title.downcase.include?(query)
       items << { offer_id: offer_id, group_id: group_id, title: title, image_link: image, price: price }
+      Rails.logger.debug("[products_search] add offer_id=#{offer_id} group_id=#{group_id} title='#{title}'")
       break if items.size >= 20
     end
+    Rails.logger.debug("[products_search] items=#{items.size}")
     render json: items
   end
 

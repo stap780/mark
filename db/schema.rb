@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_23_140000) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_28_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -103,15 +103,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_23_140000) do
     t.index ["account_id"], name: "index_swatch_groups_on_account_id"
     t.index ["name"], name: "index_swatch_groups_on_name"
     t.index ["status"], name: "index_swatch_groups_on_status"
-  end
-
-  create_table "swatch_settings", force: :cascade do |t|
-    t.string "setting_key", null: false
-    t.text "setting_value"
-    t.string "setting_type", default: "string"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["setting_key"], name: "index_swatch_settings_on_setting_key", unique: true
   end
 
   create_table "users", force: :cascade do |t|

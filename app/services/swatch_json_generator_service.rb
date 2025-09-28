@@ -23,9 +23,10 @@ class SwatchJsonGeneratorService
           collection_page_style: g.collection_page_style,
           swatch_image_source: g.swatch_image_source,
           swatches: items.map do |sgp|
-            offer = offer_lookup[sgp.swatch_value] || {}
+            offer_id = find_offer_id_for_product(sgp.product) || sgp.swatch_value
+            offer = offer_lookup[offer_id] || {}
             {
-              similar_id: sgp.swatch_value,
+              similar_id: offer_id,
               title: sgp.product&.title,
               images: offer[:images],
               link: offer[:url],
@@ -107,6 +108,26 @@ class SwatchJsonGeneratorService
         nil
       end
     end
+  end
+
+  # Determine the external offer_id for a given product by reading its variant varbinds
+  def find_offer_id_for_product(product)
+    return nil unless product
+    insale = @account.insales.first
+    if insale
+      vb = Varbind.joins(:variant)
+                  .where(variants: { product_id: product.id })
+                  .where(varbindable_type: 'Insale', varbindable_id: insale.id)
+                  .order('varbinds.id DESC')
+                  .first
+      return vb.value if vb
+    end
+
+    vb_any = Varbind.joins(:variant)
+                    .where(variants: { product_id: product.id })
+                    .order('varbinds.id DESC')
+                    .first
+    vb_any&.value
   end
 
   def s3_file_key

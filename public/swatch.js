@@ -43,18 +43,25 @@
   }
 
   function pickImage(images, source) {
-    if (!Array.isArray(images) || images.length === 0) return null;
+    if (!Array.isArray(images) || images.length === 0) { debugLog('pickImage no images'); return null; }
+    var chosen = null;
     switch (source) {
       case 'first_product_image':
-        return images[0];
+        chosen = images[0];
+        break;
       case 'second_product_image':
-        return images[1] || images[0];
+        chosen = images[1] || images[0];
+        break;
       case 'last_product_image':
-        return images[images.length - 1];
+        chosen = images[images.length - 1];
+        break;
       case 'custom_image':
       default:
-        return images[0];
+        chosen = images[0];
+        break;
     }
+    debugLog('pickImage source=', source, 'count=', images.length, 'chosen=', chosen);
+    return chosen;
   }
 
   function sizeForStyle(styleToken, isMobile) {
@@ -81,7 +88,7 @@
 
     (entry.swatches || []).forEach(function(s) {
       const imgSrc = pickImage(s.images || [], swatchImageSource);
-      if (!imgSrc) return;
+      //if (!imgSrc) return;
       const a = document.createElement('a');
       a.href = s.link || '#';
       a.style.display = 'inline-flex';
