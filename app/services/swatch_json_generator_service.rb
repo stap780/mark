@@ -21,6 +21,7 @@ class SwatchJsonGeneratorService
           status: g.status,
           product_page_style: g.product_page_style,
           collection_page_style: g.collection_page_style,
+          swatch_image_source: g.swatch_image_source,
           swatches: items.map do |sgp|
             offer = offer_lookup[sgp.swatch_value] || {}
             {
