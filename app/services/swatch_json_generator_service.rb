@@ -8,6 +8,7 @@ class SwatchJsonGeneratorService
 
     # Build offer lookup from product_xml feed: offer id -> { image, url }
     offer_lookup = build_offer_lookup_from_product_xml
+    puts "offer_lookup => #{offer_lookup}"
     # Build entries like in your example: one entry per group item (product_id = offer id),
     # and the swatches array lists all items in the group as similar_id entries
     payload = groups.flat_map do |g|

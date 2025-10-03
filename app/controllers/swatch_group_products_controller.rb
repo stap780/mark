@@ -8,7 +8,7 @@ class SwatchGroupProductsController < ApplicationController
     group_id = params[:group_id]
     title = params[:title]
     image_link = params[:image_link]
-    swatch_value = group_id.presence || offer_id
+    swatch_value = offer_id #group_id.presence || 
     @sgp = SwatchGroupProduct.new(title: title, swatch_value: swatch_value, color: nil, product_id: nil, image_link: image_link)
 
     @target = dom_id(current_account, :swatch_group_products)
