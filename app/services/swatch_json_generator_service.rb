@@ -1,4 +1,7 @@
 class SwatchJsonGeneratorService
+  require "nokogiri"
+  require "open-uri"
+
   def initialize(account_id)
     @account = Account.find(account_id)
   end
@@ -8,7 +11,6 @@ class SwatchJsonGeneratorService
 
     # Build offer lookup from product_xml feed: offer id -> { image, url }
     offer_lookup = build_offer_lookup_from_product_xml
-    puts "offer_lookup => #{offer_lookup}"
     # Build entries like in your example: one entry per group item (product_id = offer id),
     # and the swatches array lists all items in the group as similar_id entries
     payload = groups.flat_map do |g|
@@ -16,7 +18,7 @@ class SwatchJsonGeneratorService
       items.map do |base|
         {
           swatch_id: g.id,
-          product_id: base.swatch_value,
+          product_id: offer_lookup[base.swatch_value][:group_id] || base.swatch_value,
           name: g.name,
           option_name: g.option_name,
           status: g.status,
@@ -24,11 +26,10 @@ class SwatchJsonGeneratorService
           collection_page_style: g.collection_page_style,
           swatch_image_source: g.swatch_image_source,
           swatches: items.map do |sgp|
-            # offer_id = find_offer_id_for_product(sgp.product) || sgp.swatch_value
-            # offer = offer_lookup[offer_id] || {}
             offer = offer_lookup[sgp.swatch_value] || {}
+            puts "offer => #{offer}"
             {
-              similar_id: sgp.swatch_value,
+              similar_id: offer[:group_id] || sgp.swatch_value,
               title: sgp.title,
               images: offer[:images],
               link: offer[:url],
@@ -40,14 +41,6 @@ class SwatchJsonGeneratorService
         }
       end
     end
-
-    # Write one JSON per account id (not per user): /swatch_groups/:account_id.json
-    # dir = Rails.root.join('public', 'swatch_groups')
-    # FileUtils.mkdir_p(dir)
-    # path = dir.join("#{@account.id}.json")
-    # File.delete(path) if File.exist?(path)
-    # File.write(path, JSON.pretty_generate(payload))
-    # Rails.logger.info("Generated swatch JSON for account #{@account.id}: #{payload.size} groups → files per user in /public/swatch_groups/")
 
     # Attach via Active Storage to the account's Insale record swatch_file
     if (rec = @account.insales.first)
@@ -76,17 +69,18 @@ class SwatchJsonGeneratorService
     return {} if xml_content.blank?
 
     begin
-      require 'nokogiri'
       doc = Nokogiri::XML(xml_content)
       lookup = {}
       doc.xpath('//offer').each do |offer|
         offer_id = offer['id'] || offer.at('id')&.text
+        group_id = offer['group_id'] || offer.at('group_id')&.text
         next if offer_id.blank?
         pictures = offer.xpath('picture').map { |p| p.text }.compact.uniq
         url = offer.at('url')&.text
         entry = {}
         entry[:images] = pictures if pictures.any?
         entry[:url] = url if url.present?
+        entry[:group_id] = group_id if group_id.present?
         lookup[offer_id] = entry if entry.any?
       end
       lookup
@@ -105,7 +99,6 @@ class SwatchJsonGeneratorService
 
     if link =~ %r{^https?://}
       begin
-        require "open-uri"
         URI.parse(link).open(read_timeout: 10).read
       rescue StandardError => e
         Rails.logger.error("Swatch JSON fetch error: #{e.message}")
