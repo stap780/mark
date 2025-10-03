@@ -28,24 +28,24 @@ Rails.application.routes.draw do
         get :check
         get :add_order_webhook
         post :create_xml
-        get :products_search
         get :xml_source
         patch :set_product_xml
-        get :items_picker
       end
     end
     resources :swatch_groups do
       member do
         get :preview
         patch :toggle_status
-        # products_picker route no longer used for new groups; kept for compatibility if needed
-        # get :products_picker
+        get :items_picker
+        get :search
       end
       collection do
         post :regenerate_json
         get :style_selector
+        post :pick_style
+        # post :add_item
       end
-      resources :swatch_group_products, only: [:create, :update, :destroy] do
+      resources :swatch_group_products do
         member do
           patch :sort
         end

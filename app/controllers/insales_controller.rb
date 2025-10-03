@@ -74,9 +74,10 @@ class InsalesController < ApplicationController
     @insale.destroy!
 
     respond_to do |format|
-      flash.now[:success] = t('.success', default: 'Insale was successfully destroyed')
+      message = t('.success', default: 'Insale was successfully destroyed')
+      flash.now[:success] = message
       format.turbo_stream { render turbo_stream: turbo_close_offcanvas_flash + [ turbo_stream.update(:insales_actions, partial: "insales/actions") ] }
-      format.html { redirect_to account_insales_path(current_account), notice: t('.success', default: 'Insale was successfully destroyed') }
+      format.html { redirect_to account_insales_path(current_account), notice: message }
       format.json { head :no_content }
     end
   end
@@ -148,37 +149,6 @@ class InsalesController < ApplicationController
     head :ok
   end
 
-  # Lightweight search through the saved products XML (YML/Marketplace format)
-  def products_search
-    require 'open-uri'
-    query = params[:q].to_s.strip.downcase
-    rec = current_account&.insales&.first
-    return render json: [] unless rec&.product_xml.present?
-
-    doc = Nokogiri::XML(URI.open(rec.product_xml))
-    items = []
-    doc.xpath('//offer').each do |node|
-      offer_id = node['id'] || node.at('id')&.text
-      title = node.at('model')&.text.to_s
-      image = node.at('picture')&.text
-      group_id = node.at('group_id')&.text || node['group_id']
-      price_text = node.at('price')&.text
-      price_value = price_text.to_s.strip
-      price = price_value.present? ? price_value.to_d : nil
-      next if title.blank?
-      next if query.present? && !title.downcase.include?(query)
-      items << { offer_id: offer_id, group_id: group_id, title: title, image_link: image, price: price }
-      Rails.logger.debug("[products_search] add offer_id=#{offer_id} group_id=#{group_id} title='#{title}'")
-      break if items.size >= 20
-    end
-    Rails.logger.debug("[products_search] items=#{items.size}")
-    render json: items
-  end
-
-  # Account-level items picker offcanvas
-  def items_picker
-    render partial: 'insales/items_picker', layout: false
-  end
 
   private
 

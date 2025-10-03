@@ -6,9 +6,17 @@
     <%= varbind.varbindable.respond_to?(:title) ? varbind.varbindable.title : "#{varbind.varbindable_type} #{varbind.varbindable_id}" %>
   </div>
   <div class="text-sm text-gray-800"><%= varbind.value %></div>
-  <div class="text-right space-x-2 text-sm">
-    <%= link_to 'Edit', edit_account_product_variant_varbind_path(current_account, product, variant, varbind), data: { turbo_stream: true, turbo_prefetch: false }, class: 'text-violet-700 hover:underline' %>
-    <%= link_to 'Delete', account_product_variant_varbind_path(current_account, product, variant, varbind), data: { turbo_method: :delete, turbo_confirm: 'Delete varbind?', turbo_stream: true }, class: 'text-red-600 hover:underline' %>
+  <div class="text-right space-x-2 text-sm flex items-center justify-center">
+    <%= link_to 'Edit', edit_account_product_variant_varbind_path(current_account, product, variant, varbind), 
+    data: { turbo_stream: true, turbo_prefetch: false }, 
+    class: 'text-violet-700 hover:underline flex items-center justify-center' %>
+    <%= link_to account_product_variant_varbind_path(current_account, product, variant, varbind), 
+    data: { turbo_method: :delete, turbo_confirm: 'Delete varbind?', turbo_stream: true }, 
+    class: 'float-right p-2 rounded-md bg-red-300 hover:bg-red-400 flex items-center justify-center' do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    <% end %>
   </div>
 </div>
 <% end %>

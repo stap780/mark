@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_28_120000) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_02_114000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -81,10 +81,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_28_120000) do
 
   create_table "swatch_group_products", force: :cascade do |t|
     t.bigint "swatch_group_id", null: false
-    t.bigint "product_id", null: false
+    t.bigint "product_id"
     t.string "swatch_value"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "color"
+    t.string "title"
+    t.string "image_link"
+    t.string "swatch_label"
     t.index ["product_id"], name: "index_swatch_group_products_on_product_id"
     t.index ["swatch_group_id", "product_id"], name: "index_sgp_on_group_and_product", unique: true
     t.index ["swatch_group_id"], name: "index_swatch_group_products_on_swatch_group_id"

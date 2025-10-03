@@ -2,7 +2,9 @@
   <div class="flex items-center justify-between mb-3">
     <div class="text-sm font-medium text-gray-700">Bindings</div>
     <% new_frame_id = dom_id(@product, dom_id(@variant, dom_id(Varbind.new))) %>
-    <%= link_to "New", new_account_product_variant_varbind_path(current_account, @product, @variant), data: { turbo_frame: new_frame_id }, class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    <%= link_to "New", new_account_product_variant_varbind_path(current_account, @product, @variant), 
+    data: { turbo_frame: new_frame_id }, 
+    class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
   </div>
   <%= turbo_frame_tag dom_id(@product, dom_id(@variant, dom_id(Varbind.new))) %>
   <%= turbo_stream_from [@product, [@variant, :varbinds]] %>

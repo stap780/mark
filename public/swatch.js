@@ -64,7 +64,7 @@
     return chosen;
   }
 
-  function sizeForStyle(styleToken, isMobile) {
+  function sizeForStyleCircular(styleToken, isMobile) {
     // Minimal mapping; extend as needed
     if (!styleToken) return isMobile ? 20 : 30;
     if (styleToken.includes('circular_small')) return isMobile ? 20 : 30;
@@ -74,11 +74,69 @@
     return isMobile ? 20 : 30;
   }
 
+  function sizeForStyleSquare(styleToken, isMobile) {
+    if (!styleToken) return isMobile ? 20 : 30;
+    if (styleToken.includes('square_small')) return isMobile ? 20 : 30;
+    if (styleToken.includes('square_medium')) return isMobile ? 24 : 36;
+    if (styleToken.includes('square_large')) return isMobile ? 28 : 44;
+    return isMobile ? 20 : 30;
+  }
+
   function buildSwatchContainer(entry, useStyle, swatchImageSource) {
     const isMobile = window.matchMedia('(max-width: 640px)').matches;
-    const size = sizeForStyle(useStyle, isMobile);
-    debugLog('buildSwatchContainer style=', useStyle, 'mobile=', isMobile, 'size=', size, 'swatches=', (entry.swatches||[]).length);
+    const styleToken = String(useStyle || '').toLowerCase();
+    const kind = styleToken.includes('dropdown') ? 'dropdown'
+                : styleToken.includes('square') ? 'square'
+                : styleToken.includes('none') || styleToken.includes('not_show') || styleToken.includes('hidden') ? 'none'
+                : 'circular';
+    debugLog('buildSwatchContainer kind=', kind, 'styleToken=', styleToken);
 
+    // Not show → return an empty hidden container to keep caller logic safe
+    if (kind === 'none') {
+      const empty = document.createElement('div');
+      empty.style.display = 'none';
+      return empty;
+    }
+
+    // Dropdown with label
+    if (kind === 'dropdown') {
+      const container = document.createElement('div');
+      container.className = 'twc-swatch-dropdown';
+      container.style.display = 'flex';
+      container.style.flexDirection = 'column';
+      container.style.gap = '4px';
+
+      const label = document.createElement('label');
+      label.textContent = entry.option_name || 'Options';
+      label.style.fontSize = '12px';
+      label.style.color = '#374151';
+
+      const select = document.createElement('select');
+      select.style.border = '1px solid rgba(0,0,0,0.12)';
+      select.style.borderRadius = '6px';
+      select.style.padding = '6px 8px';
+      select.style.fontSize = '14px';
+
+      (entry.swatches || []).forEach(function(s) {
+        const opt = document.createElement('option');
+        opt.value = s.link || '';
+        opt.textContent = s.label || s.title || '';
+        select.appendChild(opt);
+      });
+
+      select.addEventListener('change', function(e) {
+        const href = e.target.value;
+        if (href) window.location.href = href;
+      });
+
+      container.appendChild(label);
+      container.appendChild(select);
+      return container;
+    }
+
+    // Circular or Square buttons
+    const isCircular = (kind === 'circular');
+    const size = isCircular ? sizeForStyleCircular(styleToken, isMobile) : sizeForStyleSquare(styleToken, isMobile);
     const wrapper = document.createElement('div');
     wrapper.className = 'twc-swatch-container';
     wrapper.style.display = 'flex';
@@ -86,28 +144,52 @@
     wrapper.style.gap = '6px';
     wrapper.style.alignItems = 'center';
 
+    function computeVisual(s) {
+      // Determine how to render the swatch depending on swatchImageSource and data
+      if (swatchImageSource === 'custom_color_image') {
+        if (s.color) {
+          return { bgColor: s.color };
+        }
+        const customImg = s.image || s.custom_image;
+        if (customImg) {
+          return { bgImage: customImg };
+        }
+        // Fallback to product images if neither color nor custom image present
+        const src = pickImage(s.images || [], 'first_product_image');
+        return { imgSrc: src };
+      }
+      // Default paths use product images per source selection
+      return { imgSrc: pickImage(s.images || [], swatchImageSource) };
+    }
+
     (entry.swatches || []).forEach(function(s) {
-      const imgSrc = pickImage(s.images || [], swatchImageSource);
-      //if (!imgSrc) return;
+      const visual = computeVisual(s);
       const a = document.createElement('a');
       a.href = s.link || '#';
       a.style.display = 'inline-flex';
       a.style.width = size + 'px';
       a.style.height = size + 'px';
-      a.style.borderRadius = '9999px';
+      a.style.borderRadius = isCircular ? '9999px' : '6px';
       a.style.overflow = 'hidden';
       a.style.border = '1px solid rgba(0,0,0,0.08)';
       a.style.alignItems = 'center';
       a.style.justifyContent = 'center';
-      a.title = s.title || '';
+      a.title = s.label || s.title || '';
 
-      const img = document.createElement('img');
-      img.src = imgSrc;
-      img.alt = s.title || '';
-      img.style.maxWidth = '100%';
-      img.style.maxHeight = '100%';
-
-      a.appendChild(img);
+      if (visual.bgColor) {
+        a.style.backgroundColor = visual.bgColor;
+      } else if (visual.bgImage) {
+        a.style.backgroundImage = `url(${visual.bgImage})`;
+        a.style.backgroundSize = 'cover';
+        a.style.backgroundPosition = 'center';
+      } else if (visual.imgSrc) {
+        const img = document.createElement('img');
+        img.src = visual.imgSrc;
+        img.alt = s.label || s.title || '';
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '100%';
+        a.appendChild(img);
+      }
       wrapper.appendChild(a);
     });
 
@@ -146,6 +228,7 @@
         var variantsArea = card.querySelector('.product__area-variants');
         if (variantsArea) {
           variantsArea.innerHTML = '';
+          variantsArea.style.display = 'none';
           variantsArea.appendChild(container.cloneNode(true));
           debugLog('renderForProduct replaced .product__area-variants for product_id=', entry.product_id);
         } else {

@@ -1,44 +1,47 @@
+
 class SwatchGroupsController < ApplicationController
-  before_action :set_swatch_group, only: %i[ show edit update destroy preview toggle_status ]
+  before_action :set_swatch_group, only: %i[ show edit update destroy preview toggle_status items_picker search]
 
   def index
-    @swatch_groups = current_account.swatch_groups.ordered
+    # @swatch_groups = current_account.swatch_groups.ordered
+    @search = current_account.swatch_groups.ransack(params[:q])
+    @search.sorts = "id desc" if @search.sorts.empty?
+    @swatch_groups = @search.result(distinct: true).paginate(page: params[:page], per_page: 50)
   end
 
   def show
     @assigned_products = @swatch_group.swatch_group_products.includes(:product).ordered
-    @available_products = current_account.products.order(:title)
   end
 
   def new
     @swatch_group = current_account.swatch_groups.new
-    @available_products = current_account.products.order(:title)
   end
 
   def edit
-    @available_products = current_account.products.order(:title)
   end
 
   def create
-    @swatch_group = current_account.swatch_groups.new(swatch_group_params.except(:selected_items))
+    @swatch_group = current_account.swatch_groups.new(swatch_group_params)
     if @swatch_group.save
-      persist_selected_items(@swatch_group, swatch_group_params[:selected_items])
+      resolve_products_for_nested(@swatch_group)
       SwatchJsonGeneratorJob.perform_later(current_account.id)
       redirect_to account_swatch_groups_path(current_account), notice: "Swatch group created."
     else
-      @available_products = current_account.products.order(:title)
       render :new, status: :unprocessable_content
     end
   end
 
   def update
-    if @swatch_group.update(swatch_group_params.except(:selected_items))
-      persist_selected_items(@swatch_group, swatch_group_params[:selected_items])
+    if @swatch_group.update(swatch_group_params)
+      resolve_products_for_nested(@swatch_group)
       SwatchJsonGeneratorJob.perform_later(current_account.id)
       redirect_to account_swatch_groups_path(current_account), notice: "Swatch group updated."
     else
-      @available_products = current_account.products.order(:title)
-      render :edit, status: :unprocessable_content
+      respond_to do |format|
+        flash.now[:notice] = @swatch_group.errors.full_messages.uniq.to_sentence
+        format.turbo_stream { render turbo_stream: render_turbo_flash }
+        format.html { render :edit, status: :unprocessable_content }
+      end
     end
   end
 
@@ -69,55 +72,88 @@ class SwatchGroupsController < ApplicationController
     render partial: "swatch_groups/style_selector", locals: { field: @field, current_value: @current_value }, layout: false
   end
 
-  # Offcanvas products picker that searches via product_xml
-  def products_picker
-    @swatch_group = current_account.swatch_groups.find(params[:id])
-    render partial: "swatch_group_products/picker", layout: false
+  # Turbo: user picks a style; respond with turbo_stream to update a frame in the form
+  def pick_style
+    @field = params[:field].to_s
+    @value = params[:value].to_s
+    @label = SwatchGroup.style_label_for(@value) || @value
+    render turbo_stream: [
+      turbo_stream.replace(
+        "style_#{@field}",
+        partial: "swatch_groups/style_field",
+        locals: { field: @field, value: @value, label: @label }
+      ),
+      turbo_stream.update(:offcanvas, "")
+    ]
+  end
+
+  # Account-level items picker offcanvas
+  def items_picker
+    # puts "items_picker params => #{params.inspect}"
+    # puts "items_picker @swatch_group => #{@swatch_group.inspect}"
+  end
+
+  # Turbo search endpoint replacing InsalesController#products_search
+  def search
+    require 'open-uri'
+    query = params[:q].to_s.strip.downcase
+    rec = current_account&.insales&.first
+    @items = []
+    if rec&.product_xml.present?
+      doc = Nokogiri::XML(URI.open(rec.product_xml))
+      doc.xpath('//offer').each do |node|
+        offer_id = node['id'] || node.at('id')&.text
+        title = node.at('model')&.text.to_s
+        image = node.at('picture')&.text
+        group_id = node.at('group_id')&.text || node['group_id']
+        price_text = node.at('price')&.text
+        price_value = price_text.to_s.strip
+        price = price_value.present? ? price_value.to_d : nil
+        next if title.blank?
+        next if query.present? && !title.downcase.include?(query)
+        @items << { offer_id: offer_id, group_id: group_id, title: title, image_link: image, price: price }
+        break if @items.size >= 20
+      end
+    end
   end
 
   private
 
   def set_swatch_group
     @swatch_group = current_account.swatch_groups.find(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      @swatch_group = current_account.swatch_groups.new(id: params[:id])
   end
 
   def swatch_group_params
-    params.require(:swatch_group).permit(:name, :option_name, :status, :product_page_style, :collection_page_style, :swatch_image_source, selected_items: [:offer_id, :group_id, :title, :image_link, :price])
+    params.require(:swatch_group).permit(
+      :name, :option_name, :status, :product_page_style, :collection_page_style, :swatch_image_source,
+      swatch_group_products_attributes: [:id, :product_id, :swatch_label, :swatch_value, :title, :color, :image_link, :image, :_destroy]
+    )
   end
 
-  # Create/update Product/Variant/Varbind and SwatchGroupProduct for bucketed items
-  def persist_selected_items(group, selected)
-    return if selected.blank?
-
-    selected.values.each do |item|
-      title = item["title"]
-      offer_id = item["offer_id"]
-      insales_file_product_id = item["group_id"]
-      image = item["image_link"]
-      price = item["price"].presence
+  # After nested params saved, resolve products for any SGPs missing product_id based on swatch_value/title and varbinds
+  def resolve_products_for_nested(group)
+    puts "resolve_products_for_nested group => #{group.inspect}"
+    group.swatch_group_products.each do |sgp|
+      next if sgp.product_id.present?
+      offer_id = sgp.swatch_value
+      title = sgp.title.presence
+      image_link = sgp.image_link.presence
       next if offer_id.blank? || title.blank?
 
-      # Prefer locating an existing product via a variant already bound to this offer_id (Insale varbind)
       insale = current_account.insales.first
       existing_bind = insale ? Varbind.find_by(varbindable: insale, value: offer_id) : nil
       variant = existing_bind&.variant
 
-      # If we found a variant via varbind, take its product; otherwise create/find by title
       product = variant&.product || current_account.products.find_or_initialize_by(title: title)
       product.save! if product.changed?
 
-      # Ensure there is a variant and that it is bound to the offer_id
       variant ||= product.variants.joins(:varbinds).find_by(varbinds: { value: offer_id })
-      variant ||= product.variants.first_or_initialize
-      variant.image_link ||= image
-      variant.price = price if price.present?
-      variant.save! if variant.changed?
-
+      variant ||= product.variants.first_or_create!(image_link: image_link)
       Varbind.find_or_create_by!(variant: variant, varbindable: (insale || group), value: offer_id)
 
-      sgp = group.swatch_group_products.find_or_initialize_by(product: product)
-      sgp.swatch_value = insales_file_product_id
-      sgp.save! if sgp.changed?
+      sgp.update_column(:product_id, product.id)
     end
   end
 end

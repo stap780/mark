@@ -2,20 +2,69 @@
   <div data-controller="style-selector" data-style-selector-field-value="<%= field %>">
     <% SwatchGroup::STYLE_GROUPS.each do |group_label, options| %>
       <div class="mb-4 border rounded-md">
-        <div class="px-3 py-2 font-medium bg-gray-50 border-b"><%= group_label %></div>
-        <div class="p-3 grid grid-cols-1 gap-2">
-          <% options.each do |label, value| %>
-            <button type="button"
-                    class="flex items-center justify-between w-full rounded-md border px-3 py-2 text-left hover:bg-gray-50 <%= 'ring-2 ring-violet-500' if value == current_value %>"
-                    data-action="click->style-selector#choose"
-                    data-style-selector-value-param="<%= value %>">
-              <span class="text-sm text-gray-800"><%= label %></span>
-              <% if value == current_value %>
-                <span class="text-violet-600 text-xs">Selected</span>
-              <% end %>
-            </button>
+        <div class="px-3 py-2 font-medium bg-gray-50 border-b flex items-center justify-between">
+          <span><%= group_label %></span>
+          <% if group_label == "Circular swatch" %>
+            <span class="flex items-center gap-2 text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5">
+                <circle cx="10" cy="10" r="10" />
+              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6">
+                <circle cx="12" cy="12" r="12" />
+              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" fill="currentColor" class="h-7 w-7">
+                <circle cx="14" cy="14" r="14" />
+              </svg>
+            </span>
           <% end %>
         </div>
+        <% if group_label == "Circular swatch" || group_label == "Square button" %>
+          <% desktop_opts = options.select { |label, _| label.to_s.downcase.include?("desktop") } %>
+          <% mobile_opts  = options.select { |label, _| label.to_s.downcase.include?("mobile") } %>
+          <div class="p-3 grid grid-cols-2 gap-4">
+            <div>
+              <div class="grid grid-cols-1 gap-2">
+                <% desktop_opts.each do |label, value| %>
+                  <%= link_to pick_style_account_swatch_groups_path(current_account, field: field, value: value),
+                              data: { turbo_method: :post, turbo_frame: :_top },
+                              class: "flex items-center justify-between w-full rounded-md border px-3 py-2 text-left hover:bg-gray-50 #{'ring-2 ring-violet-500' if value == current_value}" do %>
+                    <span class="text-sm text-gray-800"><%= label %></span>
+                    <% if value == current_value %>
+                      <span class="text-violet-600 text-xs">Selected</span>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+            <div>
+              <div class="grid grid-cols-1 gap-2">
+                <% mobile_opts.each do |label, value| %>
+                  <%= link_to pick_style_account_swatch_groups_path(current_account, field: field, value: value),
+                              data: { turbo_method: :post, turbo_frame: :_top },
+                              class: "flex items-center justify-between w-full rounded-md border px-3 py-2 text-left hover:bg-gray-50 #{'ring-2 ring-violet-500' if value == current_value}" do %>
+                    <span class="text-sm text-gray-800"><%= label %></span>
+                    <% if value == current_value %>
+                      <span class="text-violet-600 text-xs">Selected</span>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% else %>
+          <div class="p-3 grid grid-cols-1 gap-2">
+            <% options.each do |label, value| %>
+              <%= link_to pick_style_account_swatch_groups_path(current_account, field: field, value: value),
+                          data: { turbo_method: :post, turbo_frame: :_top },
+                          class: "flex items-center justify-between w-full rounded-md border px-3 py-2 text-left hover:bg-gray-50 #{'ring-2 ring-violet-500' if value == current_value}" do %>
+                <span class="text-sm text-gray-800"><%= label %></span>
+                <% if value == current_value %>
+                  <span class="text-violet-600 text-xs">Selected</span>
+                <% end %>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
       </div>
     <% end %>
 
@@ -24,5 +73,3 @@
     </div>
   </div>
 <% end %>
-
-

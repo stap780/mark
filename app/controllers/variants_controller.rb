@@ -19,9 +19,9 @@ class VariantsController < ApplicationController
 
     respond_to do |format|
       if @variant.save
-        flash.now[:success] = t('.success')
+        flash.now[:success] = t(".success")
         format.turbo_stream { render turbo_stream: turbo_close_offcanvas_flash }
-        format.html { redirect_to variant_url(@variant), notice: t('.success') }
+        format.html { redirect_to variant_url(@variant), notice: t(".success") }
         format.json { render :show, status: :created, location: @variant }
       else
         format.html { render :new, status: :unprocessable_entity }

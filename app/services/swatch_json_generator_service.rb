@@ -23,14 +23,17 @@ class SwatchJsonGeneratorService
           collection_page_style: g.collection_page_style,
           swatch_image_source: g.swatch_image_source,
           swatches: items.map do |sgp|
-            offer_id = find_offer_id_for_product(sgp.product) || sgp.swatch_value
-            offer = offer_lookup[offer_id] || {}
+            # offer_id = find_offer_id_for_product(sgp.product) || sgp.swatch_value
+            # offer = offer_lookup[offer_id] || {}
+            offer = offer_lookup[sgp.swatch_value] || {}
             {
-              similar_id: offer_id,
-              title: sgp.product&.title,
+              similar_id: sgp.swatch_value,
+              title: sgp.title,
               images: offer[:images],
               link: offer[:url],
-              test: true
+              color: sgp.color,
+              label: sgp.swatch_label,
+              picture: sgp.image_s3_url
             }
           end
         }
@@ -55,7 +58,7 @@ class SwatchJsonGeneratorService
         io: io, 
         filename: "swatch_#{@account.id}.json",
         key: s3_file_key,
-        content_type: 'application/json'
+        content_type: "application/json"
         )
     end
 
@@ -94,14 +97,14 @@ class SwatchJsonGeneratorService
 
   def read_product_xml_content(link)
     if link.start_with?('/')
-      file_path = Rails.root.join('public', link.sub(%r{^/}, ''))
+      file_path = Rails.root.join("public", link.sub(%r{^/}, ""))
       return File.read(file_path) if File.exist?(file_path)
       return nil
     end
 
     if link =~ %r{^https?://}
       begin
-        require 'open-uri'
+        require "open-uri"
         URI.parse(link).open(read_timeout: 10).read
       rescue StandardError => e
         Rails.logger.error("Swatch JSON fetch error: #{e.message}")
@@ -111,24 +114,24 @@ class SwatchJsonGeneratorService
   end
 
   # Determine the external offer_id for a given product by reading its variant varbinds
-  def find_offer_id_for_product(product)
-    return nil unless product
-    insale = @account.insales.first
-    if insale
-      vb = Varbind.joins(:variant)
-                  .where(variants: { product_id: product.id })
-                  .where(varbindable_type: 'Insale', varbindable_id: insale.id)
-                  .order('varbinds.id DESC')
-                  .first
-      return vb.value if vb
-    end
+  # def find_offer_id_for_product(product)
+  #   return nil unless product
+  #   insale = @account.insales.first
+  #   if insale
+  #     vb = Varbind.joins(:variant)
+  #                 .where(variants: { product_id: product.id })
+  #                 .where(varbindable_type: 'Insale', varbindable_id: insale.id)
+  #                 .order('varbinds.id DESC')
+  #                 .first
+  #     return vb.value if vb
+  #   end
 
-    vb_any = Varbind.joins(:variant)
-                    .where(variants: { product_id: product.id })
-                    .order('varbinds.id DESC')
-                    .first
-    vb_any&.value
-  end
+  #   vb_any = Varbind.joins(:variant)
+  #                   .where(variants: { product_id: product.id })
+  #                   .order('varbinds.id DESC')
+  #                   .first
+  #   vb_any&.value
+  # end
 
   def s3_file_key
     if Rails.env.development?

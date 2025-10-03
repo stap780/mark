@@ -1,0 +1,16 @@
+<%= turbo_frame_tag :picker_results do %>
+  <div class="space-y-2">
+    <% @items.each do |i| %>
+      <div class="flex items-center justify-between p-2 border rounded">
+        <div class="flex items-center space-x-2">
+          <img src="<%= i[:image_link] %>" class="h-8 w-8 object-cover rounded" onerror="this.style.display='none'">
+          <span class="text-sm"><%= i[:title] %><%= " · #{i[:price]}" if i[:price].present? %></span>
+        </div>
+        <%= link_to 'Add item', 
+        new_account_swatch_group_swatch_group_product_path(current_account, @swatch_group, 
+        offer_id: i[:offer_id], group_id: i[:group_id], title: i[:title], image_link: i[:image_link]), 
+        data: { turbo_stream: true }, class: 'px-2 py-1 text-sm rounded-md border hover:bg-gray-50' %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

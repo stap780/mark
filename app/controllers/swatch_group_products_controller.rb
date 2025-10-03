@@ -1,13 +1,26 @@
 class SwatchGroupProductsController < ApplicationController
   before_action :set_swatch_group
-  before_action :set_swatch_group_product, only: %i[ update destroy sort ]
+  before_action :set_swatch_group_product, only: %i[ new edit update destroy sort ]
+  include ActionView::RecordIdentifier
 
   def new
-    @sgp = @swatch_group.swatch_group_products.build
-    @available_products = current_account.products.order(:title)
-    render partial: 'swatch_group_products/picker', layout: false
+    offer_id = params[:offer_id]
+    group_id = params[:group_id]
+    title = params[:title]
+    image_link = params[:image_link]
+    swatch_value = group_id.presence || offer_id
+    @sgp = SwatchGroupProduct.new(title: title, swatch_value: swatch_value, color: nil, product_id: nil, image_link: image_link)
+
+    @target = dom_id(current_account, :swatch_group_products)
+    # puts "new @target => #{@target.inspect}"
+    respond_to do |format|
+      format.turbo_stream
+    end
   end
 
+  def edit
+  end
+  
   def create
     # If an external offer id is provided, find or create a local Product for this account
     if params[:external_offer_id].present?
@@ -66,11 +79,16 @@ class SwatchGroupProductsController < ApplicationController
   end
 
   def destroy
+    @target = "swatch_group_product_"+params[:id]
+    puts "destroy @target => #{@target.inspect}"
     @sgp.destroy
     respond_to do |format|
-      flash.now[:success] = 'Product removed.'
-      format.turbo_stream { render turbo_stream: [ render_turbo_flash, turbo_stream.remove(@sgp) ] }
-      format.html { redirect_to account_swatch_group_path(current_account, @swatch_group), notice: 'Product removed.' }
+      format.turbo_stream {
+        render turbo_stream: [
+          turbo_stream.remove(@target),
+          render_turbo_flash
+        ]
+      }
     end
   end
 
@@ -83,13 +101,17 @@ class SwatchGroupProductsController < ApplicationController
 
   def set_swatch_group
     @swatch_group = current_account.swatch_groups.find(params[:swatch_group_id])
+    rescue ActiveRecord::RecordNotFound
+      @swatch_group = current_account.swatch_groups.new(id: params[:swatch_group_id])
   end
 
   def set_swatch_group_product
     @sgp = @swatch_group.swatch_group_products.find(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      @sgp = @swatch_group.swatch_group_products.new
   end
 
   def sgp_params
-    params.require(:swatch_group_product).permit(:product_id, :swatch_value, :swatch_label, :custom_image_url, :position)
+    params.require(:swatch_group_product).permit(:product_id, :swatch_label, :swatch_value, :color, :title, :image_link, :image)
   end
 end

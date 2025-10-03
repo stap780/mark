@@ -1,6 +1,20 @@
 <div class="flex items-center justify-between mb-4">
   <h1 class="text-xl font-semibold">Swatch groups</h1>
   <div class="flex space-x-2">
+    <%= form_with url: account_swatch_groups_path(current_account), method: :get, local: true, class: "flex items-center space-x-2" do |f| %>
+      <%= f.label :name_cont, "Search by name", class: "sr-only" %>
+      <%= f.search_field :name_cont, value: params.dig(:q, :name_cont), placeholder: "Search by name...", class: "px-2 py-1 border rounded" %>
+      <%= f.submit "Search", class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
+      <% if params.dig(:q, :name_cont).present? %>
+        <%= link_to account_swatch_groups_path(current_account), class: "px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 flex items-center", title: "Clear" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+  <div class="flex space-x-2">
     <% if current_account.swatch_groups.exists? %>
       <%= link_to "Regenerate JSON", regenerate_json_account_swatch_groups_path(current_account), 
         data: { turbo_method: :post }, 
@@ -13,8 +27,8 @@
         class: "inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700" 
         %>
     <% end %>
+    <%= link_to "New", new_account_swatch_group_path(current_account), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
   </div>
-  <%= link_to "New", new_account_swatch_group_path(current_account), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
 </div>
 
 <%= turbo_stream_from [current_account, :swatch_groups] %>
@@ -26,7 +40,8 @@
     <div>Status</div>
     <div></div>
   </div>
-  <div id="swatch_groups">
+  <%= turbo_frame_tag [current_account, :swatch_groups] do %>
     <%= render @swatch_groups %>
-  </div>
+    <%= render "shared/paginate", f: @swatch_groups %>
+  <% end %>
 </div>

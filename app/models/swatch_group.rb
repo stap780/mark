@@ -3,6 +3,8 @@ class SwatchGroup < ApplicationRecord
   has_many :swatch_group_products, dependent: :destroy
   has_many :products, through: :swatch_group_products
 
+  accepts_nested_attributes_for :swatch_group_products, allow_destroy: true
+
   validates :name, presence: true
   validates :option_name, presence: true
 
@@ -12,33 +14,37 @@ class SwatchGroup < ApplicationRecord
   # Value is a normalized token we can interpret in the storefront/theme
   STYLE_GROUPS = {
     "Circular swatch" => [
-      ["Small - Desktop", "circular_small_desktop"],
-      ["Small - Mobile", "circular_small_mobile"],
-      ["Medium - Desktop", "circular_medium_desktop"],
-      ["Medium - Mobile", "circular_medium_mobile"],
-      ["Large - Desktop", "circular_large_desktop"],
-      ["Large - Mobile", "circular_large_mobile"]
+      ["Circular desktop - Small", "circular_small_desktop"],
+      ["Circular desktop - Medium", "circular_medium_desktop"],
+      ["Circular desktop - Large", "circular_large_desktop"],
+      ["Circular mobile - Small", "circular_small_mobile"],
+      ["Circular mobile - Medium", "circular_medium_mobile"],
+      ["Circular mobile - Large", "circular_large_mobile"]
     ],
     "Dropdown with label" => [
-      ["Extra small", "dropdown_label_xs"],
-      ["Small", "dropdown_label_sm"],
-      ["Medium", "dropdown_label_md"],
-      ["Large", "dropdown_label_lg"],
-      ["Extra large", "dropdown_label_xl"]
+      ["Dropdown label - Small", "dropdown_label_small"],
+      ["Dropdown label - Medium", "dropdown_label_medium"],
+      ["Dropdown label - Large", "dropdown_label_large"]
     ],
     "Square button" => [
-      ["Desktop - Extra small", "square_desktop_xs"],
-      ["Desktop - Small", "square_desktop_sm"],
-      ["Desktop - Medium", "square_desktop_md"],
-      ["Desktop - Large", "square_desktop_lg"],
-      ["Mobile - Small", "square_mobile_sm"],
-      ["Mobile - Medium", "square_mobile_md"]
+      ["Square desktop - Small", "square_desktop_small"],
+      ["Square desktop - Medium", "square_desktop_medium"],
+      ["Square desktop - Large", "square_desktop_large"],
+      ["Square mobile - Small", "square_mobile_small"],
+      ["Square mobile - Medium", "square_mobile_medium"],
+      ["Square mobile - Large", "square_mobile_large"]
     ],
     "Do not show" => [
-      ["Desktop","hide"],
-      ["Mobile","hide"]
+      ["Desktop hide", "hide"],
+      ["Mobile hide", "hide"]
     ]
   }.freeze
+  SWATCH_IMAGE_SOURCE = [
+    ["First product image", "first_product_image"],
+    ["Second product image", "second_product_image"],
+    ["Last product image", "last_product_image"],
+    ["Color / custom image", "custom_color_image"]
+  ].freeze
 
   def self.grouped_style_options
     STYLE_GROUPS
@@ -66,22 +72,30 @@ class SwatchGroup < ApplicationRecord
 
   after_create_commit do
     broadcast_prepend_to [account, :swatch_groups],
-                        target: "swatch_groups",
+                        target: [account, :swatch_groups],
                         partial: "swatch_groups/swatch_group",
                         locals: { swatch_group: self }
   end
 
   after_update_commit do
     broadcast_replace_to [account, :swatch_groups],
-                        target: dom_id(self),
+                        target: [account, dom_id(self)],
                         partial: "swatch_groups/swatch_group",
                         locals: { swatch_group: self }
   end
 
   after_destroy_commit do
-    broadcast_remove_to [account, :swatch_groups], target: dom_id(self)
+    broadcast_remove_to [account, :swatch_groups], target: [account, dom_id(self)]
   end
 
+
+  def self.ransackable_attributes(auth_object = nil)
+    SwatchGroup.attribute_names
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    %w[products swatch_group_products]
+  end
   # Kick off JSON regeneration for this group's account
   def regenerate_json
     SwatchJsonGeneratorJob.perform_later(account_id)

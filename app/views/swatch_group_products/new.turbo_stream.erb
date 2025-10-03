@@ -1,0 +1,9 @@
+<%= turbo_stream.append @target do %>
+  <%= render partial: "swatch_group_products/swatch_group_product", 
+  locals: { 
+    swatch_group:  @swatch_group, 
+    swatch_group_product: @sgp
+  } %>
+<% end %>
+
+<%# turbo_stream.update :offcanvas, "" %>
