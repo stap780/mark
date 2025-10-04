@@ -1,14 +1,14 @@
 <%= render 'shared/offcanvas_inner', title: '' do %>
   <div class="flex items-center justify-between mb-3">
     <div class="text-sm font-medium text-gray-700">Bindings</div>
-    <% new_frame_id = dom_id(@product, dom_id(@variant, dom_id(Varbind.new))) %>
-    <%= link_to "New", new_account_product_variant_varbind_path(current_account, @product, @variant), 
+    <% new_frame_id = dom_id(@record, dom_id(Varbind.new)) %>
+    <%= link_to "New", @record.varbind_new_path, 
     data: { turbo_frame: new_frame_id }, 
     class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
   </div>
-  <%= turbo_frame_tag dom_id(@product, dom_id(@variant, dom_id(Varbind.new))) %>
-  <%= turbo_stream_from [@product, [@variant, :varbinds]] %>
-  <%= turbo_frame_tag dom_id(@product, dom_id(@variant, :varbinds)) do %>
+  <%= turbo_frame_tag dom_id(@record, dom_id(Varbind.new)) %>
+  <%= turbo_stream_from @record.broadcast_target_for_varbinds %>
+  <%= turbo_frame_tag @record.broadcast_target_id_for_varbinds do %>
     <div class="grid grid-cols-6 gap-2 p-2 font-medium text-gray-700 border-b">
       <div class="col-span-2">Created at</div>
       <div>Type</div>
@@ -17,7 +17,7 @@
       <div></div>
     </div>
     <% @varbinds.each do |b| %>
-      <%= render 'varbinds/varbind', varbind: b, product: @product, variant: @variant %>
+      <%= render 'varbinds/varbind', varbind: b %>
     <% end %>
     <% if @varbinds.empty? %>
       <div class="text-sm text-gray-500">No varbinds yet.</div>

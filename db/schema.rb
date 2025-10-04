@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_02_114000) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_04_114153) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -51,6 +51,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_02_114000) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "clients", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name"
+    t.string "surname"
+    t.string "email"
+    t.string "phone"
+    t.string "ya_client"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_clients_on_account_id"
+  end
+
   create_table "insales", force: :cascade do |t|
     t.string "api_key"
     t.string "api_password"
@@ -60,6 +72,26 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_02_114000) do
     t.datetime "updated_at", null: false
     t.string "product_xml"
     t.index ["account_id"], name: "index_insales_on_account_id", unique: true
+  end
+
+  create_table "list_items", force: :cascade do |t|
+    t.bigint "list_id", null: false
+    t.string "item_type", null: false
+    t.bigint "item_id", null: false
+    t.jsonb "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["item_type", "item_id"], name: "index_list_items_on_item"
+    t.index ["list_id"], name: "index_list_items_on_list_id"
+  end
+
+  create_table "lists", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name"
+    t.integer "items_count"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_lists_on_account_id"
   end
 
   create_table "products", force: :cascade do |t|
@@ -121,15 +153,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_02_114000) do
   end
 
   create_table "varbinds", force: :cascade do |t|
-    t.bigint "variant_id", null: false
     t.string "varbindable_type", null: false
     t.bigint "varbindable_id", null: false
     t.string "value", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.index ["record_type", "record_id"], name: "index_varbinds_on_record_type_and_record_id"
     t.index ["value"], name: "index_varbinds_on_value"
-    t.index ["varbindable_type", "varbindable_id"], name: "index_varbinds_on_varbindable"
-    t.index ["variant_id"], name: "index_varbinds_on_variant_id"
+    t.index ["varbindable_type", "varbindable_id", "record_type", "record_id", "value"], name: "index_varbinds_on_varbindable_record_and_value", unique: true
   end
 
   create_table "variants", force: :cascade do |t|
@@ -147,13 +180,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_02_114000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "clients", "accounts"
   add_foreign_key "insales", "accounts"
+  add_foreign_key "list_items", "lists"
+  add_foreign_key "lists", "accounts"
   add_foreign_key "products", "accounts"
   add_foreign_key "sessions", "users"
   add_foreign_key "swatch_group_products", "products"
   add_foreign_key "swatch_group_products", "swatch_groups"
   add_foreign_key "swatch_groups", "accounts"
   add_foreign_key "users", "accounts"
-  add_foreign_key "varbinds", "variants"
   add_foreign_key "variants", "products"
 end

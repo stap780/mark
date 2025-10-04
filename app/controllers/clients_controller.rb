@@ -1,0 +1,70 @@
+class ClientsController < ApplicationController
+  before_action :set_client, only: %i[ show edit update destroy ]
+
+  def index
+    @clients = current_account.clients.order(created_at: :desc)
+  end
+
+  def show
+  end
+
+  def new
+    @client = current_account.clients.new
+  end
+
+  # GET /clients/1/edit
+  def edit
+  end
+
+  def create
+    @client = current_account.clients.new(client_params)
+
+    respond_to do |format|
+      if @client.save
+        flash.now[:success] = t('.success', default: 'Client was successfully created')
+        format.turbo_stream {
+          render turbo_stream: turbo_close_offcanvas_flash
+        }
+        format.html { redirect_to account_client_path(current_account, @client), notice: "Client was successfully created." }
+        format.json { render :show, status: :created, location: account_client_path(current_account, @client) }
+      else
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: @client.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def update
+    respond_to do |format|
+      if @client.update(client_params)
+        flash.now[:success] = t('.success', default: 'Client was successfully updated')
+        format.turbo_stream {
+          render turbo_stream: turbo_close_offcanvas_flash
+        }
+        format.html { redirect_to account_client_path(current_account, @client), notice: "Client was successfully updated.", status: :see_other }
+        format.json { render :show, status: :ok, location: account_client_path(current_account, @client) }
+      else
+        format.html { render :edit, status: :unprocessable_entity }
+        format.json { render json: @client.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def destroy
+    @client.destroy!
+
+    respond_to do |format|
+      format.html { redirect_to account_clients_path(current_account), notice: "Client was successfully destroyed.", status: :see_other }
+      format.json { head :no_content }
+    end
+  end
+
+  private
+    def set_client
+      @client = current_account.clients.find(params[:id])
+    end
+
+    def client_params
+      params.require(:client).permit(:name, :surname, :email, :phone, :ya_client)
+    end
+end

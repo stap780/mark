@@ -18,7 +18,7 @@ class SwatchJsonGeneratorService
       items.map do |base|
         {
           swatch_id: g.id,
-          product_id: offer_lookup[base.swatch_value][:group_id] || base.swatch_value,
+          product_id: find_external_group_id_for_product(base.product) || offer_lookup[base.swatch_value][:group_id] || base.swatch_value,
           name: g.name,
           option_name: g.option_name,
           status: g.status,
@@ -28,8 +28,13 @@ class SwatchJsonGeneratorService
           swatches: items.map do |sgp|
             offer = offer_lookup[sgp.swatch_value] || {}
             puts "offer => #{offer}"
+            
+            # Use variant varbind for similar_id (offer_id), fallback to product varbind, then offer group_id
+            variant_id = sgp.product&.variants&.first&.then { |v| find_external_variant_id_for_variant(v) }
+            similar_id = variant_id || find_external_group_id_for_product(sgp.product) || offer[:group_id] || sgp.swatch_value
+            
             {
-              similar_id: offer[:group_id] || sgp.swatch_value,
+              similar_id: similar_id,
               title: sgp.title,
               images: offer[:images],
               link: offer[:url],
@@ -107,25 +112,38 @@ class SwatchJsonGeneratorService
     end
   end
 
-  # Determine the external offer_id for a given product by reading its variant varbinds
-  # def find_offer_id_for_product(product)
-  #   return nil unless product
-  #   insale = @account.insales.first
-  #   if insale
-  #     vb = Varbind.joins(:variant)
-  #                 .where(variants: { product_id: product.id })
-  #                 .where(varbindable_type: 'Insale', varbindable_id: insale.id)
-  #                 .order('varbinds.id DESC')
-  #                 .first
-  #     return vb.value if vb
-  #   end
+  # Find external group_id for a product via varbind
+  def find_external_group_id_for_product(product)
+    return nil unless product
+    insale = @account.insales.first
+    return nil unless insale
+    
+    # Look for Product-level varbind with group_id
+    varbind = Varbind.where(record: product, varbindable: insale)
+                     .where("value LIKE ?", "group_%")
+                     .first
+    return varbind.value if varbind
+    
+    # Fallback: look for any variant varbind for this product
+    varbind = Varbind.joins(:record)
+                     .where(record_type: 'Variant', varbindable: insale)
+                     .joins("JOIN variants ON variants.id = varbinds.record_id")
+                     .where("variants.product_id = ?", product.id)
+                     .first
+    varbind&.value
+  end
 
-  #   vb_any = Varbind.joins(:variant)
-  #                   .where(variants: { product_id: product.id })
-  #                   .order('varbinds.id DESC')
-  #                   .first
-  #   vb_any&.value
-  # end
+  def find_external_variant_id_for_variant(variant)
+    return nil unless variant
+    insale = @account.insales.first
+    return nil unless insale
+    
+    # Look for Variant-level varbind (offer_id)
+    varbind = Varbind.where(record: variant, varbindable: insale)
+                     .where("value NOT LIKE ?", "group_%")
+                     .first
+    varbind&.value
+  end
 
   def s3_file_key
     if Rails.env.development?

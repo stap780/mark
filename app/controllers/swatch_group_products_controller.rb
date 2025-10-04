@@ -4,11 +4,11 @@ class SwatchGroupProductsController < ApplicationController
   include ActionView::RecordIdentifier
 
   def new
-    offer_id = params[:offer_id]
     group_id = params[:group_id]
+    offer_id = params[:offer_id]
     title = params[:title]
     image_link = params[:image_link]
-    swatch_value = offer_id #group_id.presence || 
+    swatch_value = [group_id, offer_id].compact.join("#")
     @sgp = SwatchGroupProduct.new(title: title, swatch_value: swatch_value, color: nil, product_id: nil, image_link: image_link)
 
     @target = dom_id(current_account, :swatch_group_products)
@@ -20,7 +20,7 @@ class SwatchGroupProductsController < ApplicationController
 
   def edit
   end
-  
+
   def create
     # If an external offer id is provided, find or create a local Product for this account
     if params[:external_offer_id].present?
@@ -37,14 +37,14 @@ class SwatchGroupProductsController < ApplicationController
       variant = nil
       if insale
         existing_bind = Varbind.find_by(varbindable: insale, value: offer_id)
-        variant = existing_bind&.variant
+        variant = existing_bind&.record
       end
       # Fallback: find any variant for this product with matching varbind value regardless of type
       variant ||= product.variants.joins(:varbinds).find_by(varbinds: { value: offer_id })
 
       unless variant
         variant = product.variants.create!
-        Varbind.create!(variant: variant, varbindable: (insale || @swatch_group), value: offer_id)
+        Varbind.create!(record: variant, varbindable: (insale || @swatch_group), value: offer_id)
       end
 
       # Update variant info

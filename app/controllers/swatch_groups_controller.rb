@@ -137,21 +137,41 @@ class SwatchGroupsController < ApplicationController
     puts "resolve_products_for_nested group => #{group.inspect}"
     group.swatch_group_products.each do |sgp|
       next if sgp.product_id.present?
-      offer_id = sgp.swatch_value
+
+      # Parse swatch_value: "group_id#offer_id" format
+      swatch_parts = sgp.swatch_value.to_s.split("#")
+      group_id = swatch_parts[0]
+      offer_id = swatch_parts[1]
+
       title = sgp.title.presence
       image_link = sgp.image_link.presence
-      next if offer_id.blank? || title.blank?
+      next if group_id.blank? || offer_id.blank? || title.blank?
 
       insale = current_account.insales.first
-      existing_bind = insale ? Varbind.find_by(varbindable: insale, value: offer_id) : nil
-      variant = existing_bind&.variant
 
-      product = variant&.product || current_account.products.find_or_initialize_by(title: title)
-      product.save! if product.changed?
+      # Look for existing product by group_id varbind
+      product_bind = insale ? Varbind.find_by(varbindable: insale, value: group_id, record_type: 'Product') : nil
+      product = product_bind&.record
 
-      variant ||= product.variants.joins(:varbinds).find_by(varbinds: { value: offer_id })
-      variant ||= product.variants.first_or_create!(image_link: image_link)
-      Varbind.find_or_create_by!(variant: variant, varbindable: (insale || group), value: offer_id)
+      # Look for existing variant by offer_id varbind
+      variant_bind = insale ? Varbind.find_by(varbindable: insale, value: offer_id, record_type: 'Variant') : nil
+      variant = variant_bind&.record
+
+      # If no product found by varbind, create new one
+      unless product
+        product = current_account.products.create!(title: title)
+      end
+
+      # If no variant found by varbind, create new one
+      unless variant
+        variant = product.variants.create!(image_link: image_link)
+      end
+
+      # Create varbind for variant (offer_id)
+      Varbind.find_or_create_by!(record: variant, varbindable: (insale || group), value: offer_id)
+
+      # Create varbind for product (group_id)
+      Varbind.find_or_create_by!(record: product, varbindable: (insale || group), value: group_id)
 
       sgp.update_column(:product_id, product.id)
     end

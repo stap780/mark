@@ -1,33 +1,52 @@
 class Varbind < ApplicationRecord
   include ActionView::RecordIdentifier
 
-  belongs_to :variant
+  belongs_to :record, polymorphic: true
   belongs_to :varbindable, polymorphic: true
-
+  
   validates :varbindable_id, presence: true
   validates :varbindable_type, presence: true
   validates :value, presence: true
-  validates :value, uniqueness: { scope: [:varbindable_id, :varbindable_type], message: "combination of varbindable_type, varbindable_id, and value must be unique" }
+  validates :value, uniqueness: { scope: [:varbindable_id, :varbindable_type, :record_type, :record_id], message: "combination of varbindable_type, varbindable_id, record_type, record_id, and value must be unique" }
 
-  # Broadcast inline updates like dizauto
-  after_create_commit do
-    broadcast_append_to [variant.product, [variant, :varbinds]],
-                        target: dom_id(variant.product, dom_id(variant, :varbinds)),
+  # Broadcast inline updates using Rails 8 polymorphic approach
+  after_create_commit :broadcast_create
+  after_update_commit :broadcast_update  
+  after_destroy_commit :broadcast_destroy
+
+  private
+
+  def broadcast_create
+    broadcast_append_to broadcast_target,
+                        target: broadcast_target_id,
                         partial: 'varbinds/varbind',
-                        locals: { product: variant.product, variant: variant, varbind: self }
-    broadcast_update_to [variant.product, [variant, :varbinds]], target: dom_id(variant.product, dom_id(variant, dom_id(Varbind.new))), html: ""
+                        locals: broadcast_locals
+    # Special case for Variant: also update the empty state
+    broadcast_update_to broadcast_target, target: broadcast_target_id, html: "" if record.is_a?(Variant)
   end
 
-  after_update_commit do
-    broadcast_replace_to [variant.product, [variant, :varbinds]],
-                         target: dom_id(variant.product, dom_id(variant, dom_id(self))),
+  def broadcast_update
+    broadcast_replace_to broadcast_target,
+                         target: dom_id(record, dom_id(self)),
                          partial: 'varbinds/varbind',
-                         locals: { product: variant.product, variant: variant, varbind: self }
+                         locals: broadcast_locals
   end
 
-  after_destroy_commit do
-    broadcast_remove_to [variant.product, [variant, :varbinds]],
-                        target: dom_id(variant.product, dom_id(variant, dom_id(self)))
+  def broadcast_destroy
+    broadcast_remove_to broadcast_target, target: dom_id(record, dom_id(self))
+  end
+
+  # Polymorphic broadcast configuration
+  def broadcast_target
+    record.broadcast_target_for_varbinds
+  end
+
+  def broadcast_target_id
+    record.broadcast_target_id_for_varbinds
+  end
+
+  def broadcast_locals
+    record.broadcast_locals_for_varbind(self)
   end
 
   def self.int_types

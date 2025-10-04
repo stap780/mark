@@ -57,5 +57,26 @@ Rails.application.routes.draw do
         resources :varbinds
       end
     end
+
+    resources :clients do
+      resources :varbinds
+    end
+    resources :products do
+      resources :varbinds
+    end
+    resources :lists do
+      resources :list_items, only: [:index, :create, :destroy]
+    end
+    # Optional flat endpoints for list_items API
+    resources :list_items, only: [:index]
+  end
+
+  # API routes for storefront (outside account scope)
+  namespace :api do
+    scope "/accounts/:account_id" do
+      resources :lists, only: [] do
+        resources :list_items, only: [:index, :create, :destroy]
+      end
+    end
   end
 end

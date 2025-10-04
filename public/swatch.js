@@ -42,6 +42,62 @@
     });
   }
 
+  // Shared handler for any swatch dropdown select
+  function handleSwatchDropdownChange(event) {
+    const select = event && event.target;
+    const opt = select && select.options ? select.options[select.selectedIndex] : null;
+    const rawHref = opt ? (opt.value || opt.getAttribute('data-link')) : (select ? select.value : null);
+    const href = (rawHref || '').trim();
+    const similarId = opt ? opt.getAttribute('data-tws-similar-id') : null;
+    debugLog('handleSwatchDropdownChange fired', { href, similarId, target: select, path: window.location.pathname });
+    if (href && href !== '#' && href !== 'null') {
+      try {
+        window.location.assign(href);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('swatch dropdown navigation error:', e);
+      }
+    } else {
+      // Fallback: try to find a link on the page for this product id and click it
+      if (similarId) {
+        const node = document.querySelector(`[data-product-id="${String(similarId)}"] a`);
+        if (node && node.href) {
+          debugLog('dropdown fallback navigate via DOM anchor', node.href);
+          window.location.assign(node.href);
+          return;
+        }
+      }
+      debugLog('dropdown ignored href', href);
+    }
+  }
+
+  // Global delegated listener in case dropdowns are inserted dynamically
+  document.addEventListener('change', function(e) {
+    const t = e.target;
+    if (t && t.matches && t.matches('.twc-swatch-select')) {
+      handleSwatchDropdownChange(e);
+    }
+  });
+
+  // Ensure all dropdowns reflect the correct selected option
+  function applySelectedToAllSwatchSelects() {
+    const selects = document.querySelectorAll('.twc-swatch-select');
+    selects.forEach(function(select) {
+      const productId = select.getAttribute('data-twc-select-product-id');
+      if (!productId) { return; }
+      const match = Array.from(select.options).find(
+        o => String(o.getAttribute('data-tws-similar-id')) === String(productId)
+      );
+      if (match) {
+        select.value = match.value;
+        debugLog('applySelectedToAllSwatchSelects matched', { productId, value: match.value });
+      } else if (select.options.length > 0) {
+        select.selectedIndex = 0;
+        debugLog('applySelectedToAllSwatchSelects defaulted first', { productId });
+      }
+    });
+  }
+
   function pickImage(images, source) {
     if (!Array.isArray(images) || images.length === 0) { debugLog('pickImage no images'); return null; }
     var chosen = null;
@@ -75,11 +131,11 @@
   }
 
   function sizeForStyleSquare(styleToken, isMobile) {
-    if (!styleToken) return isMobile ? 20 : 30;
-    if (styleToken.includes('square_small')) return isMobile ? 20 : 30;
-    if (styleToken.includes('square_medium')) return isMobile ? 24 : 36;
-    if (styleToken.includes('square_large')) return isMobile ? 28 : 44;
-    return isMobile ? 20 : 30;
+    if (!styleToken) return isMobile ? 28 : 34;
+    if (styleToken.includes('square_small')) return isMobile ? 24 : 34;
+    if (styleToken.includes('square_medium')) return isMobile ? 28 : 40;
+    if (styleToken.includes('square_large')) return isMobile ? 32 : 48;
+    return isMobile ? 28 : 34;
   }
 
   function buildSwatchContainer(entry, useStyle, swatchImageSource) {
@@ -98,7 +154,7 @@
       return empty;
     }
 
-    // Dropdown with label
+    // Dropdown with label and select that navigates on change
     if (kind === 'dropdown') {
       const container = document.createElement('div');
       container.className = 'twc-swatch-dropdown';
@@ -112,6 +168,8 @@
       label.style.color = '#374151';
 
       const select = document.createElement('select');
+      select.classList.add('twc-swatch-select');
+      if (entry.product_id) select.setAttribute('data-twc-select-product-id', entry.product_id);
       select.style.border = '1px solid rgba(0,0,0,0.12)';
       select.style.borderRadius = '6px';
       select.style.padding = '6px 8px';
@@ -119,15 +177,16 @@
 
       (entry.swatches || []).forEach(function(s) {
         const opt = document.createElement('option');
-        opt.value = s.link || '';
+        opt.value = s.link || '#';
         opt.textContent = s.label || s.title || '';
+        if (s.link) opt.setAttribute('data-link', s.link);
+        if (s.similar_id) opt.setAttribute('data-tws-similar-id', s.similar_id);
         select.appendChild(opt);
       });
+      // Selection will be applied after all renders
 
-      select.addEventListener('change', function(e) {
-        const href = e.target.value;
-        if (href) window.location.href = href;
-      });
+      // Also attach per-element listener for robustness
+      select.addEventListener('change', handleSwatchDropdownChange);
 
       container.appendChild(label);
       container.appendChild(select);
@@ -136,7 +195,8 @@
 
     // Circular or Square buttons
     const isCircular = (kind === 'circular');
-    const size = isCircular ? sizeForStyleCircular(styleToken, isMobile) : sizeForStyleSquare(styleToken, isMobile);
+    // Square should show the same style as circular (same sizing)
+    const size = sizeForStyleCircular(styleToken, isMobile);
     const wrapper = document.createElement('div');
     wrapper.className = 'twc-swatch-container';
     wrapper.style.display = 'flex';
@@ -169,7 +229,8 @@
       a.style.display = 'inline-flex';
       a.style.width = size + 'px';
       a.style.height = size + 'px';
-      a.style.borderRadius = isCircular ? '9999px' : '6px';
+      a.style.borderRadius = isCircular ? '9999px' : '0px';
+      a.style.padding = isCircular ? '0px' : '3px';
       a.style.overflow = 'hidden';
       a.style.border = '1px solid rgba(0,0,0,0.08)';
       a.style.alignItems = 'center';
@@ -214,6 +275,8 @@
         }
       });
     });
+    // after rendering all, apply selection to dropdowns
+    applySelectedToAllSwatchSelects();
   }
 
   function renderForProduct(data) {
@@ -227,10 +290,9 @@
       cards.forEach(function(card) {
         var variantsArea = card.querySelector('.product__area-variants');
         if (variantsArea) {
-          variantsArea.innerHTML = '';
-          variantsArea.style.display = 'none';
+          card.querySelector('.product__variants').style.display = 'none';
           variantsArea.appendChild(container.cloneNode(true));
-          debugLog('renderForProduct replaced .product__area-variants for product_id=', entry.product_id);
+          debugLog('renderForProduct .product__area-variants for product_id=', entry.product_id);
         } else {
           var anchor = card.querySelector('.product-preview__area-photo') || card;
           anchor.insertAdjacentElement('afterend', container.cloneNode(true));
@@ -238,6 +300,8 @@
         }
       });
     });
+    // after rendering all, apply selection to dropdowns
+    applySelectedToAllSwatchSelects();
   }
 
   function init() {

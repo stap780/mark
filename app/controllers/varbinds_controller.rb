@@ -1,23 +1,22 @@
 class VarbindsController < ApplicationController
-  before_action :set_product
-  before_action :set_variant
+  before_action :set_record
   before_action :set_varbind, only: %i[ show edit update destroy ]
 
   def index
-    @varbinds = @variant.varbinds.order(id: :desc)
+    @varbinds = @record.varbinds.order(id: :desc)
     render layout: false if turbo_frame_request?
   end
 
   def show; end
 
   def new
-    @varbind = @variant.varbinds.new
+    @varbind = @record.varbinds.new
   end
 
   def edit; end
 
   def create
-    @varbind = @variant.varbinds.new(varbind_params)
+    @varbind = @record.varbinds.new(varbind_params)
     respond_to do |format|
       if @varbind.save
         flash.now[:success] = t("success")
@@ -26,7 +25,7 @@ class VarbindsController < ApplicationController
             render_turbo_flash
           ]
         end
-        format.html { redirect_to account_product_variant_path(current_account, @product, @variant), notice: 'Varbind created.' }
+        format.html { redirect_to polymorphic_path([current_account, @record]), notice: 'Varbind created.' }
       else
         format.turbo_stream do
           flash.now[:success] = @varbind.errors.full_messages.join(", ")
@@ -75,16 +74,22 @@ class VarbindsController < ApplicationController
 
   private
 
-  def set_product
-    @product = current_account.products.find(params[:product_id])
-  end
-
-  def set_variant
-    @variant = @product.variants.find(params[:variant_id])
+  def set_record
+    # Support multiple record types: Client, Product, Variant
+    if params[:client_id]
+      @record = current_account.clients.find(params[:client_id])
+    elsif params[:product_id]
+      @record = current_account.products.find(params[:product_id])
+      if params[:variant_id]
+        @record = @record.variants.find(params[:variant_id])
+      end
+    else
+      head :not_found
+    end
   end
 
   def set_varbind
-    @varbind = @variant.varbinds.find(params[:id])
+    @varbind = @record.varbinds.find(params[:id])
   end
 
   def varbind_params

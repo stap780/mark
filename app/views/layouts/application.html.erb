@@ -48,6 +48,12 @@
             <%= link_to "Products",account_products_path(account_id: current_account&.id),
                 class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
                 hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/products')}"%>
+            <%= link_to "Clients", account_clients_path(current_account),
+                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white "+
+                       "hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/clients')}" %>
+            <%= link_to "Lists", account_lists_path(current_account),
+                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white "+
+                       "hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/lists')}" %>
             <%= link_to "Jobs", "/jobs",
                 class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
                 hover:bg-violet-500 hover:bg-opacity-75",

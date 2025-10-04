@@ -74,12 +74,10 @@ aliases:
   logs: app logs -f
   dbc: app exec --interactive --reuse "bin/rails dbconsole"
 
-
 # Use a persistent storage volume for sqlite database files and local Active Storage files.
 # Recommended to change this to a mounted volume path that is backed up off server.
 volumes:
   - "mark_storage:/rails/storage"
-
 
 # Bridge fingerprinted assets, like JS and CSS, between versions to avoid
 # hitting 404 on in-flight requests. Combines all files from new and old
@@ -109,7 +107,6 @@ accessories:
   postgres:
     image: postgres:15
     host: 185.247.185.69
-    # Change to 3306 to expose port to the world instead of just local network.
     port: "127.0.0.1:5432:5432"
     env:
       clear:
@@ -118,10 +115,27 @@ accessories:
       secret:
         - POSTGRES_PASSWORD
     files:
-#       - config/mysql/production.cnf:/etc/mysql/my.cnf
       - db/production.sql:/docker-entrypoint-initdb.d/setup.sql
     directories:
       - data:/var/lib/postgresql/data
+  db_backup:
+    image: eeshugerman/postgres-backup-s3:15
+    host: 185.247.185.69
+    env:
+      clear:
+        SCHEDULE: '@daily'     # optional
+        BACKUP_KEEP_DAYS: 7     # optional
+        S3_BUCKET: ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23
+        S3_PREFIX: backups
+        S3_REGION: ru-1
+        S3_ENDPOINT: https://s3.twcstorage.ru
+        POSTGRES_HOST: mark-postgres
+        POSTGRES_DATABASE: mark_production
+        POSTGRES_USER: postgres
+      secret:
+        - POSTGRES_PASSWORD
+        - S3_ACCESS_KEY_ID
+        - S3_SECRET_ACCESS_KEY
 #   redis:
 #     image: redis:7.0
 #     host: 192.168.0.2

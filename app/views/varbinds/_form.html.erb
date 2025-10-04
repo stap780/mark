@@ -1,6 +1,5 @@
-<%= form_with model: [current_account, product, variant, varbind], class: "space-y-4", data: { turbo_stream: true } do |f| %>
+<%= form_with model: varbind, url: varbind.persisted? ? @record.varbind_path(varbind) : @record.varbinds_path, method: varbind.persisted? ? :patch : :post, class: "space-y-4", data: { turbo_stream: true } do |f| %>
   <%= render "shared/errors", object: varbind %>
-  <%= f.hidden_field :variant_id, value: variant.id %>
   <div class="grid grid-cols-3 gap-4">
     <div>
       <%= f.label :varbindable_type, class: "block text-sm font-medium text-gray-700" unless varbind.persisted? %>
@@ -16,7 +15,7 @@
     </div>
   </div>
   <div class="flex justify-end space-x-2">
-    <%= link_to 'Cancel', account_product_variant_varbinds_path(current_account,product, variant), class: "px-3 py-1 rounded-md border text-gray-700 hover:bg-gray-50", data: { turbo_stream: true } %>
+    <%= link_to 'Cancel', @record.varbinds_path, class: "px-3 py-1 rounded-md border text-gray-700 hover:bg-gray-50", data: { turbo_stream: true } %>
     <%= f.submit t(:save, default: 'Save'), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
   </div>
 <% end %>
