@@ -5,5 +5,3 @@ class ListJsonGeneratorJob < ApplicationJob
     ListJsonGeneratorService.new(account_id).call
   end
 end
-
-

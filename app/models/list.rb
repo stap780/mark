@@ -29,4 +29,5 @@ class List < ApplicationRecord
   after_destroy_commit do
     broadcast_remove_to [account, :lists], target: dom_id(self)
   end
+  
 end

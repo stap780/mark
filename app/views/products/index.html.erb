@@ -5,10 +5,10 @@
 <%= turbo_stream_from "products" %>
 <div class="bg-white rounded-lg shadow divide-y">
   <div class="grid grid-cols-5 gap-4 p-4 font-medium text-gray-700">
+    <div>#</div>
     <div>Image</div>
     <div>Title</div>
     <div>Variants</div>
-    <div></div>
     <div></div>
   </div>
   <%= turbo_frame_tag 'products' do %>

@@ -164,6 +164,42 @@
     return results;
   }
 
+  // Initialize added/not-added state for each rendered list item on page load
+  function initListItemStates(accountId) {
+    return getClient().then(function(client){
+      var clientId = client && client.id;
+      if (!clientId) return;
+      var hosts = document.querySelectorAll('[data-ui-favorites-trigger-twc]');
+      hosts.forEach(function(host){
+        var productId = host.getAttribute('data-ui-favorites-trigger-twc');
+        var items = host.querySelectorAll('.twc-list-item');
+        // Group by list_id to avoid redundant requests per host
+        var byList = {};
+        items.forEach(function(it){
+          var listId = it.getAttribute('data-list-id');
+          (byList[listId] ||= []).push(it);
+        });
+        Object.keys(byList).forEach(function(listId){
+          apiGetListItems(accountId, listId, clientId).then(function(resp){
+            var arr = (resp && resp.items) || [];
+            var isInList = arr.some(function(x){ return String(x.item_id) === String(productId); });
+            byList[listId].forEach(function(node){
+              var iconStyle = node.getAttribute('data-icon-style');
+              var iconColor = node.getAttribute('data-icon-color');
+              if (isInList) {
+                node.setAttribute('data-added', 'true');
+                node.innerHTML = renderIcon(iconStyle, iconColor, true);
+              } else {
+                node.setAttribute('data-added', 'false');
+                node.innerHTML = renderIcon(iconStyle, iconColor, false);
+              }
+            });
+          }).catch(function(err){ debugLog('initListItemStates:error', err && err.message ? err.message : err); });
+        });
+      });
+    }).catch(function(err){ debugLog('initListItemStates:no_client', err && err.message ? err.message : err); });
+  }
+
   // Step 4: Click handler on twc-list-item; report product id, list id, client id
   function bindListItemClickHandlers() {
     document.addEventListener('click', function(evt) {
@@ -220,6 +256,8 @@
       .then(data => {
         debugLog('dom:update_triggers');
         updateFavoritesTriggers(data.lists);
+        // After rendering, initialize active states
+        initListItemStates(accountId);
       })
       .catch(function(err){ debugLog('dom:error', err && err.message ? err.message : err); console.error(err); });
 
