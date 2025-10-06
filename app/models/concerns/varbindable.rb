@@ -15,11 +15,11 @@ module Varbindable
   end
 
   def varbind_new_path
-    Rails.application.routes.url_helpers.new_polymorphic_path(polymorphic_stack(self) + [:varbind])
+    Rails.application.routes.url_helpers.polymorphic_path(polymorphic_stack(self) + [:varbind], action: :new)
   end
 
   def varbind_edit_path(varbind)
-    Rails.application.routes.url_helpers.edit_polymorphic_path(polymorphic_stack(self) + [varbind])
+    Rails.application.routes.url_helpers.polymorphic_path(polymorphic_stack(self) + [varbind], action: :edit)
   end
 
   def varbind_path(varbind)
