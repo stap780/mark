@@ -40,7 +40,7 @@ class Api::ListItemsController < ApplicationController
 
     # Idempotent find-or-create by unique key (list_id, client_id, item_type, item_id)
     @list_item = @list.list_items.find_by(client_id: client.id, item_type: item.class.name, item_id: item.id)
-    @list_item ||= @list.list_items.new(client_id: client.id, item: item, metadata: params[:metadata])
+    @list_item ||= @list.list_items.new(client_id: client.id, item: item)
 
     respond_to do |format|
       if @list_item.persisted? || @list_item.save
@@ -52,7 +52,7 @@ class Api::ListItemsController < ApplicationController
           }, status: status_code
         end
       else
-        format.json { render json: { errors: @list_item.errors.full_messages }, status: :unprocessable_entity }
+        format.json { render json: { errors: @list_item.errors.full_messages }, status: :unprocessable_content }
       end
     end
   end

@@ -6,7 +6,7 @@ class Product < ApplicationRecord
   has_many :variants, dependent: :destroy
   has_many :swatch_group_products
   has_many :swatch_groups, through: :swatch_group_products
-  
+
   validates :title, presence: true
 
   # Use Varbindable defaults

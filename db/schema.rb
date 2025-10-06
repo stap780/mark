@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_06_120000) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_06_143000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -78,10 +78,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_06_120000) do
     t.bigint "list_id", null: false
     t.string "item_type", null: false
     t.bigint "item_id", null: false
-    t.jsonb "metadata"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "client_id", null: false
+    t.index ["client_id"], name: "index_list_items_on_client_id"
     t.index ["item_type", "item_id"], name: "index_list_items_on_item"
+    t.index ["list_id", "client_id", "item_type", "item_id"], name: "index_list_items_on_list_client_and_item", unique: true
     t.index ["list_id"], name: "index_list_items_on_list_id"
   end
 
@@ -185,6 +187,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_06_120000) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "clients", "accounts"
   add_foreign_key "insales", "accounts"
+  add_foreign_key "list_items", "clients"
   add_foreign_key "list_items", "lists"
   add_foreign_key "lists", "accounts"
   add_foreign_key "products", "accounts"

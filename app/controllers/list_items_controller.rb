@@ -24,16 +24,16 @@ class ListItemsController < ApplicationController
 
   def create
     return head :unprocessable_entity unless @list
-    
+
     # Resolve client by external client_id via varbind
-    client = resolve_client_by_external_id(params[:external_client_id]) if params[:external_client_id]
+    # client = resolve_client_by_external_id(params[:external_client_id]) if params[:external_client_id]
     client ||= current_account.clients.find(params[:client_id]) if params[:client_id]
     return head :unprocessable_entity unless client
-    
+
     # Resolve item (Product/Variant) by external IDs via varbind
-    item = resolve_item_by_external_ids(params[:external_product_id], params[:external_variant_id])
-    return head :unprocessable_entity unless item
-    
+    # item = resolve_item_by_external_ids(params[:external_product_id], params[:external_variant_id])
+    # return head :unprocessable_entity unless item
+
     # Idempotent find-or-create by unique key (list_id, client_id, item_type, item_id)
     @list_item = @list.list_items.find_by(client_id: client.id, item_type: item.class.name, item_id: item.id)
     @list_item ||= @list.list_items.new(client_id: client.id, item: item, metadata: params[:metadata])
@@ -79,43 +79,11 @@ class ListItemsController < ApplicationController
     end
 
     def set_list
-      if params[:list_id]
-        @list = current_account.lists.find(params[:list_id])
-      end
+      @list = current_account.lists.find(params[:list_id])
     end
 
     def list_item_params
-      params.require(:list_item).permit(:list_id, :item_id, :item_type, :metadata)
+      params.require(:list_item).permit(:list_id, :item_id, :item_type, :client_id)
     end
-    
-    def resolve_client_by_external_id(external_client_id)
-      # Find client by external ID via varbind
-      varbind = Varbind.joins(:record)
-                       .where(record_type: 'Client', value: external_client_id)
-                       .where(varbindable: current_account.insale)
-                       .first
-      varbind&.record
-    end
-    
-    def resolve_item_by_external_ids(external_product_id, external_variant_id)
-      # Try to find variant first by external variant_id
-      if external_variant_id.present?
-        varbind = Varbind.joins(:record)
-                         .where(record_type: 'Variant', value: external_variant_id)
-                         .where(varbindable: current_account.insale)
-                         .first
-        return varbind.record if varbind
-      end
-      
-      # Fallback to product by external product_id
-      if external_product_id.present?
-        varbind = Varbind.joins(:record)
-                         .where(record_type: 'Product', value: external_product_id)
-                         .where(varbindable: current_account.insale)
-                         .first
-        return varbind.record if varbind
-      end
-      
-      nil
-    end
-end
+
+  end

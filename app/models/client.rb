@@ -3,6 +3,7 @@ class Client < ApplicationRecord
   include Varbindable
 
   belongs_to :account
+  has_many :list_items, dependent: :destroy
   validates :name, presence: true
 
   # Use Varbindable defaults
