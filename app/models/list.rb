@@ -3,6 +3,14 @@ class List < ApplicationRecord
   belongs_to :account
   has_many :list_items, dependent: :destroy
 
+  ICON_STYLES = {
+    "icon_one" => "Heart",
+    "icon_two" => "Wishlist",
+    "icon_three" => "Like"
+  }.freeze
+
+  validates :icon_style, inclusion: { in: ICON_STYLES.keys }
+
   # Hotwire broadcasts
   after_create_commit do
     broadcast_prepend_to [account, :lists],

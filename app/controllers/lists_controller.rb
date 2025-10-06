@@ -15,18 +15,22 @@ class ListsController < ApplicationController
     @list = current_account.lists.new
   end
 
-  # GET /lists/1/edit
   def edit
   end
 
-  # POST /lists or /lists.json
   def create
     @list = current_account.lists.new(list_params)
 
     respond_to do |format|
       if @list.save
-        format.html { redirect_to account_list_path(current_account, @list), notice: "List was successfully created." }
+        notice = t(".success", default: "List was successfully created")
+        flash.now[:success] = notice
+        format.turbo_stream { 
+          render turbo_stream: turbo_close_offcanvas_flash
+        }
+        format.html { redirect_to account_list_path(current_account, @list), notice: notice }
         format.json { render :show, status: :created, location: account_list_path(current_account, @list) }
+        ListJsonGeneratorJob.perform_later(current_account.id)
       else
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @list.errors, status: :unprocessable_entity }
@@ -34,12 +38,17 @@ class ListsController < ApplicationController
     end
   end
 
-  # PATCH/PUT /lists/1 or /lists/1.json
   def update
     respond_to do |format|
       if @list.update(list_params)
-        format.html { redirect_to account_list_path(current_account, @list), notice: "List was successfully updated.", status: :see_other }
+        notice = t(".success", default: "List was successfully updated")
+        flash.now[:success] = notice
+        format.turbo_stream { 
+          render turbo_stream: turbo_close_offcanvas_flash
+        }
+        format.html { redirect_to account_list_path(current_account, @list), notice: notice, status: :see_other }
         format.json { render :show, status: :ok, location: account_list_path(current_account, @list) }
+        ListJsonGeneratorJob.perform_later(current_account.id)
       else
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @list.errors, status: :unprocessable_entity }
@@ -47,7 +56,6 @@ class ListsController < ApplicationController
     end
   end
 
-  # DELETE /lists/1 or /lists/1.json
   def destroy
     @list.destroy!
 
@@ -55,16 +63,16 @@ class ListsController < ApplicationController
       format.html { redirect_to account_lists_path(current_account), notice: "List was successfully destroyed.", status: :see_other }
       format.json { head :no_content }
     end
+    ListJsonGeneratorJob.perform_later(current_account.id)
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
+  
     def set_list
       @list = current_account.lists.find(params[:id])
     end
 
-    # Only allow a list of trusted parameters through.
     def list_params
-      params.require(:list).permit(:name)
+      params.require(:list).permit(:name, :icon_style, :icon_color)
     end
 end

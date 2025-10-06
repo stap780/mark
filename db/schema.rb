@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_04_114153) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_06_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -91,7 +91,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_04_114153) do
     t.integer "items_count"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "icon_style", default: "icon_one", null: false
+    t.string "icon_color", default: "#999999", null: false
     t.index ["account_id"], name: "index_lists_on_account_id"
+    t.index ["icon_style"], name: "index_lists_on_icon_style"
   end
 
   create_table "products", force: :cascade do |t|

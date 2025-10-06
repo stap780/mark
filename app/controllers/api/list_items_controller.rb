@@ -6,7 +6,7 @@ class Api::ListItemsController < ApplicationController
   def index
     # Get list items for a specific client (from external client_id)
     external_client_id = params[:external_client_id]
-    
+
     if external_client_id.present?
       client = resolve_client_by_external_id(external_client_id)
       if client
@@ -32,11 +32,11 @@ class Api::ListItemsController < ApplicationController
     # Resolve client by external client_id via varbind
     client = resolve_client_by_external_id(params[:external_client_id]) if params[:external_client_id]
     return head :unprocessable_entity unless client
-    
+
     # Resolve item (Product/Variant) by external IDs via varbind
     item = resolve_item_by_external_ids(params[:external_product_id], params[:external_variant_id])
     return head :unprocessable_entity unless item
-    
+
     # Idempotent find-or-create by unique key (list_id, client_id, item_type, item_id)
     @list_item = @list.list_items.find_by(client_id: client.id, item_type: item.class.name, item_id: item.id)
     @list_item ||= @list.list_items.new(client_id: client.id, item: item, metadata: params[:metadata])

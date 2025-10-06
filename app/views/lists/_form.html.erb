@@ -6,7 +6,44 @@
     <%= form.text_field :name, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": list.errors[:name].none?, "border-red-400 focus:outline-red-600": list.errors[:name].any?}] %>
   </div>
 
+  <div class="my-5">
+    <%= form.label :icon_style, "Icon" %>
+    <div class="mt-2 grid grid-cols-3 gap-3">
+      <% List::ICON_STYLES.each do |key, label| %>
+        <label class="list-icon-option flex items-center space-x-2 border rounded-md p-3 cursor-pointer <%= 'ring-2 ring-violet-600' if list.icon_style == key %>">
+          <%= form.radio_button :icon_style, key, class: "hidden list-icon-radio", checked: (list.icon_style == key) %>
+          <span class="inline-flex items-center justify-center">
+            <%= raw list_icon_svg(list, active: false, classes: "h-6 w-6", style: key) %>
+          </span>
+          <span class="text-sm"><%= label %></span>
+          <span class="inline-flex items-center justify-center">
+            <%= raw list_icon_svg(list, active: true, classes: "h-6 w-6", style: key) %>
+          </span>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :icon_color %>
+    <%= form.text_field :icon_color, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": list.errors[:icon_color].none?, "border-red-400 focus:outline-red-600": list.errors[:icon_color].any?}] %>
+  </div>
+
   <div class="inline">
     <%= form.submit class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
   </div>
 <% end %>
+
+<script>
+  (function(){
+    var radios = document.querySelectorAll('input.list-icon-radio[name="list[icon_style]"]');
+    function updateRings(){
+      var labels = document.querySelectorAll('label.list-icon-option');
+      labels.forEach(function(l){ l.classList.remove('ring-2','ring-violet-600'); });
+      var checked = document.querySelector('input.list-icon-radio[name="list[icon_style]"]:checked');
+      if(checked){ var lbl = checked.closest('label.list-icon-option'); if(lbl){ lbl.classList.add('ring-2','ring-violet-600'); }}
+    }
+    radios.forEach(function(r){ r.addEventListener('change', updateRings); });
+    updateRings();
+  })();
+</script>

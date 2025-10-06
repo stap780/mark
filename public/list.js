@@ -1,691 +1,233 @@
 (function() {
-  'use strict';
+  
+  const S3_BASE = 'https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23';
+  let DEBUG = false;
 
-  // Configuration
-  const CONFIG = {
-    apiBaseUrl: window.location.origin, // Use current domain
-    endpoints: {
-      addItem: '/api/accounts/{account_id}/lists/{list_id}/list_items',
-      removeItem: '/api/accounts/{account_id}/lists/{list_id}/list_items/{item_id}',
-      getItems: '/api/accounts/{account_id}/lists/{list_id}/list_items'
-    },
-    s3Fallback: {
-      enabled: true,
-      baseUrl: 'https://s3.twcstorage.ru',
-      path: '/lists/{account_id}/{client_id}/{list_id}.json'
-    },
-    debug: {
-      enabled: false, // Set to true to enable debug logging
-      logLevel: 'info' // 'debug', 'info', 'warn', 'error'
-    }
-  };
-
-  // Debug logging utility
-  function debugLog(level, message, data = null) {
-    if (!CONFIG.debug.enabled) return;
-    
-    const levels = { debug: 0, info: 1, warn: 2, error: 3 };
-    const currentLevel = levels[CONFIG.debug.logLevel] || 1;
-    const messageLevel = levels[level] || 1;
-    
-    if (messageLevel >= currentLevel) {
-      const timestamp = new Date().toISOString();
-      const prefix = `[List.js ${timestamp}] ${level.toUpperCase()}:`;
-      
-      if (data) {
-        console[level](prefix, message, data);
-      } else {
-        console[level](prefix, message);
-      }
-    }
+  function debugLog(){
+    if (!DEBUG) return;
+    try { console.log('[list]', ...arguments); } catch(e) { /* noop */ }
   }
 
-  // Utility functions
-  function getClient() {
-    debugLog('debug', 'Getting client information');
-    return new Promise((resolve, reject) => {
-      if (typeof ajaxAPI !== 'undefined' && ajaxAPI.shop && ajaxAPI.shop.client) {
-        ajaxAPI.shop.client.get().done((client) => {
-          debugLog('info', 'Client retrieved successfully', client);
-          resolve(client);
-        }).fail((error) => {
-          debugLog('error', 'Failed to get client', error);
-          reject(error);
-        });
-      } else {
-        debugLog('error', 'Client API not available');
-        reject(new Error('Client API not available'));
+  function getAccountIdFromScript() {
+    const scripts = document.getElementsByTagName('script');
+    for (let i = 0; i < scripts.length; i++) {
+      const src = scripts[i].getAttribute('src') || '';
+      if (src.includes('list.js')) {
+        try {
+          const url = new URL(src, window.location.origin);
+          const id = url.searchParams.get('id');
+          const dbg = url.searchParams.get('debug');
+          if (dbg === '1' || dbg === 'true') DEBUG = true;
+          if (id) return id;
+        } catch (e) {
+          // ignore
+        }
       }
-    });
-  }
-
-  function getShopConfig() {
-    if (typeof Shop !== 'undefined' && Shop.config) {
-      return Shop.config.get();
     }
     return null;
   }
 
-  function getCurrentProductData() {
-    const productElement = document.querySelector('[data-product-id]');
-    if (!productElement) return null;
-
-    return {
-      productId: productElement.dataset.productId,
-      variantId: productElement.dataset.variantId || null,
-      listId: productElement.dataset.listId || null
-    };
-  }
-
-  // API functions
-  function buildApiUrl(endpoint, params) {
-    let url = CONFIG.endpoints[endpoint];
-    Object.keys(params).forEach(key => {
-      url = url.replace(`{${key}}`, params[key]);
-    });
-    return CONFIG.apiBaseUrl + url;
-  }
-
-  function makeApiRequest(url, method = 'GET', data = null, queryParams = null) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: url,
-        method: method,
-        dataType: 'json',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      };
-
-      if (data && method !== 'GET') {
-        options.data = JSON.stringify(data);
-      }
-
-      if (queryParams && method === 'GET') {
-        options.data = queryParams;
-      }
-
-      $.ajax(options).done(resolve).fail(reject);
+  function fetchListJson(accountId) {
+    const jsonUrl = `${S3_BASE}/lists/list_${accountId}.json`;
+    debugLog('fetchListJson:url', jsonUrl);
+    return fetch(jsonUrl, { credentials: 'omit' }).then(function(res) {
+      debugLog('fetchListJson:status', res.status);
+      if (!res.ok) throw new Error('Failed to load list json');
+      return res.json();
+    }).then(function(json){
+      debugLog('fetchListJson:success lists_count', Array.isArray(json && json.lists) ? json.lists.length : 0, json);
+      return json;
+    }).catch(function(err){
+      debugLog('fetchListJson:error', err && err.message ? err.message : err);
+      throw err;
     });
   }
-
-  function getS3FallbackUrl(accountId, clientId, listId) {
-    return CONFIG.s3Fallback.baseUrl + 
-           CONFIG.s3Fallback.path
-             .replace('{account_id}', accountId)
-             .replace('{client_id}', clientId)
-             .replace('{list_id}', listId);
-  }
-
-  // Main API functions
-  async function addListItem(listId, productId, variantId = null, metadata = {}) {
-    debugLog('info', 'Adding list item', { listId, productId, variantId, metadata });
-    try {
-      const client = await getClient();
-      const shop = getShopConfig();
-      
-      if (!shop || !shop.account_id) {
-        debugLog('error', 'Shop configuration not available');
-        throw new Error('Shop configuration not available');
-      }
-
-      const url = buildApiUrl('addItem', {
-        account_id: shop.account_id,
-        list_id: listId
-      });
-
-      const data = {
-        external_client_id: client.id,
-        external_product_id: productId,
-        external_variant_id: variantId,
-        metadata: metadata
-      };
-
-      debugLog('debug', 'Making API request', { url, data });
-      const response = await makeApiRequest(url, 'POST', data);
-      debugLog('info', 'List item added successfully', response);
-      return response;
-    } catch (error) {
-      debugLog('error', 'Error adding list item', error);
-      console.error('Error adding list item:', error);
-      throw error;
-    }
-  }
-
-  async function removeListItem(listId, itemId) {
-    try {
-      const shop = getShopConfig();
-      
-      if (!shop || !shop.account_id) {
-        throw new Error('Shop configuration not available');
-      }
-
-      const url = buildApiUrl('removeItem', {
-        account_id: shop.account_id,
-        list_id: listId,
-        item_id: itemId
-      });
-
-      const response = await makeApiRequest(url, 'DELETE');
-      return response;
-    } catch (error) {
-      console.error('Error removing list item:', error);
-      throw error;
-    }
-  }
-
-  async function getListItems(listId, useS3Fallback = true) {
-    try {
-      const client = await getClient();
-      const shop = getShopConfig();
-      
-      if (!shop || !shop.account_id) {
-        throw new Error('Shop configuration not available');
-      }
-
-      // Try API first
-      try {
-        const url = buildApiUrl('getItems', {
-          account_id: shop.account_id,
-          list_id: listId
-        });
-
-        const response = await makeApiRequest(url, 'GET', null, {
-          external_client_id: client.id
-        });
-        return response;
-      } catch (apiError) {
-        console.warn('API request failed, trying S3 fallback:', apiError);
-        
-        if (useS3Fallback && CONFIG.s3Fallback.enabled) {
-          // Try S3 fallback
-          const s3Url = getS3FallbackUrl(shop.account_id, client.id, listId);
-          const s3Response = await makeApiRequest(s3Url, 'GET');
-          return s3Response;
-        } else {
-          throw apiError;
-        }
-      }
-    } catch (error) {
-      console.error('Error getting list items:', error);
-      throw error;
-    }
-  }
-
-  // UI Helper functions
-  function updateListCounter(count) {
-    const counter = document.querySelector('[data-ui-list-counter]');
-    if (counter) {
-      counter.textContent = count;
-      counter.classList.remove('list-empty');
-    }
-  }
-
-  function updateListButton(productId, isAdded = false) {
-    const button = document.querySelector(`[data-list-product="${productId}"]`);
-    if (button) {
-      if (isAdded) {
-        button.classList.add('list-added');
+  // Step 1: Get client from Insales store via ajaxAPI
+  function getClient() {
+    return new Promise(function(resolve, reject) {
+      if (typeof ajaxAPI !== 'undefined' && ajaxAPI.shop && ajaxAPI.shop.client) {
+        ajaxAPI.shop.client.get().done(resolve).fail(reject);
       } else {
-        button.classList.remove('list-added');
+        reject(new Error('ajaxAPI.shop.client is not available'));
       }
+    });
+  }
+
+  // Minimal API helpers
+  function buildApiBase(accountId, listId) {
+    return '/api/accounts/' + encodeURIComponent(accountId) + '/lists/' + encodeURIComponent(listId) + '/list_items';
+  }
+
+  function apiGetListItems(accountId, listId, externalClientId) {
+    var url = buildApiBase(accountId, listId) + '?external_client_id=' + encodeURIComponent(externalClientId);
+    debugLog('api:get', url);
+    return fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } })
+      .then(function(r){ return r.json(); });
+  }
+
+  function apiAddItem(accountId, listId, externalClientId, externalProductId, externalVariantId) {
+    var url = buildApiBase(accountId, listId);
+    var body = { external_client_id: externalClientId, external_product_id: externalProductId };
+    if (externalVariantId) body.external_variant_id = externalVariantId;
+    debugLog('api:post', url, body);
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function(r){ return r.json(); });
+  }
+
+  function apiRemoveItem(accountId, listId, listItemId) {
+    var url = buildApiBase(accountId, listId) + '/' + encodeURIComponent(listItemId);
+    debugLog('api:delete', url);
+    return fetch(url, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
+      .then(function(r){ return r.json(); });
+  }
+
+  // Step 2: Create HTML container for all user lists with selected icon
+  function renderIcon(iconStyle, color, active) {
+    var stroke = color || '#999999';
+    var fill = active ? (color || '#999999') : 'none';
+    switch (iconStyle) {
+      case 'icon_one':
+        // Heart
+        return '<svg xmlns="http://www.w3.org/2000/svg" class="list-icon" viewBox="0 0 24 24" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+      case 'icon_two':
+        // Wishlist (bookmark)
+        return '<svg xmlns="http://www.w3.org/2000/svg" class="list-icon" viewBox="0 0 24 24" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+      case 'icon_three':
+        // Like (thumb/finger up)
+        return '<svg xmlns="http://www.w3.org/2000/svg" class="list-icon" viewBox="0 0 24 24" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 21h4V9H2v12z"/><path d="M22 11c0-1.1-.9-2-2-2h-6l1-5-5 6v11h9c1.1 0 2-.9 2-2l1-8z"/></svg>';
+      default:
+        return '';
     }
   }
 
-  function showListItems(items) {
-    const container = document.querySelector('[data-list-items-container]');
-    if (!container) return;
+  function createListsContainer(lists, options) {
+    options = options || {};
+    var containerSelector = options.containerSelector || '[data-lists-root]';
+    var attach = options.attach !== undefined ? options.attach : true;
 
-    if (!items || items.length === 0) {
-      container.innerHTML = '<div class="empty-list-message">Список пуст</div>';
-      return;
-    }
+    var wrapper = document.createElement('div');
+    wrapper.setAttribute('style', 'display:block;');
+    debugLog('createListsContainer:init', { lists_count: (lists||[]).length, containerSelector: containerSelector, attach: attach });
 
-    // Clear existing items
-    container.innerHTML = '';
+    var listEl = document.createElement('div');
+    listEl.setAttribute('style', 'display:flex;gap:12px;align-items:center;flex-wrap:wrap;');
+    wrapper.appendChild(listEl);
 
-    // Add items (assuming items have product data)
-    items.forEach(item => {
-      const itemElement = createListItemElement(item);
-      container.appendChild(itemElement);
+    (lists || []).forEach(function(list) {
+      debugLog('createListsContainer:item', list);
+      var item = document.createElement('span');
+      item.setAttribute('style', 'display:inline-flex;align-items:center;gap:8px;cursor:pointer;width:24px;');
+      item.setAttribute('class', 'twc-list-item');
+      item.setAttribute('data-list-id', String(list.id));
+      item.setAttribute('data-list-name', list.name || '');
+      item.setAttribute('data-icon-style', list.icon_style || 'icon_one');
+      item.setAttribute('data-icon-color', list.icon_color || '#999999');
+      item.setAttribute('data-added', 'false');
+
+      var iconHtml = renderIcon(list.icon_style || 'icon_one', list.icon_color || '#999999', false);
+      item.innerHTML = iconHtml;
+
+      listEl.appendChild(item);
     });
 
-    // Initialize any UI components if needed
-    if (typeof LazyLoad !== 'undefined') {
-      new LazyLoad({
-        container: container,
-        elements_selector: '.lazyload'
-      });
-    }
-  }
-
-  function createListItemElement(item) {
-    // This is a basic template - customize based on your needs
-    const element = document.createElement('div');
-    element.className = 'list-item';
-    element.dataset.itemId = item.id;
-    element.dataset.productId = item.item_id;
-
-    element.innerHTML = `
-      <div class="list-item-content">
-        <div class="list-item-image">
-          <img src="${item.metadata?.image_url || '/placeholder.jpg'}" alt="${item.metadata?.title || 'Product'}" class="lazyload">
-        </div>
-        <div class="list-item-info">
-          <h3 class="list-item-title">${item.metadata?.title || 'Product'}</h3>
-          <p class="list-item-price">${item.metadata?.price || ''}</p>
-        </div>
-        <div class="list-item-actions">
-          <button class="remove-list-item-btn" data-item-id="${item.id}">
-            <span class="icon-remove"></span>
-          </button>
-        </div>
-      </div>
-    `;
-
-    return element;
-  }
-
-  // Event handlers
-  function handleListToggle(event) {
-    const element = event.target.closest('[data-list-product]');
-    if (!element) return;
-
-    const productId = element.dataset.listProduct;
-    const listId = element.dataset.listId;
-    const productData = getCurrentProductData();
-    
-    if (!productData || !listId) {
-      console.error('Missing product data or list ID');
-      return;
+    if (attach) {
+      var host = document.querySelector(containerSelector);
+      if (host) { host.innerHTML = ''; host.appendChild(wrapper); debugLog('createListsContainer:attached', host); }
+      else { debugLog('createListsContainer:host_not_found', containerSelector); }
     }
 
-    const isAdded = element.classList.contains('list-added');
-    
-    if (isAdded) {
-      // Remove from list
-      removeListItem(listId, productId)
-        .then(() => {
-          updateListButton(productId, false);
-          updateListCounter(getListItemsCount() - 1);
+    return wrapper;
+  }
+  
+  // Step 3: Find all favorites triggers and update with lists container
+  function updateFavoritesTriggers(lists, options) {
+    var nodes = document.querySelectorAll('[data-ui-favorites-trigger]');
+    debugLog('updateFavoritesTriggers:found_nodes', nodes.length);
+    if (!nodes || !nodes.length) { debugLog('updateFavoritesTriggers:no_nodes'); return []; }
+    var results = [];
+    nodes.forEach(function(node) {
+      var container = createListsContainer(lists, { attach: false });
+      node.innerHTML = '';
+      node.appendChild(container);
+      debugLog('updateFavoritesTriggers:updated_node', node);
+      results.push(node);
+
+      // Update attribute: move data-ui-favorites-trigger to data-ui-favorites-trigger-twc
+      var productId = node.getAttribute('data-ui-favorites-trigger');
+      if (productId) {
+        node.removeAttribute('data-ui-favorites-trigger');
+        node.setAttribute('data-ui-favorites-trigger-twc', productId);
+      }
+    });
+    return results;
+  }
+
+  // Step 4: Click handler on twc-list-item; report product id, list id, client id
+  function bindListItemClickHandlers() {
+    document.addEventListener('click', function(evt) {
+      var itemNode = evt.target && evt.target.closest && evt.target.closest('.twc-list-item');
+      if (!itemNode) return;
+      var triggerHost = itemNode.closest('[data-ui-favorites-trigger-twc]');
+      if (!triggerHost) return;
+      var productId = triggerHost.getAttribute('data-ui-favorites-trigger-twc');
+      var listId = itemNode.getAttribute('data-list-id');
+      var iconStyle = itemNode.getAttribute('data-icon-style');
+      var iconColor = itemNode.getAttribute('data-icon-color');
+      var added = itemNode.getAttribute('data-added') === 'true';
+      getClient()
+        .then(function(client){
+          var clientId = client && client.id;
+          debugLog('lists:click', { clientId: clientId, productId: productId, listId: listId, added: added });
+          var accountId = getAccountIdFromScript();
+          if (!accountId) { debugLog('lists:click:no_account_id'); return; }
+
+          if (added) {
+            // find list_item id by productId via index then delete
+            apiGetListItems(accountId, listId, clientId).then(function(resp){
+              var items = (resp && resp.items) || [];
+              var match = items.find(function(x){ return String(x.item_id) === String(productId); });
+              if (!match) { debugLog('lists:remove:not_found'); return; }
+              return apiRemoveItem(accountId, listId, match.id).then(function(){
+                itemNode.setAttribute('data-added', 'false');
+                itemNode.innerHTML = renderIcon(iconStyle, iconColor, false);
+                debugLog('lists:removed', { list_item_id: match.id });
+              });
+            }).catch(function(err){ debugLog('lists:remove:error', err && err.message ? err.message : err); });
+          } else {
+            apiAddItem(accountId, listId, clientId, productId, null).then(function(resp){
+              itemNode.setAttribute('data-added', 'true');
+              itemNode.innerHTML = renderIcon(iconStyle, iconColor, true);
+              debugLog('lists:added', resp);
+            }).catch(function(err){ debugLog('lists:add:error', err && err.message ? err.message : err); });
+          }
         })
-        .catch(error => {
-          console.error('Failed to remove item:', error);
-          alert('Ошибка при удалении из списка');
+        .catch(function(){
+          debugLog('lists:click:no_client');
+          try { alert('Please register'); } catch(e) {}
         });
-    } else {
-      // Add to list
-      addListItem(listId, productData.productId, productData.variantId)
-        .then(() => {
-          updateListButton(productId, true);
-          updateListCounter(getListItemsCount() + 1);
-        })
-        .catch(error => {
-          console.error('Failed to add item:', error);
-          alert('Ошибка при добавлении в список');
-        });
-    }
+    });
   }
 
-  function handleRemoveItem(event) {
-    const element = event.target.closest('[data-item-id]');
-    if (!element) return;
-
-    const itemId = element.dataset.itemId;
-    const listId = element.dataset.listId;
-    
-    if (!listId) {
-      console.error('Missing list ID');
-      return;
-    }
-
-    removeListItem(listId, itemId)
-      .then(() => {
-        element.remove();
-        updateListCounter(getListItemsCount() - 1);
+  document.addEventListener('DOMContentLoaded', function() {
+    debugLog('dom:ready');
+    const accountId = getAccountIdFromScript();
+    if (!accountId) { debugLog('dom:no_account_id'); return; }
+  
+    fetchListJson(accountId)
+      .then(data => {
+        debugLog('dom:update_triggers');
+        updateFavoritesTriggers(data.lists);
       })
-      .catch(error => {
-        console.error('Failed to remove item:', error);
-        alert('Ошибка при удалении элемента');
-      });
-  }
+      .catch(function(err){ debugLog('dom:error', err && err.message ? err.message : err); console.error(err); });
 
-  function getListItemsCount() {
-    const counter = document.querySelector('[data-ui-list-counter]');
-    return counter ? parseInt(counter.textContent) || 0 : 0;
-  }
-
-  // Initialize list items on page load
-  async function initializeListItems() {
-    const listId = document.querySelector('[data-list-id]')?.dataset.listId;
-    if (!listId) return;
-
-    try {
-      const items = await getListItems(listId);
-      showListItems(items.items || items);
-      updateListCounter(items.items?.length || items.length || 0);
-    } catch (error) {
-      console.error('Failed to initialize list items:', error);
-    }
-  }
-
-  // Initialize favorite buttons on page load
-  async function initializeListButtons() {
-    try {
-      const items = await getListItems(document.querySelector('[data-list-id]')?.dataset.listId);
-      const productIds = items.items?.map(item => item.item_id) || items.map(item => item.item_id) || [];
-      
-      productIds.forEach(productId => {
-        updateListButton(productId, true);
-      });
-    } catch (error) {
-      console.error('Failed to initialize list buttons:', error);
-    }
-  }
-
-  // Public API
-  window.ListAPI = {
-    addItem: addListItem,
-    removeItem: removeListItem,
-    getItems: getListItems,
-    updateCounter: updateListCounter,
-    updateButton: updateListButton,
-    showItems: showListItems,
-    // Debug utilities
-    enableDebug: () => { CONFIG.debug.enabled = true; },
-    disableDebug: () => { CONFIG.debug.enabled = false; },
-    setDebugLevel: (level) => { CONFIG.debug.logLevel = level; }
-  };
-
-  // Initialize when DOM is ready
-  $(document).ready(function() {
-    // Set up event listeners
-    $(document).on('click', '[data-list-product]', handleListToggle);
-    $(document).on('click', '.remove-list-item-btn', handleRemoveItem);
-
-    // Initialize based on page type
-    if (document.querySelector('[data-list-items-container]')) {
-      // This is a list items page
-      initializeListItems();
-    } else {
-      // This is a product page with list buttons
-      initializeListButtons();
-    }
+    // Always bind click handlers
+    bindListItemClickHandlers();
   });
 
-  // Event bus integration (if available)
-  if (typeof EventBus !== 'undefined') {
-    EventBus.subscribe('list-item-added', (data) => {
-      updateListButton(data.productId, true);
-      updateListCounter(getListItemsCount() + 1);
-    });
-
-    EventBus.subscribe('list-item-removed', (data) => {
-      updateListButton(data.productId, false);
-      updateListCounter(getListItemsCount() - 1);
-    });
-  }
-
-  // ============================================================================
-  // USAGE EXAMPLES
-  // ============================================================================
-  
-  /*
-  Usage Examples
-  ==============
-  
-  Product Page (like favorites snippet)
-  ------------------------------------
-  
-  Add this HTML to your product page:
-  
-  <div data-product-id="123" data-variant-id="456">
-    <h3>Sample Product</h3>
-    
-    <!-- Add to Favorites Button -->
-    <button class="list-button" 
-            data-list-product="123" 
-            data-list-id="1">
-      Add to Favorites
-    </button>
-    
-    <!-- Add to Wishlist Button -->
-    <button class="list-button" 
-            data-list-product="123" 
-            data-list-id="2">
-      Add to Wishlist
-    </button>
-    
-    <!-- Counter Display -->
-    <span class="list-counter" data-ui-list-counter>0</span>
-  </div>
-  
-  The script will automatically:
-  - Handle button clicks
-  - Update button states (added/not added)
-  - Update counter display
-  - Make API calls to add/remove items
-  
-  List Items Page (like favorites products page)
-  ---------------------------------------------
-  
-  Add this HTML to show all items in a list:
-  
-  <div data-list-id="1">
-    <h3>My Favorites</h3>
-    <div data-list-items-container>
-      <!-- Items will be loaded here automatically -->
-    </div>
-  </div>
-  
-  The script will automatically:
-  - Load items from API
-  - Display them in the container
-  - Handle remove buttons
-  - Update counters
-  
-  // 1. BASIC HTML SETUP
-  
-  <!-- Product Page with List Buttons -->
-  <div data-product-id="123" data-variant-id="456">
-    <h3>Sample Product</h3>
-    
-    <!-- Add to Favorites Button -->
-    <button class="list-button" 
-            data-list-product="123" 
-            data-list-id="1">
-      Add to Favorites
-    </button>
-    
-    <!-- Add to Wishlist Button -->
-    <button class="list-button" 
-            data-list-product="123" 
-            data-list-id="2">
-      Add to Wishlist
-    </button>
-    
-    <!-- Counter Display -->
-    <span class="list-counter" data-ui-list-counter>0</span>
-  </div>
-  
-  <!-- List Items Page -->
-  <div data-list-id="1">
-    <h3>My Favorites</h3>
-    <div data-list-items-container>
-      <!-- Items will be loaded here automatically -->
-    </div>
-  </div>
-  
-  // 2. JAVASCRIPT API USAGE
-  
-  // Enable debug mode
-  ListAPI.enableDebug();
-  ListAPI.setDebugLevel('debug'); // 'debug', 'info', 'warn', 'error'
-  
-  // Add item to list
-  ListAPI.addItem('1', '123', '456', { title: 'Sample Product' })
-    .then(response => {
-      console.log('Item added:', response);
-      // response: { item: {...}, total_count: 5 }
-    })
-    .catch(error => {
-      console.error('Failed to add item:', error);
-    });
-  
-  // Get list items
-  ListAPI.getItems('1')
-    .then(response => {
-      console.log('List items:', response);
-      // response: { items: [...], total_count: 5 }
-    })
-    .catch(error => {
-      console.error('Failed to get items:', error);
-    });
-  
-  // Remove item from list
-  ListAPI.removeItem('1', 'item_123')
-    .then(response => {
-      console.log('Item removed:', response);
-      // response: { total_count: 4 }
-    })
-    .catch(error => {
-      console.error('Failed to remove item:', error);
-    });
-  
-  // Update UI manually
-  ListAPI.updateCounter(5);
-  ListAPI.updateButton('123', true); // true = added, false = not added
-  
-  // 3. CUSTOM EVENT HANDLING
-  
-  // Listen for list events
-  document.addEventListener('click', function(event) {
-    if (event.target.matches('[data-list-product]')) {
-      const productId = event.target.dataset.listProduct;
-      const listId = event.target.dataset.listId;
-      
-      console.log(`Toggling product ${productId} in list ${listId}`);
-    }
-  });
-  
-  // 4. INTEGRATION WITH EXISTING SYSTEMS
-  
-  // Mock Shop configuration (replace with your actual implementation)
-  window.Shop = {
-    config: {
-      get: function() {
-        return {
-          account_id: '3' // Your account ID
-        };
-      }
-    }
-  };
-  
-  // Mock ajaxAPI (replace with your actual implementation)
-  window.ajaxAPI = {
-    shop: {
-      client: {
-        get: function() {
-          return $.Deferred().resolve({
-            id: 'client_123' // Your client ID
-          });
-        }
-      }
-    }
-  };
-  
-  // 5. CUSTOM STYLING
-  
-  .list-button {
-    padding: 10px 20px;
-    border: 2px solid #ccc;
-    background: white;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: all 0.3s;
-  }
-  
-  .list-button.list-added {
-    background: #4CAF50;
-    color: white;
-    border-color: #4CAF50;
-  }
-  
-  .list-counter {
-    display: inline-block;
-    padding: 5px 10px;
-    background: #f0f0f0;
-    border-radius: 15px;
-    margin-left: 10px;
-  }
-  
-  .list-counter.list-empty {
-    opacity: 0.5;
-  }
-  
-  .list-item {
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  // 6. DEBUGGING
-  
-  // Enable debug mode in console
-  ListAPI.enableDebug();
-  ListAPI.setDebugLevel('debug');
-  
-  // Check current configuration
-  console.log('Current config:', CONFIG);
-  
-  // Test API endpoints manually
-  fetch('/api/accounts/3/lists/1/list_items?external_client_id=client_123')
-    .then(response => response.json())
-    .then(data => console.log('API test:', data));
-  
-  // 7. ERROR HANDLING
-  
-  // Wrap API calls in try-catch
-  try {
-    const result = await ListAPI.addItem('1', '123', '456');
-    console.log('Success:', result);
-  } catch (error) {
-    console.error('Error details:', {
-      message: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString()
-    });
-  }
-  
-  // 8. PERFORMANCE OPTIMIZATION
-  
-  // Debounce rapid clicks
-  let clickTimeout;
-  document.addEventListener('click', function(event) {
-    if (event.target.matches('[data-list-product]')) {
-      clearTimeout(clickTimeout);
-      clickTimeout = setTimeout(() => {
-        // Handle click after 300ms delay
-      }, 300);
-    }
-  });
-  
-  // Cache list items to avoid repeated API calls
-  const listCache = new Map();
-  
-  async function getCachedListItems(listId) {
-    if (listCache.has(listId)) {
-      return listCache.get(listId);
-    }
-    
-    const items = await ListAPI.getItems(listId);
-    listCache.set(listId, items);
-    return items;
-  }
-  */
 
 })();
+
+

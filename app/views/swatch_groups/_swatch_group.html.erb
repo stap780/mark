@@ -1,4 +1,5 @@
-<%= turbo_frame_tag [swatch_group.account, dom_id(swatch_group)], class: "grid grid-cols-4 gap-4 p-4 items-center" do %>
+<%= turbo_frame_tag [swatch_group.account, dom_id(swatch_group)], class: "grid grid-cols-5 gap-4 p-4 items-center" do %>
+  <div class="truncate"><%= swatch_group.id %></div>
   <div class="truncate"><%= swatch_group.name %></div>
   <div class="truncate"><%= swatch_group.option_name %></div>
   <div class="truncate"><%= swatch_group.status %></div>
