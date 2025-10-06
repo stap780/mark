@@ -55,32 +55,31 @@
 
   // Minimal API helpers
   function buildApiBase(accountId, listId) {
-    return '/api/accounts/' + encodeURIComponent(accountId) + '/lists/' + encodeURIComponent(listId) + '/list_items';
+    return 'https://app.teletri.ru/api/accounts/' + encodeURIComponent(accountId) + '/lists/' + encodeURIComponent(listId) + '/list_items';
   }
 
   function apiGetListItems(accountId, listId, externalClientId) {
     var url = buildApiBase(accountId, listId) + '?external_client_id=' + encodeURIComponent(externalClientId);
     debugLog('api:get', url);
-    return fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } })
+    return fetch(url, { method: 'GET', credentials: 'omit' })
       .then(function(r){ return r.json(); });
   }
 
   function apiAddItem(accountId, listId, externalClientId, externalProductId, externalVariantId) {
     var url = buildApiBase(accountId, listId);
-    var body = { external_client_id: externalClientId, external_product_id: externalProductId };
-    if (externalVariantId) body.external_variant_id = externalVariantId;
-    debugLog('api:post', url, body);
-    return fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(body)
-    }).then(function(r){ return r.json(); });
+    var params = new URLSearchParams();
+    params.append('external_client_id', externalClientId);
+    params.append('external_product_id', externalProductId);
+    if (externalVariantId) params.append('external_variant_id', externalVariantId);
+    debugLog('api:post', url, params.toString());
+    return fetch(url, { method: 'POST', body: params, credentials: 'omit' })
+      .then(function(r){ return r.json(); });
   }
 
   function apiRemoveItem(accountId, listId, listItemId) {
     var url = buildApiBase(accountId, listId) + '/' + encodeURIComponent(listItemId);
     debugLog('api:delete', url);
-    return fetch(url, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
+    return fetch(url, { method: 'DELETE', credentials: 'omit' })
       .then(function(r){ return r.json(); });
   }
 
@@ -91,13 +90,13 @@
     switch (iconStyle) {
       case 'icon_one':
         // Heart
-        return '<svg xmlns="http://www.w3.org/2000/svg" class="list-icon" viewBox="0 0 24 24" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+        return '<svg xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;display:block;" viewBox="0 0 24 24" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>';
       case 'icon_two':
         // Wishlist (bookmark)
-        return '<svg xmlns="http://www.w3.org/2000/svg" class="list-icon" viewBox="0 0 24 24" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+        return '<svg xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;display:block;" viewBox="0 0 24 24" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
       case 'icon_three':
         // Like (thumb/finger up)
-        return '<svg xmlns="http://www.w3.org/2000/svg" class="list-icon" viewBox="0 0 24 24" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 21h4V9H2v12z"/><path d="M22 11c0-1.1-.9-2-2-2h-6l1-5-5 6v11h9c1.1 0 2-.9 2-2l1-8z"/></svg>';
+        return '<svg xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;display:block;" viewBox="0 0 24 24" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 21h4V9H2v12z"/><path d="M22 11c0-1.1-.9-2-2-2h-6l1-5-5 6v11h9c1.1 0 2-.9 2-2l1-8z"/></svg>';
       default:
         return '';
     }
@@ -109,7 +108,7 @@
     var attach = options.attach !== undefined ? options.attach : true;
 
     var wrapper = document.createElement('div');
-    wrapper.setAttribute('style', 'display:block;');
+    wrapper.setAttribute('style', 'display:block;z-index: 100;');
     debugLog('createListsContainer:init', { lists_count: (lists||[]).length, containerSelector: containerSelector, attach: attach });
 
     var listEl = document.createElement('div');
@@ -168,8 +167,8 @@
   // Step 4: Click handler on twc-list-item; report product id, list id, client id
   function bindListItemClickHandlers() {
     document.addEventListener('click', function(evt) {
-      var itemNode = evt.target && evt.target.closest && evt.target.closest('.twc-list-item');
-      if (!itemNode) return;
+      if (!evt.target || !evt.target.classList || !evt.target.classList.contains('twc-list-item')) return;
+      var itemNode = evt.target;
       var triggerHost = itemNode.closest('[data-ui-favorites-trigger-twc]');
       if (!triggerHost) return;
       var productId = triggerHost.getAttribute('data-ui-favorites-trigger-twc');

@@ -1,4 +1,5 @@
 class Api::ListItemsController < ApplicationController
+  skip_before_action :require_authentication, raise: false
   before_action :set_list
   before_action :set_list_item, only: [:destroy]
   skip_before_action :verify_authenticity_token
@@ -70,6 +71,11 @@ class Api::ListItemsController < ApplicationController
   end
 
   private
+
+  # Resolve account for API requests by path param rather than session
+  def current_account
+    @current_account ||= Account.find(params[:account_id])
+  end
 
   def set_list
     @list = current_account.lists.find(params[:list_id])
