@@ -161,10 +161,10 @@ class Api::ListItemsController < ApplicationController
 
     {
       id: list_item.id,
-      external_item_id: external_value || '',
+      item_id: external_value || '',
       item_type: list_item.item_type,
       created_at: list_item.created_at.iso8601
     }
-    
+
   end
 end
