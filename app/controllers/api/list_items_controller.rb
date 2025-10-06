@@ -160,7 +160,6 @@ class Api::ListItemsController < ApplicationController
       id: list_item.id,
       item_id: list_item.item_id,
       item_type: list_item.item_type,
-      metadata: list_item.metadata || {},
       created_at: list_item.created_at.iso8601
     }
   end

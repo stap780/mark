@@ -1,4 +1,4 @@
-json.extract! list_item, :id, :list_id, :item_id, :item_type, :metadata, :created_at, :updated_at
+json.extract! list_item, :id, :list_id, :item_id, :item_type, :created_at, :updated_at
 json.list do
   json.id list_item.list_id
   json.name list_item.list.name
