@@ -86,30 +86,31 @@ class Api::ListItemsController < ApplicationController
   end
 
   def resolve_client_by_external_id(external_client_id)
-    # Find client by external ID via varbind
-    varbind = Varbind.joins(:record)
-                     .where(record_type: 'Client', value: external_client_id)
-                     .where(varbindable: current_account.insale)
-                     .first
+    # Find client by external ID via varbind scoped to account's Insale integrations
+    return nil if external_client_id.blank?
+    varbind = Varbind
+      .where(record_type: 'Client', value: external_client_id)
+      .where(varbindable: current_account.insales)
+      .first
     varbind&.record
   end
 
   def resolve_item_by_external_ids(external_product_id, external_variant_id)
     # Try to find variant first by external variant_id
     if external_variant_id.present?
-      varbind = Varbind.joins(:record)
-                       .where(record_type: 'Variant', value: external_variant_id)
-                       .where(varbindable: current_account.insale)
-                       .first
+      varbind = Varbind
+        .where(record_type: 'Variant', value: external_variant_id)
+        .where(varbindable: current_account.insales)
+        .first
       return varbind.record if varbind
     end
 
     # Fallback to product by external product_id
     if external_product_id.present?
-      varbind = Varbind.joins(:record)
-                       .where(record_type: 'Product', value: external_product_id)
-                       .where(varbindable: current_account.insale)
-                       .first
+      varbind = Varbind
+        .where(record_type: 'Product', value: external_product_id)
+        .where(varbindable: current_account.insales)
+        .first
       return varbind.record if varbind
     end
 
