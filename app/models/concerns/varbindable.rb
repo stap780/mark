@@ -5,25 +5,25 @@ module Varbindable
     has_many :varbinds, as: :record, dependent: :destroy
   end
 
-  # Each model that includes this concern must implement these methods
+  # Default route helpers using polymorphic routing
   def show_path
-    raise NotImplementedError, "#{self.class} must implement #show_path"
+    Rails.application.routes.url_helpers.polymorphic_path(polymorphic_stack(self))
   end
 
   def varbinds_path
-    raise NotImplementedError, "#{self.class} must implement #varbinds_path"
+    Rails.application.routes.url_helpers.polymorphic_path(polymorphic_stack(self) + [:varbinds])
   end
 
   def varbind_new_path
-    raise NotImplementedError, "#{self.class} must implement #varbind_new_path"
+    Rails.application.routes.url_helpers.new_polymorphic_path(polymorphic_stack(self) + [:varbind])
   end
 
   def varbind_edit_path(varbind)
-    raise NotImplementedError, "#{self.class} must implement #varbind_edit_path"
+    Rails.application.routes.url_helpers.edit_polymorphic_path(polymorphic_stack(self) + [varbind])
   end
 
   def varbind_path(varbind)
-    raise NotImplementedError, "#{self.class} must implement #varbind_path"
+    Rails.application.routes.url_helpers.polymorphic_path(polymorphic_stack(self) + [varbind])
   end
 
   def broadcast_target_for_varbinds
@@ -36,5 +36,31 @@ module Varbindable
 
   def broadcast_locals_for_varbind(varbind)
     raise NotImplementedError, "#{self.class} must implement #broadcast_locals_for_varbind"
+  end
+
+  private
+
+  # Build the polymorphic stack like [account, parent, self]
+  def polymorphic_stack(record)
+    stack = []
+    stack << account_for_varbinds(record)
+    parent = parent_resource_for_varbinds(record)
+    stack << parent if parent
+    stack << record
+    stack
+  end
+
+  def account_for_varbinds(record)
+    if record.respond_to?(:account)
+      record.account
+    else
+      # Variant has product → product.account
+      record.product.account
+    end
+  end
+
+  def parent_resource_for_varbinds(record)
+    # Only Variant has a parent resource (Product)
+    record.respond_to?(:product) ? record.product : nil
   end
 end

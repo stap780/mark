@@ -3,37 +3,9 @@ class Client < ApplicationRecord
   include Varbindable
 
   belongs_to :account
+  validates :name, presence: true
 
-      # Varbindable implementation
-      def show_path
-        Rails.application.routes.url_helpers.account_client_path(
-          account, self
-        )
-      end
-
-      def varbinds_path
-        Rails.application.routes.url_helpers.account_client_varbinds_path(
-          account, self
-        )
-      end
-
-      def varbind_new_path
-        Rails.application.routes.url_helpers.new_account_client_varbind_path(
-          account, self
-        )
-      end
-
-      def varbind_edit_path(varbind)
-        Rails.application.routes.url_helpers.edit_account_client_varbind_path(
-          account, self, varbind
-        )
-      end
-
-  def varbind_path(varbind)
-    Rails.application.routes.url_helpers.account_client_varbind_path(
-      account, self, varbind
-    )
-  end
+  # Use Varbindable defaults
 
   def broadcast_target_for_varbinds
     [account, [self, :varbinds]]
@@ -65,4 +37,10 @@ class Client < ApplicationRecord
   after_destroy_commit do
     broadcast_remove_to [account, :clients], target: dom_id(self)
   end
+
+
+
+
+
+
 end

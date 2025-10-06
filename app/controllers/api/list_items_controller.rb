@@ -92,7 +92,19 @@ class Api::ListItemsController < ApplicationController
       .where(record_type: 'Client', value: external_client_id)
       .where(varbindable: current_account.insales)
       .first
-    varbind&.record
+    return varbind.record if varbind
+
+    # Auto-create Client and Varbind if not present
+    insale = current_account.insales.first
+    return nil unless insale
+
+    client = current_account.clients.create!(name: "API Client #{external_client_id}")
+    Varbind.create!(
+      varbindable: insale,
+      record: client,
+      value: external_client_id
+    )
+    client
   end
 
   def resolve_item_by_external_ids(external_product_id, external_variant_id)
@@ -114,7 +126,33 @@ class Api::ListItemsController < ApplicationController
       return varbind.record if varbind
     end
 
-    nil
+    # Auto-create Product (and Variant if external_variant_id present)
+    insale = current_account.insales.first
+    return nil unless insale
+
+    product = nil
+    if external_product_id.present?
+      product = current_account.products.create!(title: "API Product #{external_product_id}")
+      Varbind.create!(
+        varbindable: insale,
+        record: product,
+        value: external_product_id
+      )
+    end
+
+    if external_variant_id.present?
+      # Ensure product exists for variant; if not, create a container product
+      product ||= current_account.products.create!(title: "API Product #{external_product_id}")
+      variant = product.variants.create!
+      Varbind.create!(
+        varbindable: insale,
+        record: variant,
+        value: external_variant_id
+      )
+      return variant
+    end
+
+    product
   end
 
   def serialize_list_item(list_item)
