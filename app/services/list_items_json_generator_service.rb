@@ -39,7 +39,7 @@ class ListItemsJsonGeneratorService
     items_by_list = lists.map do |list|
       items = list.list_items.where(client_id: client.id)
       serialized = items.map { |li| serialize_item(li) }
-      { id: list.id, name: list.name, items: serialized }
+      { id: list.id, name: list.name, icon_style: list.icon_style, icon_color: list.icon_color, items: serialized }
     end
     {
       account_id: @account.id,

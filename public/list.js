@@ -211,6 +211,7 @@
         .then(function(r){ if (!r.ok) throw new Error('S3 not available'); return r.json(); })
         .then(function(data){
           var listsData = (data && data.lists) || [];
+          debugLog('initListItemStatesFromS3:data', listsData);
           var byId = {};
           listsData.forEach(function(l){ byId[String(l.id)] = l; });
 
@@ -227,18 +228,123 @@
               if (listBlock && Array.isArray(listBlock.items)) {
                 present = listBlock.items.some(function(it){ return String(it.external_item_id) === String(productId); });
               }
+              debugLog('S3:state', { listId: listId, productId: productId, present: present, items_len: (listBlock && listBlock.items ? listBlock.items.length : 0) });
               if (present) {
                 node.setAttribute('data-added', 'true');
                 node.innerHTML = renderIcon(iconStyle, iconColor, true);
+                debugLog('S3:apply', 'active', { listId: listId, productId: productId });
               } else {
                 node.setAttribute('data-added', 'false');
                 node.innerHTML = renderIcon(iconStyle, iconColor, false);
+                debugLog('S3:apply', 'inactive', { listId: listId, productId: productId });
               }
             });
           });
         })
         .catch(function(err){ debugLog('initListItemStatesFromS3:error', err && err.message ? err.message : err); });
     }).catch(function(err){ debugLog('initListItemStatesFromS3:no_client', err && err.message ? err.message : err); });
+  }
+
+  // Favorites page renderer: builds simple sections per list using Insales ajaxAPI.product.getList
+  function renderFavoritesPageFromS3(accountId) {
+    if (!/favorites/i.test(window.location.href)) { return; }
+    return getClient().then(function(client){
+      var clientId = client && client.id;
+      if (!clientId) return;
+      var url = S3_BASE + '/lists/list_' + accountId + '_client_' + clientId + '_list_items.json';
+      debugLog('favorites:page:url', url);
+      return fetch(url, { credentials: 'omit' })
+        .then(function(r){ if (!r.ok) throw new Error('S3 not available'); return r.json(); })
+        .then(function(data){
+          var listsData = (data && data.lists) || [];
+          debugLog('favorites:page:data', listsData);
+          var main = document.querySelector('main') || document.body;
+          if (main) { main.innerHTML = ''; }
+          listsData.forEach(function(block){
+            var ids = (block.items || []).map(function(it){ return it.external_item_id; }).filter(Boolean);
+            if (!ids.length) return;
+            var section = document.createElement('section');
+            section.setAttribute('style', 'margin:20px 0;padding: 20px;');
+            var h2 = document.createElement('h2');
+            h2.textContent = block.name || ('List #' + block.id);
+            h2.setAttribute('style', 'font-size:20px;margin:0 0 12px;');
+            var grid = document.createElement('div');
+            grid.setAttribute('style', 'display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;');
+            section.appendChild(h2);
+            section.appendChild(grid);
+            if (main) { main.appendChild(section); }
+
+            if (typeof ajaxAPI !== 'undefined' && ajaxAPI.product && typeof ajaxAPI.product.getList === 'function') {
+              ajaxAPI.product.getList(ids)
+                .done(function(onDone){
+                  debugLog('favorites:ajaxAPI:done', onDone);
+                  try {
+                    var products = onDone; // expected structure depends on Insales; assume array-like or id-map
+                    var arr = Array.isArray(products) ? products : ids.map(function(id){ return products[id]; });
+                    arr.forEach(function(p, idx){
+                      if (!p) return;
+                      var productId = ids[idx] || p.id;
+                      var card = buildMiniCard(p, productId);
+                      grid.appendChild(card);
+                      // Inject list controls into each card
+                      var host = card.querySelector('[data-ui-favorites-trigger]');
+                      if (host) {
+                        var container = createListsContainer(listsData, { attach: false });
+                        host.appendChild(container);
+                        // Set state for current block list id using S3 data
+                        var itemsForList = (block.items || []);
+                        var present = itemsForList.some(function(it){ return String(it.external_item_id) === String(productId); });
+                        var controls = host.querySelectorAll('.twc-list-item');
+                        controls.forEach(function(ctrl){
+                          var lid = ctrl.getAttribute('data-list-id');
+                          var iconStyle = ctrl.getAttribute('data-icon-style');
+                          var iconColor = ctrl.getAttribute('data-icon-color');
+                          var isThisList = String(lid) === String(block.id);
+                          var added = isThisList ? present : false;
+                          ctrl.setAttribute('data-added', added ? 'true' : 'false');
+                          ctrl.innerHTML = renderIcon(iconStyle, iconColor, added);
+                        });
+                        // Remove card if not added to this block list
+                        var currentCtrl = host.querySelector('.twc-list-item[data-list-id="' + String(block.id) + '"]');
+                        if (!(currentCtrl && currentCtrl.getAttribute('data-added') === 'true')) {
+                          card.remove();
+                        }
+                      }
+                    });
+                  } catch(e){ debugLog('favorites:render:error', e && e.message ? e.message : e); }
+                })
+                .fail(function(onFail){ debugLog('favorites:ajaxAPI:fail', onFail); });
+            } else {
+              debugLog('favorites:ajaxAPI:not_available');
+            }
+          });
+        })
+        .catch(function(err){ debugLog('favorites:page:error', err && err.message ? err.message : err); });
+    }).catch(function(err){ debugLog('favorites:page:no_client', err && err.message ? err.message : err); });
+  }
+
+  function buildMiniCard(product, externalProductId) {
+    var card = document.createElement('a');
+    var url = product && (product.url || product.link || ('/products/' + (product.id || '')));
+    card.setAttribute('href', url || '#');
+    card.setAttribute('style', 'display:block;border:1px solid #e5e7eb;border-radius:8px;padding:10px;text-decoration:none;color:#111827;background:#fff;');
+    card.className = 'list-item';
+    var imgUrl = (product.first_image && product.first_image.large_url) || (product.images && product.images[0] && product.images[0].large_url) || product.image || '';
+    var img = document.createElement('img');
+    img.setAttribute('src', imgUrl || '');
+    img.setAttribute('alt', product.title || '');
+    img.setAttribute('style', 'width:100%;height:140px;object-fit:cover;border-radius:6px;display:block;');
+    var title = document.createElement('div');
+    title.textContent = product.title || ('#' + (product.id || ''));
+    title.setAttribute('style', 'margin-top:8px;font-size:14px;line-height:1.3;');
+    // Controls host for lists buttons
+    var controlsHost = document.createElement('div');
+    controlsHost.setAttribute('data-ui-favorites-trigger', externalProductId || (product && product.id) || '');
+    controlsHost.setAttribute('style', 'margin-top:8px;');
+    card.appendChild(img);
+    card.appendChild(title);
+    card.appendChild(controlsHost);
+    return card;
   }
 
   // Step 4: Click handler on twc-list-item; report product id, list id, client id
@@ -288,24 +394,30 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    debugLog('dom:ready');
-    const accountId = getAccountIdFromScript();
-    if (!accountId) { debugLog('dom:no_account_id'); return; }
   
-    fetchListJson(accountId)
-      .then(data => {
-        debugLog('dom:update_triggers');
-        updateFavoritesTriggers(data.lists);
-        // After rendering, initialize active states
-        // initListItemStates(accountId);
-        // Fallback/init via S3 cache as well
-        initListItemStatesFromS3(accountId);
-      })
-      .catch(function(err){ debugLog('dom:error', err && err.message ? err.message : err); console.error(err); });
 
-    // Always bind click handlers
-    bindListItemClickHandlers();
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      debugLog('Lists:dom:ready:500');
+      const accountId = getAccountIdFromScript();
+      if (!accountId) { debugLog('dom:no_account_id'); return; }
+
+      fetchListJson(accountId)
+        .then(data => {
+          debugLog('dom:update_triggers');
+          updateFavoritesTriggers(data.lists);
+          // After rendering, initialize active states
+          // initListItemStates(accountId);
+          // Fallback/init via S3 cache as well
+          initListItemStatesFromS3(accountId);
+          // If favorites page, render content
+          renderFavoritesPageFromS3(accountId);
+        })
+        .catch(function(err){ debugLog('dom:error', err && err.message ? err.message : err); console.error(err); });
+
+      // Always bind click handlers
+      bindListItemClickHandlers();
+    }, 800);
   });
 
 
