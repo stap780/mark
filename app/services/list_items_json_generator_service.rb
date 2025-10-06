@@ -59,7 +59,7 @@ class ListItemsJsonGeneratorService
     }
   end
 
-  def s3_file_key(client)
+  def s3_file_key
     "lists/list_#{@account.id}_client_#{@external_client_id}_list_items.json"
   end
 end
