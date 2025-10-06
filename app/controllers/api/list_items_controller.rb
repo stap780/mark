@@ -156,11 +156,15 @@ class Api::ListItemsController < ApplicationController
   end
 
   def serialize_list_item(list_item)
+
+    external_value = list_item.item.varbinds.find_by_varbindable_type("Insale")&.value
+
     {
       id: list_item.id,
-      item_id: list_item.item_id,
+      external_item_id: external_value || '',
       item_type: list_item.item_type,
       created_at: list_item.created_at.iso8601
     }
+    
   end
 end

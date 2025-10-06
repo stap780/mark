@@ -186,6 +186,7 @@
           if (added) {
             // find list_item id by productId via index then delete
             apiGetListItems(accountId, listId, clientId).then(function(resp){
+              debugLog('apiGetListItems =>', resp);
               var items = (resp && resp.items) || [];
               var match = items.find(function(x){ return String(x.item_id) === String(productId); });
               if (!match) { debugLog('lists:remove:not_found'); return; }
