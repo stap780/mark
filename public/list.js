@@ -200,6 +200,47 @@
     }).catch(function(err){ debugLog('initListItemStates:no_client', err && err.message ? err.message : err); });
   }
 
+  // Initialize state using S3 JSON cache per account/client
+  function initListItemStatesFromS3(accountId) {
+    return getClient().then(function(client){
+      var clientId = client && client.id;
+      if (!clientId) return;
+      var url = S3_BASE + '/lists/list_' + accountId + '_client_' + clientId + '_list_items.json';
+      debugLog('initListItemStatesFromS3:url', url);
+      return fetch(url, { credentials: 'omit' })
+        .then(function(r){ if (!r.ok) throw new Error('S3 not available'); return r.json(); })
+        .then(function(data){
+          var listsData = (data && data.lists) || [];
+          var byId = {};
+          listsData.forEach(function(l){ byId[String(l.id)] = l; });
+
+          var hosts = document.querySelectorAll('[data-ui-favorites-trigger-twc]');
+          hosts.forEach(function(host){
+            var productId = host.getAttribute('data-ui-favorites-trigger-twc');
+            var items = host.querySelectorAll('.twc-list-item');
+            items.forEach(function(node){
+              var listId = node.getAttribute('data-list-id');
+              var iconStyle = node.getAttribute('data-icon-style');
+              var iconColor = node.getAttribute('data-icon-color');
+              var listBlock = byId[String(listId)];
+              var present = false;
+              if (listBlock && Array.isArray(listBlock.items)) {
+                present = listBlock.items.some(function(it){ return String(it.external_item_id) === String(productId); });
+              }
+              if (present) {
+                node.setAttribute('data-added', 'true');
+                node.innerHTML = renderIcon(iconStyle, iconColor, true);
+              } else {
+                node.setAttribute('data-added', 'false');
+                node.innerHTML = renderIcon(iconStyle, iconColor, false);
+              }
+            });
+          });
+        })
+        .catch(function(err){ debugLog('initListItemStatesFromS3:error', err && err.message ? err.message : err); });
+    }).catch(function(err){ debugLog('initListItemStatesFromS3:no_client', err && err.message ? err.message : err); });
+  }
+
   // Step 4: Click handler on twc-list-item; report product id, list id, client id
   function bindListItemClickHandlers() {
     document.addEventListener('click', function(evt) {
@@ -257,7 +298,9 @@
         debugLog('dom:update_triggers');
         updateFavoritesTriggers(data.lists);
         // After rendering, initialize active states
-        initListItemStates(accountId);
+        // initListItemStates(accountId);
+        // Fallback/init via S3 cache as well
+        initListItemStatesFromS3(accountId);
       })
       .catch(function(err){ debugLog('dom:error', err && err.message ? err.message : err); console.error(err); });
 

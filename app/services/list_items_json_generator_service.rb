@@ -12,7 +12,6 @@ class ListItemsJsonGeneratorService
     return unless client
 
     payload = build_payload(client)
-    key = s3_file_key(client)
 
     io = StringIO.new(JSON.pretty_generate(payload))
     if insale.client_list_items_file.attached?
@@ -20,11 +19,10 @@ class ListItemsJsonGeneratorService
     end
     insale.client_list_items_file.attach(
       io: io,
-      filename: File.basename(key),
-      key: key,
+      filename: "list_#{@account.id}_client_#{@external_client_id}_list_items.json",
+      key: s3_file_key,
       content_type: "application/json"
     )
-    key
   end
 
   private
@@ -65,5 +63,3 @@ class ListItemsJsonGeneratorService
     "lists/list_#{@account.id}_client_#{@external_client_id}_list_items.json"
   end
 end
-
-
