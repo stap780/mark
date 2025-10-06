@@ -52,6 +52,7 @@ gem "insales_api", github: "stap780/insales_api"
 gem "nokogiri"
 
 gem "liquid"
+gem 'rack-cors'
 gem "ransack"
 gem "will_paginate"
 
