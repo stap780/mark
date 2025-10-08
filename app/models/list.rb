@@ -16,14 +16,14 @@ class List < ApplicationRecord
     broadcast_prepend_to [account, :lists],
                         target: [account, :lists],
                         partial: "lists/list",
-                        locals: { list: self }
+                        locals: { list: self, current_account: account }
   end
 
   after_update_commit do
     broadcast_replace_to [account, :lists],
                         target: dom_id(self),
                         partial: "lists/list",
-                        locals: { list: self }
+                        locals: { list: self, current_account: account }
   end
 
   after_destroy_commit do

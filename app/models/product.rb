@@ -68,8 +68,16 @@ class Product < ApplicationRecord
     # Find or create variant via varbind (scoped to integration)
     variant = nil
     if ext_variant_id
-      vbind = Varbind.find_or_create_by!(varbindable: rec, record_type: "Variant", value: ext_variant_id)
-      variant = vbind.record
+      # First try to find existing variant by varbind
+      vbind = Varbind.find_by(varbindable: rec, record_type: "Variant", value: ext_variant_id)
+      variant = vbind&.record
+
+      # If no variant found, create one and then create the varbind
+      unless variant
+        variant = variants.first || variants.build
+        variant.save! if variant.new_record?
+        Varbind.create!(record: variant, varbindable: rec, value: ext_variant_id)
+      end
     end
     variant ||= variants.first || variants.build
 
