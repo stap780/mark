@@ -13,6 +13,7 @@
   </div>
   <%= turbo_frame_tag 'products' do %>
     <%= render @products %>
+    <%= render "shared/paginate", f: @products %>
   <% end %>
 </div>
 

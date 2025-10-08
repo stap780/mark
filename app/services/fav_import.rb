@@ -1,16 +1,15 @@
-require 'csv'
-require 'open-uri'
-
-
+# Imports favorites from a CSV available at `csv_url` into the given account.
+# Expected headers (case-insensitive):
+# clientid, name, surname, email, phone, insid, title
+# - clientid -> Varbind on Client (value)
+# - insid    -> Varbind on Product (value)
+# Missing entities are auto-created with provided attributes.
+# Use => FavImport.call(account: Account.find(2), csv_url: 'https://example.com/favorites.csv')
+# 
+require "csv"
+require "open-uri"
 
 class FavImport
-  # Imports favorites from a CSV available at `csv_url` into the given account.
-  # Expected headers (case-insensitive):
-  # clientid, name, surname, email, phone, insid, title
-  # - clientid -> Varbind on Client (value)
-  # - insid    -> Varbind on Product (value)
-  # Missing entities are auto-created with provided attributes.
-  # Use => FavImport.call(account: Account.find(2), csv_url: 'https://example.com/favorites.csv')
   def self.call(account:, csv_url:, list_name: "favorite", integration: nil)
     new(account: account, csv_url: csv_url, list_name: list_name, integration: integration).call
   end
@@ -64,7 +63,7 @@ class FavImport
 
   def find_or_create_client(clientid:, name:, surname:, email:, phone:)
     # Lookup by varbind value
-    bind = Varbind.find_by(varbindable: @varbindable, record_type: "Client", value: clientid)
+    bind = Varbind.where(varbindable: @varbindable).find_by(record_type: "Client", value: clientid)
     client = bind&.record
     return client if client
 
@@ -74,17 +73,17 @@ class FavImport
       email: email.presence,
       phone: phone.presence
     )
-    Varbind.find_or_create_by!(record: client, varbindable: @varbindable, value: clientid)
+    Varbind.where(varbindable: @varbindable).find_or_create_by!(record: client, value: clientid)
     client
   end
 
   def find_or_create_product(insid:, title:)
-    bind = Varbind.find_by(varbindable: @varbindable, record_type: "Product", value: insid)
+    bind = Varbind.where(varbindable: @varbindable).find_by(record_type: "Product", value: insid)
     product = bind&.record
     return product if product
 
     product = @account.products.create!(title: title.presence || "Product #{insid}")
-    Varbind.find_or_create_by!(record: product, varbindable: @varbindable, value: insid)
+    Varbind.where(varbindable: @varbindable).find_or_create_by!(record: product, value: insid)
     product
   end
 

@@ -19,6 +19,7 @@
     </div>
     <%= turbo_frame_tag dom_id(current_account, :clients) do %>
       <%= render @clients %>
+      <%= render "shared/paginate", f: @clients %>
     <% end %>
   </div>
 </div>

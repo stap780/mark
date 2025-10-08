@@ -2,7 +2,9 @@ class ClientsController < ApplicationController
   before_action :set_client, only: %i[ show edit update destroy ]
 
   def index
-    @clients = current_account.clients.order(created_at: :desc)
+    @search = current_account.swatch_groups.ransack(params[:q])
+    @search.sorts = "id desc" if @search.sorts.empty?
+    @clients = @search.result(distinct: true).paginate(page: params[:page], per_page: 50)
   end
 
   def show

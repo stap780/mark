@@ -4,7 +4,10 @@ class ProductsController < ApplicationController
 
 
   def index
-    @products = current_account.products.includes(:variants).order(:title)
+    # @products = current_account.products.includes(:variants).order(:title)
+    @search = current_account.products.ransack(params[:q])
+    @search.sorts = "id desc" if @search.sorts.empty?
+    @products = @search.result(distinct: true).paginate(page: params[:page], per_page: 50)
   end
 
   def show
