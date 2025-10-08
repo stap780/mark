@@ -28,9 +28,9 @@
   }
 
   function fetchListJson(accountId) {
-    const jsonUrl = `${S3_BASE}/lists/list_${accountId}.json`;
+    const jsonUrl = `${S3_BASE}/lists/list_${accountId}.json?t=${Date.now()}`;
     debugLog('fetchListJson:url', jsonUrl);
-    return fetch(jsonUrl, { credentials: 'omit' }).then(function(res) {
+    return fetch(jsonUrl, { credentials: 'omit', cache: 'no-cache' }).then(function(res) {
       debugLog('fetchListJson:status', res.status);
       if (!res.ok) throw new Error('Failed to load list json');
       return res.json();
@@ -205,9 +205,9 @@
     return getClient().then(function(client){
       var clientId = client && client.id;
       if (!clientId) return;
-      var url = S3_BASE + '/lists/list_' + accountId + '_client_' + clientId + '_list_items.json';
+      var url = S3_BASE + '/lists/list_' + accountId + '_client_' + clientId + '_list_items.json?t=' + Date.now();
       debugLog('initListItemStatesFromS3:url', url);
-      return fetch(url, { credentials: 'omit' })
+      return fetch(url, { credentials: 'omit', cache: 'no-cache' })
         .then(function(r){ if (!r.ok) throw new Error('S3 not available'); return r.json(); })
         .then(function(data){
           var listsData = (data && data.lists) || [];
@@ -251,9 +251,9 @@
     return getClient().then(function(client){
       var clientId = client && client.id;
       if (!clientId) return;
-      var url = S3_BASE + '/lists/list_' + accountId + '_client_' + clientId + '_list_items.json';
+      var url = S3_BASE + '/lists/list_' + accountId + '_client_' + clientId + '_list_items.json?t=' + Date.now();
       debugLog('favorites:page:url', url);
-      return fetch(url, { credentials: 'omit' })
+      return fetch(url, { credentials: 'omit', cache: 'no-cache' })
         .then(function(r){ if (!r.ok) throw new Error('S3 not available'); return r.json(); })
         .then(function(data){
           var listsData = (data && data.lists) || [];
@@ -287,7 +287,7 @@
                       var card = buildMiniCard(p, productId);
                       grid.appendChild(card);
                       // Inject list controls into each card
-                      var host = card.querySelector('[data-ui-favorites-trigger]');
+                      var host = card.querySelector('[data-ui-favorites-trigger-twc]');
                       if (host) {
                         var container = createListsContainer(listsData, { attach: false });
                         host.appendChild(container);
@@ -302,11 +302,31 @@
                           var isThisList = String(lid) === String(block.id);
                           var added = isThisList ? present : false;
                           ctrl.setAttribute('data-added', added ? 'true' : 'false');
-                          ctrl.innerHTML = renderIcon(iconStyle, iconColor, added);
+                          if (added) {
+                            ctrl.innerHTML = renderIcon(iconStyle, iconColor, added);
+                          } else {
+                            ctrl.setAttribute('style', 'display:none;');
+                          }
                         });
                         // Remove card if not added to this block list
                         var currentCtrl = host.querySelector('.twc-list-item[data-list-id="' + String(block.id) + '"]');
                         if (!(currentCtrl && currentCtrl.getAttribute('data-added') === 'true')) {
+                          // Call API to remove item from this list
+                          getClient().then(function(client){
+                            var clientId = client && client.id;
+                            if (!clientId) return;
+                            apiGetListItems(accountId, block.id, clientId).then(function(resp){
+                              var items = (resp && resp.items) || [];
+                              var match = items.find(function(x){ return String(x.item_id) === String(productId); });
+                              if (match) {
+                                apiRemoveItem(accountId, block.id, match.id).then(function(){
+                                  debugLog('favorites:auto_remove', { list_item_id: match.id, product_id: productId });
+                                  // Update header after removal
+                                  updateHeaderInfo(accountId);
+                                }).catch(function(err){ debugLog('favorites:auto_remove:error', err); });
+                              }
+                            }).catch(function(err){ debugLog('favorites:auto_remove:get_error', err); });
+                          }).catch(function(err){ debugLog('favorites:auto_remove:no_client', err); });
                           card.remove();
                         }
                       }
@@ -327,7 +347,7 @@
     var card = document.createElement('a');
     var url = product && (product.url || product.link || ('/products/' + (product.id || '')));
     card.setAttribute('href', url || '#');
-    card.setAttribute('style', 'display:block;border:1px solid #e5e7eb;border-radius:8px;padding:10px;text-decoration:none;color:#111827;background:#fff;');
+    card.setAttribute('style', 'display:flex;flex-direction:column;gap:8px;height:100%;border:1px solid #e5e7eb;border-radius:8px;padding:10px;text-decoration:none;color:#111827;background:#fff;');
     card.className = 'list-item';
     var imgUrl = (product.first_image && product.first_image.large_url) || (product.images && product.images[0] && product.images[0].large_url) || product.image || '';
     var img = document.createElement('img');
@@ -339,18 +359,85 @@
     title.setAttribute('style', 'margin-top:8px;font-size:14px;line-height:1.3;');
     // Controls host for lists buttons
     var controlsHost = document.createElement('div');
-    controlsHost.setAttribute('data-ui-favorites-trigger', externalProductId || (product && product.id) || '');
-    controlsHost.setAttribute('style', 'margin-top:8px;');
+    controlsHost.setAttribute('data-ui-favorites-trigger-twc', externalProductId || (product && product.id) || '');
+    controlsHost.setAttribute('style', 'margin-top:auto;');
     card.appendChild(img);
     card.appendChild(title);
     card.appendChild(controlsHost);
     return card;
   }
 
+  // Update header info with list counts from S3
+  function updateHeaderInfo(accountId) {
+    return new Promise(function(resolve, reject) {
+      setTimeout(function() {
+        getClient().then(function(client){
+          var clientId = client && client.id;
+          if (!clientId) return resolve();
+          var url = S3_BASE + '/lists/list_' + accountId + '_client_' + clientId + '_list_items.json?t=' + Date.now();
+          debugLog('updateHeaderInfo:url', url);
+          return fetch(url, { credentials: 'omit', cache: 'no-cache' })
+        .then(function(r){ if (!r.ok) throw new Error('S3 not available'); return r.json(); })
+        .then(function(data){
+          var listsData = (data && data.lists) || [];
+          debugLog('updateHeaderInfo:data', listsData);
+          
+          // Find the default header icon
+          var headerContainer = document.querySelector('.header__favorite');
+          if (!headerContainer) {
+            debugLog('updateHeaderInfo:header_not_found');
+            return;
+          }
+          headerContainer.innerHTML = '';
+          headerContainer.setAttribute('style', 'display:flex;gap:5px;');
+          
+          // Clear existing custom icons
+          var existingCustom = headerContainer.querySelectorAll('.twc-header-list-item');
+          existingCustom.forEach(function(el) { el.remove(); });
+          
+          // Add custom list icons
+          var totalItems = 0;
+          listsData.forEach(function(list) {
+            var itemCount = (list.items || []).length;
+            totalItems += itemCount;
+            if (itemCount === 0) return; // Skip empty lists
+            
+            var listIcon = document.createElement('span');
+            listIcon.setAttribute('class', 'twc-header-list-item');
+            listIcon.setAttribute('style', 'position:relative;margin-left:8px;display:block;width:24px;');
+            listIcon.setAttribute('data-list-id', String(list.id));
+            listIcon.setAttribute('data-list-name', list.name || '');
+            listIcon.setAttribute('data-icon-style', list.icon_style || 'icon_one');
+            listIcon.setAttribute('data-icon-color', list.icon_color || '#999999');
+            
+            var iconHtml = renderIcon(list.icon_style || 'icon_one', list.icon_color || '#999999', true);
+            listIcon.innerHTML = iconHtml;
+            
+            // Add badge with count
+            var badge = document.createElement('span');
+            badge.setAttribute('class', 'header__control-bage twc-list-badge');
+            badge.setAttribute('style', 'position:absolute;top:-8px;right:-8px;background:#ff4444;color:white;border-radius:50%;min-width:18px;height:18px;font-size:11px;display:flex;align-items:center;justify-content:center;padding:0 4px;');
+            badge.textContent = String(itemCount);
+            listIcon.appendChild(badge);
+            
+            headerContainer.appendChild(listIcon);
+          });
+          
+          debugLog('updateHeaderInfo:updated', { lists_count: listsData.length, total_items: totalItems });
+          resolve();
+        })
+        .catch(function(err){ debugLog('updateHeaderInfo:error', err && err.message ? err.message : err); reject(err); });
+        }).catch(function(err){ debugLog('updateHeaderInfo:no_client', err && err.message ? err.message : err); reject(err); });
+      }, 300);
+    });
+  }
+
   // Step 4: Click handler on twc-list-item; report product id, list id, client id
   function bindListItemClickHandlers() {
     document.addEventListener('click', function(evt) {
       if (!evt.target || !evt.target.classList || !evt.target.classList.contains('twc-list-item')) return;
+      // Prevent anchor navigation when clicking controls inside cards
+      evt.preventDefault();
       var itemNode = evt.target;
       var triggerHost = itemNode.closest('[data-ui-favorites-trigger-twc]');
       if (!triggerHost) return;
@@ -377,6 +464,13 @@
                 itemNode.setAttribute('data-added', 'false');
                 itemNode.innerHTML = renderIcon(iconStyle, iconColor, false);
                 debugLog('lists:removed', { list_item_id: match.id });
+                // If on favorites page, remove the enclosing product card from the grid
+                if (/favorites/i.test(window.location.href)) {
+                  var card = itemNode.closest('.list-item');
+                  if (card && card.parentNode) { card.parentNode.removeChild(card); }
+                }
+                // Update header info after remove
+                updateHeaderInfo(accountId);
               });
             }).catch(function(err){ debugLog('lists:remove:error', err && err.message ? err.message : err); });
           } else {
@@ -384,6 +478,8 @@
               itemNode.setAttribute('data-added', 'true');
               itemNode.innerHTML = renderIcon(iconStyle, iconColor, true);
               debugLog('lists:added', resp);
+              // Update header info after add
+              updateHeaderInfo(accountId);
             }).catch(function(err){ debugLog('lists:add:error', err && err.message ? err.message : err); });
           }
         })
@@ -410,6 +506,8 @@
           // initListItemStates(accountId);
           // Fallback/init via S3 cache as well
           initListItemStatesFromS3(accountId);
+          // Update header info
+          updateHeaderInfo(accountId);
           // If favorites page, render content
           renderFavoritesPageFromS3(accountId);
         })
@@ -422,5 +520,3 @@
 
 
 })();
-
-

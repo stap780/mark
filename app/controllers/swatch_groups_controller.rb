@@ -173,7 +173,18 @@ class SwatchGroupsController < ApplicationController
       # Create varbind for product (group_id)
       Varbind.find_or_create_by!(record: product, varbindable: (insale || group), value: group_id)
 
-      sgp.update_column(:product_id, product.id)
+      # Safely set product_id, but skip if it would violate unique index (swatch_group_id, product_id)
+      begin
+        # Skip if target pair already exists on another row
+        if SwatchGroupProduct.exists?(swatch_group_id: group.id, product_id: product.id)
+          Rails.logger.info("[resolve_products_for_nested] skip duplicate pair sg=#{group.id} product=#{product.id} for sgp=#{sgp.id}")
+          next
+        end
+        sgp.update!(product_id: product.id)
+      rescue ActiveRecord::RecordNotUnique
+        Rails.logger.warn("[resolve_products_for_nested] unique violation for sg=#{group.id} product=#{product.id} on sgp=#{sgp.id}; skipping update")
+        next
+      end
     end
   end
 end
