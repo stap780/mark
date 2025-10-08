@@ -23,11 +23,12 @@ class ClientsController < ApplicationController
 
     respond_to do |format|
       if @client.save
-        flash.now[:success] = t('.success', default: 'Client was successfully created')
+        message = "Client was successfully created"
+        flash.now[:success] = t('.success', default: message)
         format.turbo_stream {
           render turbo_stream: turbo_close_offcanvas_flash
         }
-        format.html { redirect_to account_client_path(current_account, @client), notice: "Client was successfully created." }
+        format.html { redirect_to account_client_path(current_account, @client), notice: message }
         format.json { render :show, status: :created, location: account_client_path(current_account, @client) }
       else
         format.html { render :new, status: :unprocessable_entity }
