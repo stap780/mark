@@ -5,18 +5,21 @@ module Varbindable
     has_many :varbinds, as: :record, dependent: :destroy
   end
 
-  # Default route helpers using explicit routing
+  # Default route helpers using polymorphic routing
+  # def show_path
+  #   case self
+  #   when Client
+  #     Rails.application.routes.url_helpers.account_client_path(account, self)
+  #   when Product
+  #     Rails.application.routes.url_helpers.account_product_path(account, self)
+  #   when Variant
+  #     Rails.application.routes.url_helpers.account_product_variant_path(product.account, product, self)
+  #   else
+  #     Rails.application.routes.url_helpers.polymorphic_path(polymorphic_stack(self))
+  #   end
+  # end
   def show_path
-    case self
-    when Client
-      Rails.application.routes.url_helpers.account_client_path(account, self)
-    when Product
-      Rails.application.routes.url_helpers.account_product_path(account, self)
-    when Variant
-      Rails.application.routes.url_helpers.account_product_variant_path(product.account, product, self)
-    else
-      Rails.application.routes.url_helpers.polymorphic_path(polymorphic_stack(self))
-    end
+    Rails.application.routes.url_helpers.polymorphic_path(polymorphic_stack(self))
   end
 
   def varbinds_path

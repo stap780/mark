@@ -25,14 +25,14 @@ class Client < ApplicationRecord
     broadcast_prepend_to [self.account, :clients],
                         target: [self.account, :clients],
                         partial: "clients/client",
-                        locals: { client: self }
+                        locals: { client: self, current_account: self.account }
   end
 
   after_update_commit do
     broadcast_replace_to [self.account, :clients],
                         target: dom_id(self),
                         partial: "clients/client",
-                        locals: { client: self }
+                        locals: { client: self, current_account: self.account }
   end
 
   after_destroy_commit do
