@@ -4,8 +4,11 @@ class Product < ApplicationRecord
 
   belongs_to :account
   has_many :variants, dependent: :destroy
+  accepts_nested_attributes_for :variants, allow_destroy: true
   has_many :swatch_group_products
   has_many :swatch_groups, through: :swatch_group_products
+
+  before_destroy :ensure_not_used_in_swatch_groups
 
   validates :title, presence: true
 
@@ -21,9 +24,14 @@ class Product < ApplicationRecord
     { product: self, varbind: varbind }
   end
 
-  accepts_nested_attributes_for :variants, allow_destroy: true
+  def self.ransackable_attributes(auth_object = nil)
+    Product.attribute_names
+  end
 
-  before_destroy :ensure_not_used_in_swatch_groups
+  def self.ransackable_associations(auth_object = nil)
+    %w[variants]
+  end
+
 
   def insale_api_update(integration: nil)
     rec = integration || account.insales.first

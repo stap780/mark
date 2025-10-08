@@ -40,7 +40,13 @@ class Client < ApplicationRecord
   end
 
 
+  def self.ransackable_attributes(auth_object = nil)
+    Client.attribute_names
+  end
 
+  def self.ransackable_associations(auth_object = nil)
+    %w[list_items]
+  end
 
 
 
