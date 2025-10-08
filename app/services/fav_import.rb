@@ -4,30 +4,31 @@
 # - clientid -> Varbind on Client (value)
 # - insid    -> Varbind on Product (value)
 # Missing entities are auto-created with provided attributes.
-# Use => FavImport.call(account: Account.find(2), csv_url: 'https://example.com/favorites.csv')
+# Use => FavImport.call(account: Account.find(2), csv_url: 'https://example.com/favorites.csv', limit: 100)
 # FavImport.call(account: Account.find(5), csv_url: 'https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23/clients_favorites_%20insales538988.csv')
 # 
 require "csv"
 require "open-uri"
 
 class FavImport
-  def self.call(account:, csv_url:, list_name: "favorite", integration: nil)
+  def self.call(account:, csv_url:, list_name: "favorite", integration: nil, limit: nil)
     new(account: account, csv_url: csv_url, list_name: list_name, integration: integration).call
   end
 
-  def initialize(account:, csv_url:, list_name:, integration: nil)
+  def initialize(account:, csv_url:, list_name:, integration: nil, limit: nil)
     @account = account
     @csv_url = csv_url
     @list_name = list_name.to_s
     # Prefer provided integration record (e.g., Insale) for varbinds; fallback to account
     @varbindable = integration || @account.insales.first || @account
+    @limit = limit
   end
 
   def call
     ensure_list!
     io = URI.open(@csv_url)
     CSV.new(io, headers: true, header_converters: :symbol).each.with_index do |row, idx|
-      break if idx >= 100
+      break if @limit && idx >= @limit
       import_row(row)
     end
     true

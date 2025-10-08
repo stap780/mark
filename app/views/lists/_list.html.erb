@@ -10,7 +10,7 @@
   </div>
   <div>
     <%= link_to account_list_path(current_account, list),
-      data: { turbo_method: :delete, turbo_confirm: "Delete list?" },
+      data: { turbo_method: :delete, turbo_confirm: "ВНИМАНИЕ !!!! Вместе с листом удаляются позиции клиентов привязанных к нему. Удалить список?" },
       class: "float-right p-2 rounded-md bg-red-300 hover:bg-red-400 flex items-center justify-center" do %>
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
