@@ -25,7 +25,8 @@ class FavImport
   def call
     ensure_list!
     io = URI.open(@csv_url)
-    CSV.new(io, headers: true, header_converters: :symbol).each do |row|
+    CSV.new(io, headers: true, header_converters: :symbol).each.with_index do |row, idx|
+      break if idx >= 100
       import_row(row)
     end
     true
