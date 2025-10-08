@@ -5,6 +5,7 @@
 # - insid    -> Varbind on Product (value)
 # Missing entities are auto-created with provided attributes.
 # Use => FavImport.call(account: Account.find(2), csv_url: 'https://example.com/favorites.csv')
+# FavImport.call(account: Account.find(5), csv_url: 'https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23/clients_favorites_%20insales538988.csv')
 # 
 require "csv"
 require "open-uri"
@@ -53,19 +54,29 @@ class FavImport
 
     return if clientid.blank? || insid.blank?
 
+    Rails.logger.info("[FavImport] Processing row: clientid=#{clientid}, insid=#{insid}, title=#{title}")
+
     client = find_or_create_client(clientid: clientid, name: name, surname: surname, email: email, phone: phone)
+    Rails.logger.info("[FavImport] Client: #{client.id} (#{client.name})")
+
     product = find_or_create_product(insid: insid, title: title)
+    Rails.logger.info("[FavImport] Product: #{product.id} (#{product.title})")
 
     # Idempotent list item for Product
-    ListItem.find_or_create_by!(list: @list, client: client, item: product)
+    list_item = ListItem.find_or_create_by!(list: @list, client: client, item: product)
+    Rails.logger.info("[FavImport] ListItem created: #{list_item.id}")
   rescue => e
     Rails.logger.error("[FavImport] row error: #{e.class} #{e.message}; row=#{row.inspect}")
+    Rails.logger.error("[FavImport] Backtrace: #{e.backtrace.first(5).join("\n")}")
   end
 
   def find_or_create_client(clientid:, name:, surname:, email:, phone:)
     # Lookup by varbind value
-    bind = Varbind.where(varbindable: @varbindable).find_by(record_type: "Client", value: clientid)
+    Rails.logger.info("[FavImport] Looking for client varbind: varbindable=#{@varbindable.class}##{@varbindable.id}, record_type=Client, value=#{clientid}")
+    bind = Varbind.find_by(varbindable: @varbindable, record_type: "Client", value: clientid)
+    Rails.logger.info("[FavImport] Found varbind: #{bind.inspect}")
     client = bind&.record
+    Rails.logger.info("[FavImport] Client from varbind: #{client.inspect}")
     return client if client
 
     client = @account.clients.create!(
@@ -74,17 +85,20 @@ class FavImport
       email: email.presence,
       phone: phone.presence
     )
-    Varbind.where(varbindable: @varbindable).find_or_create_by!(record: client, value: clientid)
+    Varbind.find_or_create_by!(record: client, varbindable: @varbindable, value: clientid)
     client
   end
 
   def find_or_create_product(insid:, title:)
-    bind = Varbind.where(varbindable: @varbindable).find_by(record_type: "Product", value: insid)
+    Rails.logger.info("[FavImport] Looking for product varbind: varbindable=#{@varbindable.class}##{@varbindable.id}, record_type=Product, value=#{insid}")
+    bind = Varbind.find_by(varbindable: @varbindable, record_type: "Product", value: insid)
+    Rails.logger.info("[FavImport] Found varbind: #{bind.inspect}")
     product = bind&.record
+    Rails.logger.info("[FavImport] Product from varbind: #{product.inspect}")
     return product if product
 
     product = @account.products.create!(title: title.presence || "Product #{insid}")
-    Varbind.where(varbindable: @varbindable).find_or_create_by!(record: product, value: insid)
+    Varbind.find_or_create_by!(record: product, varbindable: @varbindable, value: insid)
     product
   end
 
