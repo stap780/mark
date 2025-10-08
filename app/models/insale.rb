@@ -25,7 +25,7 @@ class Insale < ApplicationRecord
     attribute_names
   end
 
-  def s3_url
+  def swatch_s3_url
     "https://s3.timeweb.cloud/#{self.swatch_file.service.bucket.name}/#{self.swatch_file.blob.key}"
   end
 
@@ -171,4 +171,7 @@ class Insale < ApplicationRecord
       [false, ["StandardError #{e}"]]
     end
   end
+
+
+  
 end

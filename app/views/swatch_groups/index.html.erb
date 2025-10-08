@@ -21,7 +21,7 @@
         class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"%>
     <% end %>
     <% if current_account.swatch_groups.exists? && current_account&.insales&.first&.swatch_file&.attached? %>
-      <%= link_to "File", current_account.insales.first.s3_url, 
+      <%= link_to "Swatch file", current_account.insales.first.swatch_s3_url, 
         target: "_blank", 
         rel: "noopener", 
         class: "inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700" 

@@ -17,6 +17,9 @@ class Variant < ApplicationRecord
   def broadcast_locals_for_varbind(varbind)
     { product: product, variant: self, varbind: varbind }
   end
+
+
+  
 end
 
 
