@@ -15,43 +15,54 @@
       <% grouped.each do |list, items| %>
         <div>
           <h3 style="margin:0 0 8px 0; font-weight:600;">List: <%= list&.name || 'Unnamed list' %> (<%= items.size %>)</h3>
-          <ul style="margin:0; padding-left:0; list-style:none; display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:8px;">
-            <% items.each do |li| %>
-              <% raw_item = li.item %>
-              <% product = if raw_item.is_a?(Product)
-                raw_item
-              elsif raw_item.respond_to?(:product)
-                raw_item.product
-              else
-                nil
-              end %>
+          <table style="width:100%; border-collapse:collapse; border:1px solid #e5e7eb;">
+            <thead>
+              <tr style="background:#f9fafb;">
+                <th style="padding:12px; text-align:left; border-bottom:1px solid #e5e7eb; font-weight:600;">Image</th>
+                <th style="padding:12px; text-align:left; border-bottom:1px solid #e5e7eb; font-weight:600;">Product Title</th>
+                <th style="padding:12px; text-align:right; border-bottom:1px solid #e5e7eb; font-weight:600;">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% items.each do |li| %>
+                <% raw_item = li.item %>
+                <% product = if raw_item.is_a?(Product)
+                  raw_item
+                elsif raw_item.respond_to?(:product)
+                  raw_item.product
+                else
+                  nil
+                end %>
 
-              <% title = product&.title || (raw_item.respond_to?(:title) ? raw_item.title : "Item ##{li.item_id}") %>
-              <% first_variant = product&.variants&.first || (raw_item.respond_to?(:image_link) ? raw_item : nil) %>
-              <% image_link = first_variant&.respond_to?(:image_link) ? first_variant.image_link : nil %>
-              <% price = first_variant&.respond_to?(:price) ? first_variant.price : nil %>
+                <% title = product&.title || (raw_item.respond_to?(:title) ? raw_item.title : "Item ##{li.item_id}") %>
+                <% first_variant = product&.variants&.first || (raw_item.respond_to?(:image_link) ? raw_item : nil) %>
+                <% image_link = first_variant&.respond_to?(:image_link) ? first_variant.image_link : nil %>
+                <% price = first_variant&.respond_to?(:price) ? first_variant.price : nil %>
 
-              <li style="display:flex; align-items:center; gap:10px; border:1px solid #e5e7eb; border-radius:8px; padding:8px; background:#fff;">
-                <div style="width:52px; height:52px; flex:0 0 52px; border-radius:6px; overflow:hidden; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
-                  <% if image_link.present? %>
-                    <img src="<%= image_link %>" alt="<%= title %>" style="width:100%; height:100%; object-fit:cover; display:block;" />
-                  <% else %>
-                    <span style="font-size:10px; color:#9ca3af;">no image</span>
-                  <% end %>
-                </div>
-                <div style="display:flex; flex-direction:column; min-width:0;">
-                  <div style="font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                    <%= title %>
-                  </div>
-                  <% if price.present? %>
-                    <div style="color:#374151; font-size:13px; margin-top:2px;">
-                      <%= number_to_currency(price) %>
+                <tr style="border-bottom:1px solid #f3f4f6;">
+                  <td style="padding:12px; border-bottom:1px solid #f3f4f6;">
+                    <div style="width:60px; height:60px; border-radius:6px; overflow:hidden; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
+                      <% if image_link.present? %>
+                        <img src="<%= image_link %>" alt="<%= title %>" style="width:100%; height:100%; object-fit:cover; display:block;" />
+                      <% else %>
+                        <span style="font-size:10px; color:#9ca3af;">no image</span>
+                      <% end %>
                     </div>
-                  <% end %>
-                </div>
-              </li>
-            <% end %>
-          </ul>
+                  </td>
+                  <td style="padding:12px; border-bottom:1px solid #f3f4f6; font-weight:500;">
+                    <%= title %>
+                  </td>
+                  <td style="padding:12px; border-bottom:1px solid #f3f4f6; text-align:right;">
+                    <% if price.present? %>
+                      <%= number_to_currency(price) %>
+                    <% else %>
+                      <span style="color:#9ca3af;">—</span>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
         </div>
       <% end %>
     <% end %>

@@ -1,7 +1,7 @@
 <div class="flex items-center justify-between mb-4">
   <h1 class="text-xl font-semibold">Products</h1>
   <div class="flex space-x-2">
-    <%= form_with url: account_products_path(current_account), method: :get, local: true, class: "flex items-center space-x-2" do |f| %>
+    <%= search_form_for @search, url: account_products_path(current_account), method: :get, html: { class: "flex items-center space-x-2" } do |f| %>
       <%= f.label :title_cont, "Search by name", class: "sr-only" %>
       <%= f.search_field :title_cont, value: params.dig(:q, :title_cont), placeholder: "Search by name...", class: "px-2 py-1 border rounded" %>
       <%= f.submit "Search", class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
