@@ -2,6 +2,21 @@
   
   const S3_BASE = 'https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23';
   let DEBUG = false;
+  
+  // S3 URL builders
+  function buildS3AccountListsUrl(accountId) {
+    return S3_BASE + '/lists/list_' + accountId + '.json';
+  }
+  function buildS3ClientListItemsUrl(accountId, clientId) {
+    return S3_BASE + '/lists/list_' + accountId + '_client_' + clientId + '_list_items.json';
+  }
+  
+  // Version logging
+  console.log('[list][v_0.2][loaded]');
+  
+  // Immediate debug check
+  console.log('[list][debug] Script loaded, DEBUG:', DEBUG);
+  // console.log('[list][debug] Document ready state:', document.readyState);
 
   function debugLog(){
     if (!DEBUG) return;
@@ -10,25 +25,32 @@
 
   function getAccountIdFromScript() {
     const scripts = document.getElementsByTagName('script');
+    console.log('[list][debug] Scanning', scripts.length, 'scripts for list.js');
     for (let i = 0; i < scripts.length; i++) {
       const src = scripts[i].getAttribute('src') || '';
+      // console.log('[list][debug] Script', i, ':', src);
       if (src.includes('list.js')) {
         try {
           const url = new URL(src, window.location.origin);
           const id = url.searchParams.get('id');
           const dbg = url.searchParams.get('debug');
-          if (dbg === '1' || dbg === 'true') DEBUG = true;
+          // console.log('[list][debug] Found list.js with id:', id, 'debug:', dbg);
+          if (dbg === '1' || dbg === 'true') {
+            DEBUG = true;
+            console.log('[list][debug] DEBUG mode ENABLED');
+          }
           if (id) return id;
         } catch (e) {
-          // ignore
+          console.log('[list][debug] Error parsing URL:', e);
         }
       }
     }
+    console.log('[list][debug] No list.js script found or no account ID');
     return null;
   }
 
   function fetchListJson(accountId) {
-    const jsonUrl = `${S3_BASE}/lists/list_${accountId}.json?t=${Date.now()}`;
+    const jsonUrl = buildS3AccountListsUrl(accountId) + `?t=${Date.now()}`;
     debugLog('fetchListJson:url', jsonUrl);
     return fetch(jsonUrl, { credentials: 'omit', cache: 'no-cache' }).then(function(res) {
       debugLog('fetchListJson:status', res.status);
@@ -205,7 +227,7 @@
     return getClient().then(function(client){
       var clientId = client && client.id;
       if (!clientId) return;
-      var url = S3_BASE + '/lists/list_' + accountId + '_client_' + clientId + '_list_items.json?t=' + Date.now();
+      var url = buildS3ClientListItemsUrl(accountId, clientId) + '?t=' + Date.now();
       debugLog('initListItemStatesFromS3:url', url);
       return fetch(url, { credentials: 'omit', cache: 'no-cache' })
         .then(function(r){ if (!r.ok) throw new Error('S3 not available'); return r.json(); })
@@ -228,15 +250,15 @@
               if (listBlock && Array.isArray(listBlock.items)) {
                 present = listBlock.items.some(function(it){ return String(it.external_item_id) === String(productId); });
               }
-              debugLog('S3:state', { listId: listId, productId: productId, present: present, items_len: (listBlock && listBlock.items ? listBlock.items.length : 0) });
+              // debugLog('S3:state', { listId: listId, productId: productId, present: present, items_len: (listBlock && listBlock.items ? listBlock.items.length : 0) });
               if (present) {
                 node.setAttribute('data-added', 'true');
                 node.innerHTML = renderIcon(iconStyle, iconColor, true);
-                debugLog('S3:apply', 'active', { listId: listId, productId: productId });
+                // debugLog('S3:apply', 'active', { listId: listId, productId: productId });
               } else {
                 node.setAttribute('data-added', 'false');
                 node.innerHTML = renderIcon(iconStyle, iconColor, false);
-                debugLog('S3:apply', 'inactive', { listId: listId, productId: productId });
+                // debugLog('S3:apply', 'inactive', { listId: listId, productId: productId });
               }
             });
           });
@@ -251,15 +273,23 @@
     return getClient().then(function(client){
       var clientId = client && client.id;
       if (!clientId) return;
-      var url = S3_BASE + '/lists/list_' + accountId + '_client_' + clientId + '_list_items.json?t=' + Date.now();
+      var url = buildS3ClientListItemsUrl(accountId, clientId) + '?t=' + Date.now();
       debugLog('favorites:page:url', url);
       return fetch(url, { credentials: 'omit', cache: 'no-cache' })
         .then(function(r){ if (!r.ok) throw new Error('S3 not available'); return r.json(); })
         .then(function(data){
           var listsData = (data && data.lists) || [];
           debugLog('favorites:page:data', listsData);
-          var main = document.querySelector('main') || document.body;
-          if (main) { main.innerHTML = ''; }
+          var main = document.querySelector('.lists-wrapper');
+          debugLog('favorites:page:main_selector', { found: !!main, selector: '.lists-wrapper' });
+          if (!main) {
+            main = document.querySelector('main');
+            debugLog('favorites:page:main_selector', { found: !!main, selector: 'main' });
+          }
+          if (main) { 
+            debugLog('favorites:page:main_clearing', { main: main });
+            main.innerHTML = ''; 
+          }
           listsData.forEach(function(block){
             var ids = (block.items || []).map(function(it){ return it.external_item_id; }).filter(Boolean);
             if (!ids.length) return;
@@ -367,68 +397,89 @@
     return card;
   }
 
-  // Update header info with list counts from S3
+  // Helper function to create list icon element
+  function createListIconElement(list, itemCount) {
+    var listIcon = document.createElement('span');
+    listIcon.setAttribute('class', 'twc-header-list-item');
+    listIcon.setAttribute('style', 'position:relative;margin-left:8px;display:block;width:24px;');
+    listIcon.setAttribute('data-list-id', String(list.id));
+    listIcon.setAttribute('data-list-name', list.name || '');
+    listIcon.setAttribute('data-icon-style', list.icon_style || 'icon_one');
+    listIcon.setAttribute('data-icon-color', list.icon_color || '#999999');
+    
+    var iconHtml = renderIcon(list.icon_style || 'icon_one', list.icon_color || '#999999', true);
+    listIcon.innerHTML = iconHtml;
+    
+    // Add badge with count
+    var badge = document.createElement('span');
+    badge.setAttribute('class', 'header__control-bage twc-list-badge');
+    badge.setAttribute('style', 'position:absolute;top:-8px;right:-8px;background:#ff4444;color:white;border-radius:50%;min-width:18px;height:18px;font-size:11px;display:flex;align-items:center;justify-content:center;padding:0 4px;');
+    badge.textContent = String(itemCount);
+    listIcon.appendChild(badge);
+    
+    return listIcon;
+  }
+
+  // Helper: delay header update to allow S3 JSON to refresh
+  function delayedHeaderUpdate(accountId, delayMs) {
+    var ms = typeof delayMs === 'number' ? delayMs : 300;
+    setTimeout(function(){ updateHeaderInfo(accountId); }, ms);
+  }
+
+  // Update header info: first render all lists with 0, then update counts if client-specific data is available
   function updateHeaderInfo(accountId) {
-    return new Promise(function(resolve, reject) {
-      setTimeout(function() {
-        getClient().then(function(client){
-          var clientId = client && client.id;
-          if (!clientId) return resolve();
-          var url = S3_BASE + '/lists/list_' + accountId + '_client_' + clientId + '_list_items.json?t=' + Date.now();
-          debugLog('updateHeaderInfo:url', url);
-          return fetch(url, { credentials: 'omit', cache: 'no-cache' })
-        .then(function(r){ if (!r.ok) throw new Error('S3 not available'); return r.json(); })
-        .then(function(data){
-          var listsData = (data && data.lists) || [];
-          debugLog('updateHeaderInfo:data', listsData);
-          
-          // Find the default header icon
-          var headerContainer = document.querySelector('.header__favorite');
-          if (!headerContainer) {
-            debugLog('updateHeaderInfo:header_not_found');
-            return;
-          }
+    return new Promise(function(resolve) {
+      var headerContainer = document.querySelector('.header__favorite');
+      if (!headerContainer) {
+        debugLog('updateHeaderInfo:header_not_found');
+        return resolve();
+      }
+
+      // 1) Render base header with all lists and count 0
+      fetchListJson(accountId)
+        .then(function(baseData){
+          var baseLists = (baseData && baseData.lists) || [];
           headerContainer.innerHTML = '';
           headerContainer.setAttribute('style', 'display:flex;gap:5px;');
-          
-          // Clear existing custom icons
-          var existingCustom = headerContainer.querySelectorAll('.twc-header-list-item');
-          existingCustom.forEach(function(el) { el.remove(); });
-          
-          // Add custom list icons
-          var totalItems = 0;
-          listsData.forEach(function(list) {
-            var itemCount = (list.items || []).length;
-            totalItems += itemCount;
-            if (itemCount === 0) return; // Skip empty lists
-            
-            var listIcon = document.createElement('span');
-            listIcon.setAttribute('class', 'twc-header-list-item');
-            listIcon.setAttribute('style', 'position:relative;margin-left:8px;display:block;width:24px;');
-            listIcon.setAttribute('data-list-id', String(list.id));
-            listIcon.setAttribute('data-list-name', list.name || '');
-            listIcon.setAttribute('data-icon-style', list.icon_style || 'icon_one');
-            listIcon.setAttribute('data-icon-color', list.icon_color || '#999999');
-            
-            var iconHtml = renderIcon(list.icon_style || 'icon_one', list.icon_color || '#999999', true);
-            listIcon.innerHTML = iconHtml;
-            
-            // Add badge with count
-            var badge = document.createElement('span');
-            badge.setAttribute('class', 'header__control-bage twc-list-badge');
-            badge.setAttribute('style', 'position:absolute;top:-8px;right:-8px;background:#ff4444;color:white;border-radius:50%;min-width:18px;height:18px;font-size:11px;display:flex;align-items:center;justify-content:center;padding:0 4px;');
-            badge.textContent = String(itemCount);
-            listIcon.appendChild(badge);
-            
+          baseLists.forEach(function(list){
+            var listIcon = createListIconElement(list, 0);
             headerContainer.appendChild(listIcon);
           });
-          
-          debugLog('updateHeaderInfo:updated', { lists_count: listsData.length, total_items: totalItems });
-          resolve();
+          debugLog('updateHeaderInfo:base_rendered', { lists_count: baseLists.length });
+
+          // 2) Try to update counts using client-specific S3 JSON
+          getClient()
+            .then(function(client){
+              var clientId = client && client.id;
+              if (!clientId) { debugLog('updateHeaderInfo:no_client'); return resolve(); }
+        var url = buildS3ClientListItemsUrl(accountId, clientId) + '?t=' + Date.now();
+              debugLog('updateHeaderInfo:url', url);
+              return fetch(url, { credentials: 'omit', cache: 'no-cache' })
+                .then(function(r){ if (!r.ok) throw new Error('S3 not available'); return r.json(); })
+                .then(function(s3Data){
+                  var listsData = (s3Data && s3Data.lists) || [];
+                  debugLog('updateHeaderInfo:s3_lists', listsData);
+                  // Build map of counts per list id
+                  var countsById = {};
+                  listsData.forEach(function(l){ countsById[String(l.id)] = (l.items || []).length; });
+                  // Update existing badges in header
+                  var icons = headerContainer.querySelectorAll('.twc-header-list-item');
+                  icons.forEach(function(icon){
+                    var lid = icon.getAttribute('data-list-id');
+                    var badge = icon.querySelector('.twc-list-badge');
+                    if (badge) { badge.textContent = String(countsById[lid] || 0); }
+                  });
+                  debugLog('updateHeaderInfo:updated_counts');
+                  resolve();
+                })
+                .catch(function(err){ debugLog('updateHeaderInfo:s3_error', err && err.message ? err.message : err); resolve(); });
+            })
+            .catch(function(err){ debugLog('updateHeaderInfo:getClient_error', err && err.message ? err.message : err); resolve(); });
         })
-        .catch(function(err){ debugLog('updateHeaderInfo:error', err && err.message ? err.message : err); reject(err); });
-        }).catch(function(err){ debugLog('updateHeaderInfo:no_client', err && err.message ? err.message : err); reject(err); });
-      }, 300);
+        .catch(function(err){
+          debugLog('updateHeaderInfo:base_error', err && err.message ? err.message : err);
+          resolve();
+        });
     });
   }
 
@@ -469,8 +520,8 @@
                   var card = itemNode.closest('.list-item');
                   if (card && card.parentNode) { card.parentNode.removeChild(card); }
                 }
-                // Update header info after remove
-                updateHeaderInfo(accountId);
+                // Update header info after remove (delay for S3 refresh)
+                delayedHeaderUpdate(accountId, 300);
               });
             }).catch(function(err){ debugLog('lists:remove:error', err && err.message ? err.message : err); });
           } else {
@@ -478,45 +529,53 @@
               itemNode.setAttribute('data-added', 'true');
               itemNode.innerHTML = renderIcon(iconStyle, iconColor, true);
               debugLog('lists:added', resp);
-              // Update header info after add
-              updateHeaderInfo(accountId);
+              // Update header info after add (delay for S3 refresh)
+              delayedHeaderUpdate(accountId, 300);
             }).catch(function(err){ debugLog('lists:add:error', err && err.message ? err.message : err); });
           }
         })
         .catch(function(){
           debugLog('lists:click:no_client');
-          try { alert('Please register'); } catch(e) {}
+          try { alert('Пожалуйста, зарегистрируйтесь, чтобы добавить товар в список! А ещё вы сможете смотреть свой список на любом устройстве или отправить себе на почту'); } catch(e) {}
         });
     });
   }
 
+  // console.log('[list][debug] About to attach DOMContentLoaded listener');
   
+  // Function to run initialization
+  function runInitialization() {
+    console.log('[list][debug] DOM ready, DEBUG status:', DEBUG);
+    const accountId = getAccountIdFromScript();
+    // console.log('[list][debug] Account ID:', accountId);
+    // if (!accountId) { debugLog('dom:no_account_id'); return; }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-      debugLog('Lists:dom:ready:500');
-      const accountId = getAccountIdFromScript();
-      if (!accountId) { debugLog('dom:no_account_id'); return; }
+    fetchListJson(accountId)
+      .then(data => {
+        debugLog('dom:update_triggers');
+        updateFavoritesTriggers(data.lists);
+        // After rendering, initialize active states
+        // initListItemStates(accountId);
+        // Fallback/init via S3 cache as well
+        initListItemStatesFromS3(accountId);
+        // Update header info
+        updateHeaderInfo(accountId);
+        // If favorites page, render content
+        renderFavoritesPageFromS3(accountId);
+      })
+      .catch(function(err){ debugLog('dom:error', err && err.message ? err.message : err); console.error(err); });
 
-      fetchListJson(accountId)
-        .then(data => {
-          debugLog('dom:update_triggers');
-          updateFavoritesTriggers(data.lists);
-          // After rendering, initialize active states
-          // initListItemStates(accountId);
-          // Fallback/init via S3 cache as well
-          initListItemStatesFromS3(accountId);
-          // Update header info
-          updateHeaderInfo(accountId);
-          // If favorites page, render content
-          renderFavoritesPageFromS3(accountId);
-        })
-        .catch(function(err){ debugLog('dom:error', err && err.message ? err.message : err); console.error(err); });
-
-      // Always bind click handlers
-      bindListItemClickHandlers();
-    }, 800);
-  });
-
+    // Always bind click handlers
+    bindListItemClickHandlers();
+  }
+  
+  // Check if DOM is already loaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', runInitialization);
+  } else {
+    console.log('[list][debug] DOM already loaded, running initialization immediately');
+    runInitialization();
+  }
+  
 
 })();

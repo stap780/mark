@@ -1,5 +1,6 @@
 class List < ApplicationRecord
   include ActionView::RecordIdentifier
+  include AccountScoped
   belongs_to :account
   has_many :list_items, dependent: :destroy
 

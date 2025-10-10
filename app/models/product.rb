@@ -1,6 +1,7 @@
 class Product < ApplicationRecord
   include ActionView::RecordIdentifier
   include Varbindable
+  include AccountScoped
 
   belongs_to :account
   has_many :variants, dependent: :destroy

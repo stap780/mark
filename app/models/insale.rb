@@ -1,5 +1,6 @@
 # Insale < ApplicationRecord
 class Insale < ApplicationRecord
+  include AccountScoped
   belongs_to :account
 
   has_one_attached :swatch_file

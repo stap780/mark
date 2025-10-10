@@ -9,4 +9,5 @@ class Current < ActiveSupport::CurrentAttributes
   # Clear session context if account is being cleared to avoid cross-account leakage
   self.session = nil unless account
   end
+  
 end

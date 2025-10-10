@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  include AccountScoped
+
   belongs_to :account
   has_secure_password
   has_many :sessions, dependent: :destroy

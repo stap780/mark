@@ -32,6 +32,8 @@ class SwatchJsonGeneratorService
             product_page_style: g.product_page_style,
             collection_page_style: g.collection_page_style,
             swatch_image_source: g.swatch_image_source,
+            css_class_product: g.css_class_product,
+            css_class_preview: g.css_class_preview,
             swatches: items.map do |sgp|
               # Get offer_id from product varbinds (not variants)
               offer_id = sgp.product&.varbinds&.find_by(varbindable_type: 'Insale')&.value

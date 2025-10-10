@@ -1,4 +1,6 @@
 class SwatchGroup < ApplicationRecord
+  include AccountScoped
+
   belongs_to :account
   has_many :swatch_group_products, dependent: :destroy
   has_many :products, through: :swatch_group_products

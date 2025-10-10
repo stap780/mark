@@ -1,6 +1,7 @@
 class Client < ApplicationRecord
   include ActionView::RecordIdentifier
   include Varbindable
+  include AccountScoped
 
   belongs_to :account
   has_many :list_items, dependent: :destroy

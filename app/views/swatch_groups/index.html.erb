@@ -5,12 +5,10 @@
       <%= f.label :name_cont, "Search by name", class: "sr-only" %>
       <%= f.search_field :name_cont, value: params.dig(:q, :name_cont), placeholder: "Search by name...", class: "px-2 py-1 border rounded" %>
       <%= f.submit "Search", class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
-      <% if params.dig(:q, :name_cont).present? %>
-        <%= link_to account_swatch_groups_path(current_account), class: "px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 flex items-center", title: "Clear" do %>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        <% end %>
+      <%= link_to account_swatch_groups_path(current_account), class: "px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 flex items-center", title: "Clear" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
       <% end %>
     <% end %>
   </div>

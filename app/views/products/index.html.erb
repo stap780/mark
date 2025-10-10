@@ -1,20 +1,32 @@
 <div class="flex items-center justify-between mb-4">
   <h1 class="text-xl font-semibold">Products</h1>
-  <%= link_to "New", new_account_product_path(current_account), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+  <div class="flex space-x-2">
+    <%= form_with url: account_products_path(current_account), method: :get, local: true, class: "flex items-center space-x-2" do |f| %>
+      <%= f.label :title_cont, "Search by name", class: "sr-only" %>
+      <%= f.search_field :title_cont, value: params.dig(:q, :title_cont), placeholder: "Search by name...", class: "px-2 py-1 border rounded" %>
+      <%= f.submit "Search", class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
+      <%= link_to account_products_path(current_account), class: "px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 flex items-center", title: "Clear" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      <% end %>
+    <% end %>
   </div>
-<%= turbo_stream_from "products" %>
+  <div class="flex space-x-2">
+    <%= link_to "New", new_account_product_path(current_account), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+  </div>
+</div>
+<%= turbo_stream_from [current_account, :products] %>
 <div class="bg-white rounded-lg shadow divide-y">
-  <div class="grid grid-cols-5 gap-4 p-4 font-medium text-gray-700">
+  <div class="grid grid-cols-[100px_80px_1fr_80px_120px] gap-4 p-4 font-medium text-gray-700">
     <div>#</div>
     <div>Image</div>
     <div>Title</div>
     <div>Variants</div>
     <div></div>
   </div>
-  <%= turbo_frame_tag 'products' do %>
+  <%= turbo_frame_tag [current_account, :products] do %>
     <%= render @products %>
     <%= render "shared/paginate", f: @products %>
   <% end %>
 </div>
-
-

@@ -1,5 +1,5 @@
 <% first_variant = product.variants.first %>
-<%= turbo_frame_tag product, class: "grid grid-cols-5 gap-4 p-4 items-center" do %>
+<%= turbo_frame_tag product, class: "grid grid-cols-[100px_80px_1fr_80px_120px] gap-4 p-4 items-center" do %>
   <div><%= product.id %></div>
   <div>
     <% if first_variant&.image_link.present? %>
