@@ -300,6 +300,7 @@
             h2.setAttribute('style', 'font-size:20px;margin:0 0 12px;');
             var grid = document.createElement('div');
             grid.setAttribute('style', 'display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;');
+            grid.setAttribute('class', 'twc-list-cards');
             section.appendChild(h2);
             section.appendChild(grid);
             if (main) { main.appendChild(section); }
@@ -374,26 +375,71 @@
   }
 
   function buildMiniCard(product, externalProductId) {
-    var card = document.createElement('a');
+    var card = document.createElement('div');
     var url = product && (product.url || product.link || ('/products/' + (product.id || '')));
-    card.setAttribute('href', url || '#');
+    // card.setAttribute('href', url || '#');
     card.setAttribute('style', 'display:flex;flex-direction:column;gap:8px;height:100%;border:1px solid #e5e7eb;border-radius:8px;padding:10px;text-decoration:none;color:#111827;background:#fff;');
-    card.className = 'list-item';
+    card.className = 'twc-list-card';
     var imgUrl = (product.first_image && product.first_image.large_url) || (product.images && product.images[0] && product.images[0].large_url) || product.image || '';
+    
+    // Wrap image in twc-list-card-img-wrap
+    var imgWrap = document.createElement('div');
+    imgWrap.className = 'twc-list-card-img-wrap';
+    
     var img = document.createElement('img');
     img.setAttribute('src', imgUrl || '');
     img.setAttribute('alt', product.title || '');
     img.setAttribute('style', 'width:100%;height:140px;object-fit:cover;border-radius:6px;display:block;');
+    
+    imgWrap.appendChild(img);
+    
+    // Wrap title in twc-list-card-title-wrap
+    var titleWrap = document.createElement('div');
+    titleWrap.className = 'twc-list-card-title-wrap';
+    
     var title = document.createElement('div');
     title.textContent = product.title || ('#' + (product.id || ''));
     title.setAttribute('style', 'margin-top:8px;font-size:14px;line-height:1.3;');
+    
+    titleWrap.appendChild(title);
+    
+    // Wrap controls in twc-list-card-controls-wrap
+    var controlsWrap = document.createElement('div');
+    controlsWrap.className = 'twc-list-card-controls-wrap';
+    
     // Controls host for lists buttons
     var controlsHost = document.createElement('div');
     controlsHost.setAttribute('data-ui-favorites-trigger-twc', externalProductId || (product && product.id) || '');
     controlsHost.setAttribute('style', 'margin-top:auto;');
-    card.appendChild(img);
-    card.appendChild(title);
-    card.appendChild(controlsHost);
+    
+    // Price
+    var priceWrap = document.createElement('div');
+    priceWrap.className = 'twc-list-card-price-wrap';
+    
+    var price = document.createElement('div');
+    price.setAttribute('style', 'font-size:16px;font-weight:bold;color:#333;margin-top:8px;');
+    price.textContent = product.price_min ? ('₽' + product.price_min) : '';
+    price.className = 'twc-list-card-price';
+    
+    priceWrap.appendChild(price);
+    
+    // Buy button
+    var buyButtonWrap = document.createElement('div');
+    buyButtonWrap.className = 'twc-list-card-buy-button-wrap';
+    
+    var buyButton = document.createElement('a');
+    buyButton.setAttribute('href', url || '#');
+    buyButton.setAttribute('style', 'display:block;width:100%;padding:8px 12px;background:#007bff;color:white;text-align:center;text-decoration:none;border-radius:4px;font-size:14px;margin-top:8px;');
+    buyButton.textContent = 'Buy';
+    buyButton.className = 'twc-list-card-buy-button';
+    
+    buyButtonWrap.appendChild(buyButton);
+        
+    card.appendChild(imgWrap);
+    card.appendChild(titleWrap);
+    card.appendChild(controlsWrap);
+    card.appendChild(priceWrap);
+    card.appendChild(buyButtonWrap);
     return card;
   }
 
