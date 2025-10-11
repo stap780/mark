@@ -40,6 +40,7 @@ production:
     database: mark_production_queue
     url: <%= ENV["QUEUE_DATABASE_URL"] %>
     migrations_paths: db/queue_migrate
+    pool: 25
   cable:
     <<: *primary_production
     database: mark_production_cable
