@@ -1,6 +1,16 @@
 <% first_variant = product.variants.first %>
-<%= turbo_frame_tag product, class: "grid grid-cols-[100px_80px_1fr_80px_120px] gap-4 p-4 items-center" do %>
+<%= turbo_frame_tag dom_id(product, dom_id(current_account)), class: "grid grid-cols-[50px_40px_80px_1fr_80px_120px] gap-4 p-4 items-center" do %>
   <div><%= product.id %></div>
+  <div>
+  <%= link_to insales_info_account_product_path(current_account, product),
+    data: { turbo_stream: true },
+    class: "p-2 rounded-md bg-blue-300 hover:bg-blue-400 flex items-center justify-center", 
+    title: "Reload from Insales" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+    <% end %>
+  </div>
   <div>
     <% if first_variant&.image_link.present? %>
       <img src="<%= first_variant.image_link %>" alt="" class="h-10 w-10 object-cover rounded" onerror="this.style.display='none'">

@@ -1,5 +1,5 @@
 class ProductsController < ApplicationController
-  before_action :set_product, only: %i[ show edit update destroy ]
+  before_action :set_product, only: %i[ show edit update insales_info destroy ]
   include ActionView::RecordIdentifier
 
 
@@ -37,6 +37,28 @@ class ProductsController < ApplicationController
     end
   end
 
+  def insales_info
+    check  = @product.insale_api_update
+    respond_to do |format|
+      format.turbo_stream do
+        if check
+          flash.now[:success] = t(".success")
+          render turbo_stream: [
+            turbo_stream.replace(dom_id(@product, dom_id(current_account)), 
+                partial: "products/product", 
+                locals: { product: @product, current_account: current_account }),
+            render_turbo_flash
+          ]
+        else
+          flash.now[:notice] = check
+          render turbo_stream: [
+            render_turbo_flash
+          ]
+        end
+      end
+    end
+  end
+
   def destroy
     check_destroy = @product.destroy ? true : false
     if check_destroy == true
@@ -48,7 +70,7 @@ class ProductsController < ApplicationController
       format.turbo_stream do
         if check_destroy == true
           render turbo_stream: [
-            turbo_stream.remove(dom_id(@product)),
+            turbo_stream.remove(dom_id(@product, dom_id(current_account))),
             render_turbo_flash
           ]
         else

@@ -3,7 +3,7 @@
   <div class="flex space-x-2">
     <%= search_form_for @search, url: account_swatch_groups_path(current_account), method: :get, html: { class: "flex items-center space-x-2" } do |f| %>      
       <%= f.label :name_cont, "Search by name", class: "sr-only" %>
-      <%= f.search_field :name_cont, value: params.dig(:q, :name_cont), placeholder: "Search by name...", class: "px-2 py-1 border rounded" %>
+      <%= f.search_field :name_cont, value: params.dig(:q, :name_cont), placeholder: "Search by name...", class: "px-2 py-1 border rounded", style: "width: 350px;" %>
       <%= f.submit "Search", class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
       <%= link_to account_swatch_groups_path(current_account), class: "px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 flex items-center", title: "Clear" do %>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">

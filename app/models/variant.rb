@@ -18,6 +18,9 @@ class Variant < ApplicationRecord
     { product: product, variant: self, varbind: varbind }
   end
 
+  def self.ransackable_attributes(auth_object = nil)
+    Variant.attribute_names
+  end
 
   
 end

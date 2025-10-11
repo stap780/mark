@@ -13,6 +13,19 @@ class Product < ApplicationRecord
 
   validates :title, presence: true
 
+  include ActionView::RecordIdentifier
+
+  after_update_commit do
+    broadcast_replace_to [dom_id(account), :products], 
+        target: dom_id(self, dom_id(account)),
+        partial: "products/product",
+        locals: { product: self, current_account: account }
+  end
+
+  after_destroy_commit do
+    broadcast_remove_to [dom_id(account), :products], target: dom_id(self, dom_id(account))
+  end
+
   def broadcast_target_for_varbinds
     [self, :varbinds]
   end
@@ -75,12 +88,10 @@ class Product < ApplicationRecord
 
       # If no variant found, create one and then create the varbind
       unless variant
-        variant = variants.first || variants.build
-        variant.save! if variant.new_record?
+        variant = variants.create!  # This builds AND saves in one step
         Varbind.create!(record: variant, varbindable: rec, value: ext_variant_id)
       end
     end
-    variant ||= variants.first || variants.build
 
     update_attrs = {}
     update_attrs[:barcode]   = ins_variant.try(:barcode)

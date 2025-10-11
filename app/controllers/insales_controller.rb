@@ -48,7 +48,8 @@ class InsalesController < ApplicationController
   def update
     respond_to do |format|
       if @insale.update(insale_params)
-        flash.now[:success] = t('.success', default: 'Insale was successfully updated')
+        message = t('.success', default: 'Insale was successfully updated')
+        flash.now[:success] = message
         format.turbo_stream { 
           # render turbo_stream: turbo_close_offcanvas_flash + [ turbo_stream.replace([current_account, "insales"], target:  dom_id(@insale), partial: "insales/insale") ]
           render turbo_stream: [
@@ -61,7 +62,7 @@ class InsalesController < ApplicationController
               )
           ]
         }
-        format.html { redirect_to account_insale_url(current_account, @insale), notice: t('.success', default: 'Insale was successfully updated') }
+        format.html { redirect_to account_insale_url(current_account, @insale), notice: message }
         format.json { render :show, status: :ok, location: @insale }
       else
         format.html { render :edit, status: :unprocessable_entity }

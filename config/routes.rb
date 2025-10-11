@@ -53,6 +53,9 @@ Rails.application.routes.draw do
     end
 
     resources :products do
+      member do
+        get :insales_info
+      end
       resources :variants do
         resources :varbinds
       end
