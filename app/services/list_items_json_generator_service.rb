@@ -1,47 +1,38 @@
 class ListItemsJsonGeneratorService
-  def initialize(account_id, external_client_id)
+  def initialize(account_id, external_client_id, client_id)
     @account = Account.find(account_id)
     @external_client_id = external_client_id
+    @client_id = client_id
+    @file_name = "list_#{@account.id}_client_#{@external_client_id}_list_items.json"
   end
 
   def call
     insale = @account.insales.first
     return unless insale
 
-    client = resolve_client_by_external_id(@external_client_id)
+    # client = resolve_client_by_external_id(@external_client_id)
+    client = @account.clients.find(@client_id)
     return unless client
 
     payload = build_payload(client)
 
     io = StringIO.new(JSON.pretty_generate(payload))
 
-    if insale.client_list_items_file.attached?
-      # Rename the existing file by updating the blob's key and filename
-      blob = insale.client_list_items_file.blob
-      blob.update!(
-        key: old_s3_file_key,
-        filename: "list_#{@account.id}_client_#{@external_client_id}_list_items.json"
-      )
-      # Upload the new content to the renamed file
-      blob.service.upload(blob.key, io.read, filename: blob.filename, content_type: blob.content_type)
+    if client.list_items_file.attached?
+      client.list_items_file.prune
     end
 
-    insale.client_list_items_file.attach(
-      io: io,
-      filename: "list_#{@account.id}_client_#{@external_client_id}_list_items.json",
-      key: s3_file_key,
-      content_type: "application/json"
-    )
+    unless client.list_items_file.attached?
+      client.list_items_file.attach(
+        io: io,
+        filename: @file_name,
+        key: s3_file_key,
+        content_type: "application/json"
+      )
+    end
   end
 
   private
-
-  def resolve_client_by_external_id(external_client_id)
-    Varbind
-      .where(record_type: "Client", value: external_client_id)
-      .where(varbindable: @account.insales)
-      .first&.record
-  end
 
   def build_payload(client)
     lists = @account.lists.order(:id)
@@ -69,10 +60,7 @@ class ListItemsJsonGeneratorService
   end
 
   def s3_file_key
-    "lists/list_#{@account.id}_client_#{@external_client_id}_list_items.json"
+    "lists/#{@file_name}"
   end
 
-  def old_s3_file_key
-    "lists/old/list_#{@account.id}_client_#{@external_client_id}_list_items.json"
-  end
 end

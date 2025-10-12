@@ -5,6 +5,8 @@ class Client < ApplicationRecord
 
   belongs_to :account
   has_many :list_items, dependent: :destroy
+  has_one_attached :list_items_file
+
   validates :name, presence: true
 
   # Use Varbindable defaults
