@@ -15,8 +15,14 @@ class ListItemsJsonGeneratorService
 
     io = StringIO.new(JSON.pretty_generate(payload))
     if insale.client_list_items_file.attached?
-      insale.client_list_items_file.purge_later
+      # Get the blob and delete it directly
+      blob = insale.client_list_items_file.blob
+      insale.client_list_items_file.detach
+      blob&.purge
     end
+
+    # Use a simple approach - just use the original filename
+    # The purge should handle the duplicate key issue
     insale.client_list_items_file.attach(
       io: io,
       filename: "list_#{@account.id}_client_#{@external_client_id}_list_items.json",
