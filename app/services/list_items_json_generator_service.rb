@@ -14,36 +14,24 @@ class ListItemsJsonGeneratorService
     payload = build_payload(client)
 
     io = StringIO.new(JSON.pretty_generate(payload))
-    
-    retries = 0
-    begin
-      ActiveRecord::Base.transaction do
-        if insale.client_list_items_file.attached?
-          # Get the blob and delete it directly
-          blob = insale.client_list_items_file.blob
-          insale.client_list_items_file.detach
-          blob&.purge
-        end
-        
-        # Use a simple approach - just use the original filename
-        insale.client_list_items_file.attach(
-          io: io,
-          filename: "list_#{@account.id}_client_#{@external_client_id}_list_items.json",
-          key: s3_file_key,
-          content_type: "application/json"
-        )
-      end
-    rescue ActiveRecord::RecordNotUnique => e
-      retries += 1
-      if retries < 3
-        Rails.logger.warn("Duplicate key error, retrying (#{retries}/3): #{e.message}")
-        sleep 0.1 * retries  # Increasing delay
-        retry
-      else
-        Rails.logger.error("Failed to attach file after 3 retries: #{e.message}")
-        raise e
-      end
+
+    if insale.client_list_items_file.attached?
+      # Rename the existing file by updating the blob's key and filename
+      blob = insale.client_list_items_file.blob
+      blob.update!(
+        key: old_s3_file_key,
+        filename: "list_#{@account.id}_client_#{@external_client_id}_list_items.json"
+      )
+      # Upload the new content to the renamed file
+      blob.service.upload(blob.key, io.read, filename: blob.filename, content_type: blob.content_type)
     end
+
+    insale.client_list_items_file.attach(
+      io: io,
+      filename: "list_#{@account.id}_client_#{@external_client_id}_list_items.json",
+      key: s3_file_key,
+      content_type: "application/json"
+    )
   end
 
   private
@@ -82,5 +70,9 @@ class ListItemsJsonGeneratorService
 
   def s3_file_key
     "lists/list_#{@account.id}_client_#{@external_client_id}_list_items.json"
+  end
+
+  def old_s3_file_key
+    "lists/old/list_#{@account.id}_client_#{@external_client_id}_list_items.json"
   end
 end
