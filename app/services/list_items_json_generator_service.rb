@@ -15,7 +15,8 @@ class ListItemsJsonGeneratorService
 
     io = StringIO.new(JSON.pretty_generate(payload))
     if insale.client_list_items_file.attached?
-      insale.client_list_items_file.detach
+      insale.client_list_items_file.purge
+      sleep 0.1  # Small delay to ensure purge completes before attach
     end
     insale.client_list_items_file.attach(
       io: io,
