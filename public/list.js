@@ -130,12 +130,12 @@
     var attach = options.attach !== undefined ? options.attach : true;
 
     var wrapper = document.createElement('div');
-    wrapper.setAttribute('style', 'display:block;z-index: 100;');
+    wrapper.setAttribute('style', 'display:flex;gap:12px;align-items:center;flex-wrap:wrap;');
     debugLog('createListsContainer:init', { lists_count: (lists||[]).length, containerSelector: containerSelector, attach: attach });
 
-    var listEl = document.createElement('div');
-    listEl.setAttribute('style', 'display:flex;gap:12px;align-items:center;flex-wrap:wrap;');
-    wrapper.appendChild(listEl);
+    // var listEl = document.createElement('div');
+    // listEl.setAttribute('style', 'display:flex;gap:12px;align-items:center;flex-wrap:wrap;');
+    // wrapper.appendChild(listEl);
 
     (lists || []).forEach(function(list) {
       debugLog('createListsContainer:item', list);
@@ -151,7 +151,8 @@
       var iconHtml = renderIcon(list.icon_style || 'icon_one', list.icon_color || '#999999', false);
       item.innerHTML = iconHtml;
 
-      listEl.appendChild(item);
+      // listEl.appendChild(item);
+      wrapper.appendChild(item);
     });
 
     if (attach) {
@@ -386,20 +387,28 @@
     var imgWrap = document.createElement('div');
     imgWrap.className = 'twc-list-card-img-wrap';
     
+    // Create link wrapper for image
+    var imgLink = document.createElement('a');
+    imgLink.setAttribute('href', url || '#');
+    imgLink.setAttribute('style', 'display:block;');
+    
     var img = document.createElement('img');
     img.setAttribute('src', imgUrl || '');
     img.setAttribute('alt', product.title || '');
     img.setAttribute('style', 'width:100%;height:140px;object-fit:cover;border-radius:6px;display:block;');
     
-    imgWrap.appendChild(img);
+    imgLink.appendChild(img);
+    imgWrap.appendChild(imgLink);
     
     // Wrap title in twc-list-card-title-wrap
     var titleWrap = document.createElement('div');
     titleWrap.className = 'twc-list-card-title-wrap';
     
-    var title = document.createElement('div');
+    var title = document.createElement('a');
+    title.setAttribute('href', url || '#');
+    title.setAttribute('style', 'margin-top:8px;font-size:14px;line-height:1.3;color:#333;text-decoration:none;');
     title.textContent = product.title || ('#' + (product.id || ''));
-    title.setAttribute('style', 'margin-top:8px;font-size:14px;line-height:1.3;');
+    title.className = 'twc-list-card-title';
     
     titleWrap.appendChild(title);
     
@@ -412,13 +421,15 @@
     controlsHost.setAttribute('data-ui-favorites-trigger-twc', externalProductId || (product && product.id) || '');
     controlsHost.setAttribute('style', 'margin-top:auto;');
     
+    controlsWrap.appendChild(controlsHost);
+    
     // Price
     var priceWrap = document.createElement('div');
     priceWrap.className = 'twc-list-card-price-wrap';
     
     var price = document.createElement('div');
     price.setAttribute('style', 'font-size:16px;font-weight:bold;color:#333;margin-top:8px;');
-    price.textContent = product.price_min ? ('₽' + product.price_min) : '';
+    price.textContent = product.price_min;
     price.className = 'twc-list-card-price';
     
     priceWrap.appendChild(price);
@@ -429,9 +440,18 @@
     
     var buyButton = document.createElement('a');
     buyButton.setAttribute('href', url || '#');
-    buyButton.setAttribute('style', 'display:block;width:100%;padding:8px 12px;background:#007bff;color:white;text-align:center;text-decoration:none;border-radius:4px;font-size:14px;margin-top:8px;');
-    buyButton.textContent = 'Buy';
+    buyButton.setAttribute('style', 'display:flex;align-items:center;justify-content:center;width:100%;padding:8px 12px;background:#007bff;color:white;text-decoration:none;border-radius:4px;margin-top:8px;');
     buyButton.className = 'twc-list-card-buy-button';
+    
+    // Add cart SVG icon
+    var cartIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    cartIcon.setAttribute('width', '16');
+    cartIcon.setAttribute('height', '16');
+    cartIcon.setAttribute('viewBox', '0 0 640 512');
+    cartIcon.setAttribute('fill', 'white');
+    cartIcon.innerHTML = '<path d="M24-16C10.7-16 0-5.3 0 8S10.7 32 24 32l45.3 0c3.9 0 7.2 2.8 7.9 6.6l52.1 286.3c6.2 34.2 36 59.1 70.8 59.1L456 384c13.3 0 24-10.7 24-24s-10.7-24-24-24l-255.9 0c-11.6 0-21.5-8.3-23.6-19.7l-5.1-28.3 303.6 0c30.8 0 57.2-21.9 62.9-52.2L568.9 69.9C572.6 50.2 557.5 32 537.4 32l-412.7 0-.4-2c-4.8-26.6-28-46-55.1-46L24-16zM208 512a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm224 0a48 48 0 1 0 0-96 48 48 0 1 0 0 96z"/>';
+    
+    buyButton.appendChild(cartIcon);
     
     buyButtonWrap.appendChild(buyButton);
         
@@ -563,7 +583,7 @@
                 debugLog('lists:removed', { list_item_id: match.id });
                 // If on favorites page, remove the enclosing product card from the grid
                 if (/favorites/i.test(window.location.href)) {
-                  var card = itemNode.closest('.list-item');
+                  var card = itemNode.closest('.twc-list-card');
                   if (card && card.parentNode) { card.parentNode.removeChild(card); }
                 }
                 // Update header info after remove (delay for S3 refresh)

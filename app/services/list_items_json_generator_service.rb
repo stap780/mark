@@ -14,9 +14,9 @@ class ListItemsJsonGeneratorService
     payload = build_payload(client)
 
     io = StringIO.new(JSON.pretty_generate(payload))
-    if insale.client_list_items_file.attached?
-      insale.client_list_items_file.purge
-    end
+    # if insale.client_list_items_file.attached?
+    #   insale.client_list_items_file.purge
+    # end
     insale.client_list_items_file.attach(
       io: io,
       filename: "list_#{@account.id}_client_#{@external_client_id}_list_items.json",
