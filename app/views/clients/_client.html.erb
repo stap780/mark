@@ -1,4 +1,5 @@
-<%= turbo_frame_tag client, class: "grid grid-cols-[1fr_200px_150px_200px] gap-4 p-4 items-center" do %>
+<%= turbo_frame_tag client, class: "grid grid-cols-[50px_1fr_200px_150px_200px] gap-4 p-4 items-center" do %>
+  <div class="truncate"><%= client.id %></div>
   <div class="truncate"><%= "#{client.name} #{client.surname}" %></div>
   <div class="text-sm text-gray-600"><%= client.email %></div>
   <div class="text-sm text-gray-600"><%= client.phone %></div>

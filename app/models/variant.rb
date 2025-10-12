@@ -3,7 +3,7 @@ class Variant < ApplicationRecord
   include Varbindable
 
   belongs_to :product
-  has_many :list_items, as: :item, dependent: :destroy
+  has_many :list_items, as: :item
 
   before_destroy :check_list_items_dependency
 

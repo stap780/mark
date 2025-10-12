@@ -8,7 +8,7 @@ class Product < ApplicationRecord
   accepts_nested_attributes_for :variants, allow_destroy: true
   has_many :swatch_group_products
   has_many :swatch_groups, through: :swatch_group_products
-  has_many :list_items, as: :item, dependent: :destroy
+  has_many :list_items, as: :item
 
   before_destroy :ensure_not_used_in_swatch_groups
   before_destroy :check_list_items_dependency
