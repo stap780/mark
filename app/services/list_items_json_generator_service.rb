@@ -10,7 +10,6 @@ class ListItemsJsonGeneratorService
     insale = @account.insales.first
     return unless insale
 
-    # client = resolve_client_by_external_id(@external_client_id)
     client = @account.clients.find(@client_id)
     return unless client
 
@@ -21,6 +20,8 @@ class ListItemsJsonGeneratorService
     if client.list_items_file.attached?
       client.list_items_file.prune
     end
+
+    ActiveStorage::Blob.unattached.find_each(&:purge)
 
     unless client.list_items_file.attached?
       client.list_items_file.attach(
