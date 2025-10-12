@@ -18,10 +18,12 @@ class ListItemsJsonGeneratorService
     io = StringIO.new(JSON.pretty_generate(payload))
 
     if client.list_items_file.attached?
-      client.list_items_file.prune
+      client.list_items_file.purge
     end
-
-    ActiveStorage::Blob.unattached.find_each(&:purge)
+    
+    if ActiveStorage::Blob.unattached.any?
+      ActiveStorage::Blob.unattached.find_each(&:purge)
+    end
 
     unless client.list_items_file.attached?
       client.list_items_file.attach(

@@ -51,7 +51,8 @@ class Api::ListItemsController < ApplicationController
             total_count: @list.list_items.where(client_id: client.id).count
           }, status: status_code
           # Regenerate per-client cache in S3
-          ListItemsJsonGeneratorJob.perform_now(current_account.id, params[:external_client_id], client.id)
+          # ListItemsJsonGeneratorJob.perform_now(current_account.id, params[:external_client_id], client.id)
+          ListItemsJsonGeneratorService.new(current_account.id, params[:external_client_id], client.id).call
         end
       else
         format.json { render json: { errors: @list_item.errors.full_messages }, status: :unprocessable_content }
@@ -69,7 +70,8 @@ class Api::ListItemsController < ApplicationController
           total_count: @list.list_items.where(client_id: client_id).count
         }
         # Regenerate per-client cache in S3
-        ListItemsJsonGeneratorJob.perform_now(current_account.id, external_client_id_for(client_id), client_id)
+        # ListItemsJsonGeneratorJob.perform_now(current_account.id, external_client_id_for(client_id), client_id)
+        ListItemsJsonGeneratorService.new(account_id, external_client_id, client_id).call
       end
     end
   end
