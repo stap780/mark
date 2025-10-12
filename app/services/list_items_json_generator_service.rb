@@ -14,9 +14,9 @@ class ListItemsJsonGeneratorService
     payload = build_payload(client)
 
     io = StringIO.new(JSON.pretty_generate(payload))
-    # if insale.client_list_items_file.attached?
-    #   insale.client_list_items_file.purge
-    # end
+    if insale.client_list_items_file.attached?
+      insale.client_list_items_file.purge_later
+    end
     insale.client_list_items_file.attach(
       io: io,
       filename: "list_#{@account.id}_client_#{@external_client_id}_list_items.json",
@@ -29,7 +29,7 @@ class ListItemsJsonGeneratorService
 
   def resolve_client_by_external_id(external_client_id)
     Varbind
-      .where(record_type: 'Client', value: external_client_id)
+      .where(record_type: "Client", value: external_client_id)
       .where(varbindable: @account.insales)
       .first&.record
   end
