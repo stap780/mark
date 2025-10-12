@@ -71,7 +71,7 @@ class Api::ListItemsController < ApplicationController
         }
         # Regenerate per-client cache in S3
         # ListItemsJsonGeneratorJob.perform_now(current_account.id, external_client_id_for(client_id), client_id)
-        ListItemsJsonGeneratorService.new(account_id, external_client_id, client_id).call
+        ListItemsJsonGeneratorService.new(current_account.id, external_client_id_for(client_id), client_id).call
       end
     end
   end

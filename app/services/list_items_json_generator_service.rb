@@ -20,7 +20,7 @@ class ListItemsJsonGeneratorService
     if client.list_items_file.attached?
       client.list_items_file.purge
     end
-    
+
     if ActiveStorage::Blob.unattached.any?
       ActiveStorage::Blob.unattached.find_each(&:purge)
     end
