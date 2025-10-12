@@ -117,7 +117,7 @@ class Api::ListItemsController < ApplicationController
     # Try to find variant first by external variant_id
     if external_variant_id.present?
       varbind = Varbind
-        .where(record_type: 'Variant', value: external_variant_id)
+        .where(record_type: "Variant", value: external_variant_id)
         .where(varbindable: current_account.insales)
         .first
       return varbind.record if varbind
@@ -126,7 +126,7 @@ class Api::ListItemsController < ApplicationController
     # Fallback to product by external product_id
     if external_product_id.present?
       varbind = Varbind
-        .where(record_type: 'Product', value: external_product_id)
+        .where(record_type: "Product", value: external_product_id)
         .where(varbindable: current_account.insales)
         .first
       return varbind.record if varbind

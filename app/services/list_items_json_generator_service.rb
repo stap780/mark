@@ -41,7 +41,7 @@ class ListItemsJsonGeneratorService
     lists = @account.lists.order(:id)
     items_by_list = lists.map do |list|
       items = list.list_items.where(client_id: client.id)
-      serialized = items.map { |li| serialize_item(li) }
+      serialized = items.map { |li| serialize_item(li) }.compact
       { id: list.id, name: list.name, icon_style: list.icon_style, icon_color: list.icon_color, items: serialized }
     end
     {
@@ -54,6 +54,7 @@ class ListItemsJsonGeneratorService
 
   def serialize_item(list_item)
     insale = @account.insales.first
+
     external_value = list_item.item.varbinds.find_by(varbindable: insale)&.value
     {
       item_type: list_item.item_type,

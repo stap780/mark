@@ -8,8 +8,10 @@ class Product < ApplicationRecord
   accepts_nested_attributes_for :variants, allow_destroy: true
   has_many :swatch_group_products
   has_many :swatch_groups, through: :swatch_group_products
+  has_many :list_items, as: :item, dependent: :destroy
 
   before_destroy :ensure_not_used_in_swatch_groups
+  before_destroy :check_list_items_dependency
 
   validates :title, presence: true
 
@@ -109,6 +111,13 @@ class Product < ApplicationRecord
     return unless swatch_group_products.exists?
 
     errors.add(:base, "Cannot delete product while assigned to a swatch group")
+    throw(:abort)
+  end
+
+  def check_list_items_dependency
+    return unless list_items.exists?
+
+    errors.add(:base, "Cannot delete product while it has items in lists")
     throw(:abort)
   end
 
