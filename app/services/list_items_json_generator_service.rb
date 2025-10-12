@@ -14,21 +14,36 @@ class ListItemsJsonGeneratorService
     payload = build_payload(client)
 
     io = StringIO.new(JSON.pretty_generate(payload))
-    if insale.client_list_items_file.attached?
-      # Get the blob and delete it directly
-      blob = insale.client_list_items_file.blob
-      insale.client_list_items_file.detach
-      blob&.purge
+    
+    retries = 0
+    begin
+      ActiveRecord::Base.transaction do
+        if insale.client_list_items_file.attached?
+          # Get the blob and delete it directly
+          blob = insale.client_list_items_file.blob
+          insale.client_list_items_file.detach
+          blob&.purge
+        end
+        
+        # Use a simple approach - just use the original filename
+        insale.client_list_items_file.attach(
+          io: io,
+          filename: "list_#{@account.id}_client_#{@external_client_id}_list_items.json",
+          key: s3_file_key,
+          content_type: "application/json"
+        )
+      end
+    rescue ActiveRecord::RecordNotUnique => e
+      retries += 1
+      if retries < 3
+        Rails.logger.warn("Duplicate key error, retrying (#{retries}/3): #{e.message}")
+        sleep 0.1 * retries  # Increasing delay
+        retry
+      else
+        Rails.logger.error("Failed to attach file after 3 retries: #{e.message}")
+        raise e
+      end
     end
-
-    # Use a simple approach - just use the original filename
-    # The purge should handle the duplicate key issue
-    insale.client_list_items_file.attach(
-      io: io,
-      filename: "list_#{@account.id}_client_#{@external_client_id}_list_items.json",
-      key: s3_file_key,
-      content_type: "application/json"
-    )
   end
 
   private
