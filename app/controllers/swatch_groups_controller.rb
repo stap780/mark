@@ -67,7 +67,7 @@ class SwatchGroupsController < ApplicationController
 
   # Offcanvas for selecting a style for either field
   def style_selector
-    @field = params[:field].in?(%w[product_page_style collection_page_style]) ? params[:field] : "product_page_style"
+    @field = params[:field].in?(SwatchGroup::PAGE_STYLE_FILEDS) ? params[:field] : "product_page_style"
     @current_value = params[:current]
     render partial: "swatch_groups/style_selector", locals: { field: @field, current_value: @current_value }, layout: false
   end

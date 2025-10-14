@@ -59,6 +59,7 @@ class SwatchGroup < ApplicationRecord
                                       .flatten(1)
                                       .each_with_object({}) { |(label, value), memo| memo[value] = label }
                                       .freeze
+  PAGE_STYLE_FILEDS = %w[product_page_style product_page_style_mob collection_page_style collection_page_style_mob]
 
   def self.style_label_for(value)
     return nil if value.blank?
@@ -109,5 +110,18 @@ class SwatchGroup < ApplicationRecord
     account_id = account_or_id.is_a?(Account) ? account_or_id.id : account_or_id
     SwatchJsonGeneratorJob.perform_later(account_id)
     true
+  end
+
+  def self.page_style_field_names
+    PAGE_STYLE_FIELDS.map do |field|
+      [I18n.t("activerecord.attributes.swatch_group.#{field}"), field.to_s]
+    end
+  end
+
+  # Returns the translation for a given page style field, or the input if not translatable
+  def self.field_i18n(field)
+    key = "activerecord.attributes.swatch_group.#{field}"
+    translation = I18n.t(key, default: "")
+    translation.present? ? translation : field.to_s
   end
 end

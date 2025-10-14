@@ -1,5 +1,5 @@
-<%= render 'shared/offcanvas_inner', title: 'Select style' do %>
-  <div data-controller="style-selector" data-style-selector-field-value="<%= field %>">
+<%= render 'shared/offcanvas_inner', title: SwatchGroup.field_i18n(field) do %>
+  <div data-style-selector-field-value="<%= field %>">
     <% SwatchGroup::STYLE_GROUPS.each do |group_label, options| %>
       <div class="mb-4 border rounded-md">
         <div class="px-3 py-2 font-medium bg-gray-50 border-b flex items-center justify-between">

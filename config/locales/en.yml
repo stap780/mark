@@ -33,3 +33,44 @@ en:
   back: "Back"
   cancel: "Cancel"
   update: "Update"
+  activerecord:
+    models:
+      swatch_group: "Swatch Group"
+    attributes:
+      swatch_group:
+        name: "Name"
+        option_name: "Option Name"
+        status: "Status"
+        product_page_style: "Product page style"
+        product_page_style_mob: "Product page style (Mobile)"
+        collection_page_style: "Collection page style"
+        collection_page_style_mob: "Collection page style (Mobile)"
+        swatch_image_source: "Swatch image source"
+        css_class_product: "Product CSS class"
+        css_class_preview: "Preview CSS class"
+  swatch_group:
+    statuses:
+      active: "Active"
+      inactive: "Inactive"
+    styles:
+      "circular_small_desktop": "Circular desktop - Small"
+      "circular_medium_desktop": "Circular desktop - Medium"
+      "circular_large_desktop": "Circular desktop - Large"
+      "circular_small_mobile": "Circular mobile - Small"
+      "circular_medium_mobile": "Circular mobile - Medium"
+      "circular_large_mobile": "Circular mobile - Large"
+      "dropdown_label_small": "Dropdown label - Small"
+      "dropdown_label_medium": "Dropdown label - Medium"
+      "dropdown_label_large": "Dropdown label - Large"
+      "square_desktop_small": "Square desktop - Small"
+      "square_desktop_medium": "Square desktop - Medium"
+      "square_desktop_large": "Square desktop - Large"
+      "square_mobile_small": "Square mobile - Small"
+      "square_mobile_medium": "Square mobile - Medium"
+      "square_mobile_large": "Square mobile - Large"
+      "hide": "Hide"
+    image_sources:
+      "first_product_image": "First product image"
+      "second_product_image": "Second product image"
+      "last_product_image": "Last product image"
+      "custom_color_image": "Color / custom image"
