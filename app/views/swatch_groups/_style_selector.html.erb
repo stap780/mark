@@ -1,4 +1,4 @@
-<%= render 'shared/offcanvas_inner', title: (field == 'product_page_style' ? 'Product page style' : 'Collection page style') do %>
+<%= render 'shared/offcanvas_inner', title: 'Select style' do %>
   <div data-controller="style-selector" data-style-selector-field-value="<%= field %>">
     <% SwatchGroup::STYLE_GROUPS.each do |group_label, options| %>
       <div class="mb-4 border rounded-md">
