@@ -48,6 +48,7 @@
       <div class="bg-white rounded-lg border p-4 space-y-4">
         <div>
           <%= render "swatch_groups/style_field", field: 'product_page_style', value: swatch_group.product_page_style, label: (SwatchGroup.style_label_for(swatch_group.product_page_style) || 'Not selected') %>
+          <%= render "swatch_groups/style_field", field: 'product_page_style_mob', value: swatch_group.product_page_style_mob, label: (SwatchGroup.style_label_for(swatch_group.product_page_style_mob) || 'Not selected') %>
           <div class="mt-3">
             <label class="block text-sm font-medium text-gray-700">Swatch image source</label>
             <%= f.select :swatch_image_source,
@@ -59,6 +60,7 @@
 
         <div>
           <%= render "swatch_groups/style_field", field: 'collection_page_style', value: swatch_group.collection_page_style, label: (SwatchGroup.style_label_for(swatch_group.collection_page_style) || 'Not selected') %>
+          <%= render "swatch_groups/style_field", field: 'collection_page_style_mob', value: swatch_group.collection_page_style_mob, label: (SwatchGroup.style_label_for(swatch_group.collection_page_style_mob) || 'Not selected') %>
           <div class="mt-3">
             <label class="block text-sm font-medium text-gray-700">Swatch image source</label>
             <%= f.select :swatch_image_source,

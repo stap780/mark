@@ -5,7 +5,6 @@ class Insale < ApplicationRecord
 
   has_one_attached :swatch_file
   has_one_attached :list_file
-  # has_one_attached :client_list_items_file
 
   validates :api_link, presence: true
   validates :api_key, presence: true

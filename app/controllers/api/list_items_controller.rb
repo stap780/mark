@@ -176,9 +176,10 @@ class Api::ListItemsController < ApplicationController
 
   def external_client_id_for(client_id)
     Varbind
-      .where(record_type: 'Client', record_id: client_id)
+      .where(record_type: "Client", record_id: client_id)
       .where(varbindable: current_account.insales)
       .limit(1)
       .pick(:value)
   end
+  
 end

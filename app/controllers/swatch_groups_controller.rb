@@ -127,7 +127,7 @@ class SwatchGroupsController < ApplicationController
 
   def swatch_group_params
     params.require(:swatch_group).permit(
-      :name, :option_name, :status, :product_page_style, :collection_page_style, :swatch_image_source,
+      :name, :option_name, :status, :product_page_style, :product_page_style_mob, :collection_page_style, :collection_page_style_mob, :swatch_image_source,
       :css_class_product, :css_class_preview,
       swatch_group_products_attributes: [:id, :product_id, :swatch_label, :swatch_value, :title, :color, :image_link, :image, :_destroy]
     )
@@ -151,11 +151,11 @@ class SwatchGroupsController < ApplicationController
       insale = current_account.insales.first
 
       # Look for existing product by group_id varbind
-      product_bind = insale ? Varbind.find_by(varbindable: insale, value: group_id, record_type: 'Product') : nil
+      product_bind = insale ? Varbind.find_by(varbindable: insale, value: group_id, record_type: "Product") : nil
       product = product_bind&.record
 
       # Look for existing variant by offer_id varbind
-      variant_bind = insale ? Varbind.find_by(varbindable: insale, value: offer_id, record_type: 'Variant') : nil
+      variant_bind = insale ? Varbind.find_by(varbindable: insale, value: offer_id, record_type: "Variant") : nil
       variant = variant_bind&.record
 
       # If no product found by varbind, create new one
