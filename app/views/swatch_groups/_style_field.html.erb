@@ -1,6 +1,11 @@
 <%= turbo_frame_tag "style_#{field}" do %>
   <div class="flex items-center justify-between">
-    <label class="block text-sm font-medium text-gray-700"><%= field == 'product_page_style' ? 'Product page style' : 'Collection page style' %></label>
+    <label class="block text-sm font-medium text-gray-700">
+      <%= 'Product page style' if field == 'product_page_style' %>
+      <%= 'Product page style mob' if field == 'product_page_style_mob' %>
+      <%= 'Collection page style' if field == 'collection_page_style' %>
+      <%= 'Collection page style mob' if field == 'collection_page_style_mob' %>
+      </label>
     <%= link_to 'Select style', style_selector_account_swatch_groups_path(current_account, field: field, current: value), data: { turbo_frame: :offcanvas }, class: 'text-violet-600 hover:underline text-sm' %>
   </div>
   <%= hidden_field_tag "swatch_group[#{field}]", value %>
