@@ -21,7 +21,7 @@ class SwatchJsonGeneratorService
         items = g.swatch_group_products.ordered
         items.map do |base|
           # Get group_id from product varbinds
-          group_id = base.product&.varbinds&.find_by(varbindable_type: 'Insale')&.value
+          group_id = base.product&.varbinds&.find_by(varbindable_type: "Insale")&.value
 
           {
             swatch_id: g.id,
@@ -33,12 +33,13 @@ class SwatchJsonGeneratorService
             product_page_style_mob: g.product_page_style_mob,
             collection_page_style: g.collection_page_style,
             collection_page_style_mob: g.collection_page_style_mob,
-            swatch_image_source: g.swatch_image_source,
+            product_page_image_source: g.product_page_image_source,
+            collection_page_image_source: g.collection_page_image_source,
             css_class_product: g.css_class_product,
             css_class_preview: g.css_class_preview,
             swatches: items.map do |sgp|
               # Get offer_id from product varbinds (not variants)
-              offer_id = sgp.product&.varbinds&.find_by(varbindable_type: 'Insale')&.value
+              offer_id = sgp.product&.varbinds&.find_by(varbindable_type: "Insale")&.value
 
               # Use offer_id to lookup in XML data
               offer = offer_lookup[offer_id] || {}
@@ -60,6 +61,11 @@ class SwatchJsonGeneratorService
       # Attach via Active Storage to the account's Insale record swatch_file
       if (rec = @account.insales.first)
         io = StringIO.new(JSON.pretty_generate(payload))
+        
+        if ActiveStorage::Blob.unattached.any?
+          ActiveStorage::Blob.unattached.find_each(&:purge)
+        end
+
         if rec.swatch_file.attached?
           rec.swatch_file.purge
         end

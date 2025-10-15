@@ -127,7 +127,7 @@ class SwatchGroupsController < ApplicationController
 
   def swatch_group_params
     params.require(:swatch_group).permit(
-      :name, :option_name, :status, :product_page_style, :product_page_style_mob, :collection_page_style, :collection_page_style_mob, :swatch_image_source,
+      :name, :option_name, :status, :product_page_style, :product_page_style_mob, :collection_page_style, :collection_page_style_mob, :product_page_image_source, :collection_page_image_source,
       :css_class_product, :css_class_preview,
       swatch_group_products_attributes: [:id, :product_id, :swatch_label, :swatch_value, :title, :color, :image_link, :image, :_destroy]
     )

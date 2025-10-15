@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_14_063313) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_15_112432) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -138,13 +138,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_14_063313) do
     t.integer "status", default: 0
     t.string "product_page_style", default: "circular_small_desktop"
     t.string "collection_page_style", default: "circular_small_mobile"
-    t.string "swatch_image_source", default: "first_product_image"
+    t.string "product_page_image_source", default: "first_product_image"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "css_class_product"
     t.string "css_class_preview"
     t.string "product_page_style_mob"
     t.string "collection_page_style_mob"
+    t.string "collection_page_image_source", default: "first_product_image"
     t.index ["account_id"], name: "index_swatch_groups_on_account_id"
     t.index ["name"], name: "index_swatch_groups_on_name"
     t.index ["status"], name: "index_swatch_groups_on_status"
