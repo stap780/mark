@@ -1,6 +1,4 @@
 class InsalesController < ApplicationController
-  # Webhook endpoint must be callable without session
-  # allow_unauthenticated_access only: [:order]
   before_action :set_insale, only: %i[ show edit update destroy ]
   # Ensure these actions are rendered within a Turbo Frame withount url /new or etc
   before_action :ensure_turbo_frame_response, only: %i[new edit show]

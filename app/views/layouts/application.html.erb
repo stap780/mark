@@ -71,10 +71,11 @@
                   <%= Current.user&.email_address %>
                 </span>
                 <%= button_to "Sign out", session_path, method: :delete,
-                      class: "inline-flex items-center px-3 py-1 text-sm font-medium rounded-md text-gray-700 hover:text-gray-900" %>
+                      class: "inline-flex items-center px-3 py-1 text-sm font-medium rounded-md text-gray-700 hover:text-gray-900 cursor-pointer" %>
               </div>
             </div>
           </div>
+          
           <!-- Page content -->
           <main class="flex-1 overflow-y-auto">
             <div class="py-6">
