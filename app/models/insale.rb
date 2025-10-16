@@ -31,21 +31,18 @@ class Insale < ApplicationRecord
 
   # Initialize InSales API client for this account
   # If no record given, default to current account's config
-  def self.api_init(record = nil)
-    rec = record || Current.account&.insales&.first
-    return false unless rec
-
-    InsalesApi::App.api_key = rec.api_key
-    InsalesApi::App.configure_api(rec.api_link, rec.api_password)
+  def api_init
+    InsalesApi::App.api_key = self.api_key
+    InsalesApi::App.configure_api(self.api_link, self.api_password)
   end
 
   # Check API works using the current account's Insale record
   # Returns [true, ""] or [false, messages]
-  def self.api_work?
-    rec = Current.account&.insales&.first
+  def api_work?
+    rec = account.insales&.first
     return [false, ["No Insale configuration for this account"]] unless rec
 
-    api_init(rec)
+    rec.api_init
     message = []
     begin
       account = InsalesApi::Account.find
@@ -119,7 +116,7 @@ class Insale < ApplicationRecord
     rec = Current.account&.insales&.first
     return [false, ["No Insale configuration for this account"]] unless rec
 
-    api_init(rec)
+    rec.api_init
 
     begin
       collection_ids = InsalesApi::Collection.find(:all).map(&:id)

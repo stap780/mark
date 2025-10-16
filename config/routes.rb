@@ -23,9 +23,11 @@ Rails.application.routes.draw do
   scope "/accounts/:account_id", as: :account do
     get "dashboard", to: "dashboard#index"
     resources :insales do
+      member do
+        get :check
+      end
       collection do
         post :order
-        get :check
         get :add_order_webhook
         post :create_xml
         get :xml_source
@@ -62,6 +64,9 @@ Rails.application.routes.draw do
     end
 
     resources :clients do
+      member do
+        get :insales_info
+      end
       resources :varbinds
     end
     resources :products do
@@ -70,8 +75,8 @@ Rails.application.routes.draw do
     resources :lists do
       resources :list_items, only: [:index, :create, :destroy]
     end
-    # Optional flat endpoints for list_items API
-    resources :list_items, only: [:index]
+    # # Optional flat endpoints for list_items API
+    # resources :list_items, only: [:index]
   end
 
   # API routes for storefront (outside account scope)

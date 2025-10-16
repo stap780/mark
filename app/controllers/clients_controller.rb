@@ -62,7 +62,30 @@ class ClientsController < ApplicationController
     end
   end
 
+  def insales_info
+    check  = @client.insale_api_update
+    respond_to do |format|
+      format.turbo_stream do
+        if check
+          flash.now[:success] = t(".success")
+          render turbo_stream: [
+            turbo_stream.replace(dom_id(@client, dom_id(current_account)), 
+                partial: "clients/client", 
+                locals: { client: @client, current_account: current_account }),
+            render_turbo_flash
+          ]
+        else
+          flash.now[:notice] = check
+          render turbo_stream: [
+            render_turbo_flash
+          ]
+        end
+      end
+    end
+  end
+
   private
+  
     def set_client
       @client = current_account.clients.find(params[:id])
     end

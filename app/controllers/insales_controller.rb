@@ -1,5 +1,5 @@
 class InsalesController < ApplicationController
-  before_action :set_insale, only: %i[ show edit update destroy ]
+  before_action :set_insale, only: %i[ show edit update check destroy ]
   # Ensure these actions are rendered within a Turbo Frame withount url /new or etc
   before_action :ensure_turbo_frame_response, only: %i[new edit show]
   include ActionView::RecordIdentifier
@@ -82,7 +82,7 @@ class InsalesController < ApplicationController
   end
 
   def check
-    result, message = Insale.api_work?
+    result, message = @insale.api_work?
     respond_to do |format|
       if result
         flash.now[:success] = t('.success', default: 'API work')

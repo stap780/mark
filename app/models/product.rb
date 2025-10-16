@@ -28,6 +28,11 @@ class Product < ApplicationRecord
     broadcast_remove_to [dom_id(account), :products], target: dom_id(self, dom_id(account))
   end
 
+  # Trigger Insale sync after product is created, in background
+  after_create_commit do
+    ProductInsaleSyncJob.perform_later(account.id, id)
+  end
+
   def broadcast_target_for_varbinds
     [self, :varbinds]
   end
@@ -48,12 +53,8 @@ class Product < ApplicationRecord
     %w[variants]
   end
 
-
-  def insale_api_update(integration: nil)
-    rec = integration || account.insales.first
-    return [false, ["No Insale configuration for this account"]] unless rec
-
-    ok, msg = Insale.api_work?
+  def insale_api_update
+    ok, msg = account.insales.first.api_work?
     return [false, Array(msg)] unless ok
 
     # external id for this product in Insale stored in Varbind
@@ -61,7 +62,7 @@ class Product < ApplicationRecord
     return [false, ["No Insale varbind value for product"]] if external_id.to_s.strip.blank?
 
     begin
-      Insale.api_init(rec)
+      account.insales.first.api_init
       # Try to fetch product by id from Insales API
       ins_product = InsalesApi::Product.find(external_id)
     rescue StandardError => e
