@@ -4,6 +4,7 @@ class SwatchJsonGeneratorService
 
   def initialize(account_id)
     @account = Account.find(account_id)
+    @offers = {}
   end
 
   def call
@@ -12,8 +13,12 @@ class SwatchJsonGeneratorService
 
       groups = @account.swatch_groups.includes(swatch_group_products: :product)
 
-      # Build offer lookup from product_xml feed: offer id -> { image, url }
-      offer_lookup = build_offer_lookup_from_product_xml
+      # Load offers once by parsing the product_xml link into @offers; proceed only if present
+      offer_lookup = create_offers_hash
+      if offer_lookup.blank?
+        Rails.logger.warn "Swatch JSON: no offers available for account #{@account.id}; skipping payload generation"
+        return []
+      end
 
       # Build entries like in your example: one entry per group item (product_id = offer id),
       # and the swatches array lists all items in the group as similar_id entries
@@ -25,7 +30,7 @@ class SwatchJsonGeneratorService
 
           {
             swatch_id: g.id,
-            product_id: group_id || base.swatch_value,
+            product_id: base.swatch_value.split("#")[0], # here is insales product id
             name: g.name,
             option_name: g.option_name,
             status: g.status,
@@ -38,14 +43,26 @@ class SwatchJsonGeneratorService
             css_class_product: g.css_class_product,
             css_class_preview: g.css_class_preview,
             swatches: items.map do |sgp|
-              # Get offer_id from product varbinds (not variants)
-              offer_id = sgp.product&.varbinds&.find_by(varbindable_type: "Insale")&.value
+              product_id = sgp.swatch_value.split("#")[0]
+              variant_id = sgp.swatch_value.split("#")[1]
 
-              # Use offer_id to lookup in XML data
-              offer = offer_lookup[offer_id] || {}
-              # puts "offer => #{offer}"
+              # offer_lookup - hash of offers by variant_id
+              #  {
+              #   "12518121" => {
+              #     images: ["https://static.insales-cdn.com/images/products/1/3333/7032069/compact_slide_00.jpg"],
+              #     url: "http://djeak.myinsales.ru/collection/velo/product/nikon-d3?variant_id=12518121",
+              #     group_id: "8280444"
+              #   },
+              #   "12518122" => {
+              #     images: ["https://static.insales-cdn.com/images/products/1/3333/7032069/compact_slide_00.jpg"],
+              #     url: "http://djeak.myinsales.ru/collection/velo/product/nikon-d3?variant_id=12518122",
+              #     group_id: "8280444"
+              #   }
+              # }
+
+              offer = offer_lookup[variant_id] || {}
               {
-                similar_id: offer_id || sgp.swatch_value,
+                similar_id: product_id, # here is insales product id
                 title: sgp.title,
                 images: offer[:images],
                 link: offer[:url],
@@ -91,7 +108,7 @@ class SwatchJsonGeneratorService
 
   private
 
-  def build_offer_lookup_from_product_xml
+  def create_offers_hash
     rec = @account.insales.first
     return {} unless rec&.product_xml.present?
 
@@ -104,7 +121,6 @@ class SwatchJsonGeneratorService
       doc.xpath('//offer').each do |offer|
         offer_id = offer['id'] || offer.at('id')&.text
         group_id = offer['group_id'] || offer.at('group_id')&.text
-        next if offer_id.blank?
         pictures = offer.xpath('picture').map { |p| p.text }.compact.uniq
         url = offer.at('url')&.text
         entry = {}
@@ -113,19 +129,19 @@ class SwatchJsonGeneratorService
         entry[:group_id] = group_id if group_id.present?
         lookup[offer_id] = entry if entry.any?
       end
-      lookup
+      @offers = lookup
     rescue StandardError => e
-      Rails.logger.error("Swatch JSON image lookup parse error: #{e.message}")
-      {}
+      Rails.logger.error("Swatch JSON lookup parse error: #{e.message}")
+      @offers = {}
     end
   end
 
   def read_product_xml_content(link)
-    if link.start_with?('/')
-      file_path = Rails.root.join("public", link.sub(%r{^/}, ""))
-      return File.read(file_path) if File.exist?(file_path)
-      return nil
-    end
+    # if link.start_with?('/')
+    #   file_path = Rails.root.join("public", link.sub(%r{^/}, ""))
+    #   return File.read(file_path) if File.exist?(file_path)
+    #   return nil
+    # end
 
     if link =~ %r{^https?://}
       begin
