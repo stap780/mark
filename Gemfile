@@ -4,7 +4,8 @@ source "https://rubygems.org"
 gem "rails", "~> 8.0.2", ">= 8.0.2.1"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
-# Use SQLite in development and test, PostgreSQL in production
+# Use postgresql as the database for Active Record
+gem "pg", "~> 1.1"
 
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
