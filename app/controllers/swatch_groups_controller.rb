@@ -112,6 +112,7 @@ class SwatchGroupsController < ApplicationController
         next if title.blank?
         next if query.present? && !title.downcase.include?(query)
         @items << { offer_id: offer_id, group_id: group_id, title: title, image_link: image, price: price }
+        @items.uniq! { |item| item[:group_id] }
         break if @items.size >= 30
       end
     end
