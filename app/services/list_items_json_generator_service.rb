@@ -61,9 +61,9 @@ class ListItemsJsonGeneratorService
       item_type: list_item.item_type,
       external_item_id: external_value,
       created_at: list_item.created_at.iso8601,
-      item_link: "/product_by_id/#{external_value}"
+      item_link: "/product_by_id/#{external_value}",
       item_image: list_item.item.variants&.first&.image_link,
-      item_price: list_item.item.variants&.first&.price
+      item_price: list_item.item.variants&.first&.price.to_s
     }
   end
 
