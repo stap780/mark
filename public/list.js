@@ -140,7 +140,7 @@
     (lists || []).forEach(function(list) {
       debugLog('createListsContainer:item', list);
       var item = document.createElement('span');
-      item.setAttribute('style', 'display:inline-flex;align-items:center;gap:8px;cursor:pointer;width:24px;');
+      item.setAttribute('style', 'display:inline-flex;align-items:center;gap:8px;cursor:pointer;width:24px;z-index: 100;');
       item.setAttribute('class', 'twc-list-item');
       item.setAttribute('data-list-id', String(list.id));
       item.setAttribute('data-list-name', list.name || '');
