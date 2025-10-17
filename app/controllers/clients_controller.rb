@@ -1,6 +1,7 @@
 class ClientsController < ApplicationController
   before_action :set_client, only: %i[ show edit update insales_info destroy ]
-
+  include ActionView::RecordIdentifier
+  
   def index
     @search = current_account.clients.ransack(params[:q])
     @search.sorts = "id desc" if @search.sorts.empty?
