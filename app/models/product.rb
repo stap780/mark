@@ -56,7 +56,8 @@ class Product < ApplicationRecord
   def insale_api_update
     ok, msg = account.insales.first.api_work?
     return [false, Array(msg)] unless ok
-
+    
+    rec = account.insales.first
     # external id for this product in Insale stored in Varbind
     external_id = varbinds.find_by(varbindable: rec)&.value
     return [false, ["No Insale varbind value for product"]] if external_id.to_s.strip.blank?

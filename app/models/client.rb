@@ -56,6 +56,7 @@ class Client < ApplicationRecord
     ok, msg = account.insales.first.api_work?
     return [false, Array(msg)] unless ok
     
+    rec = account.insales.first
     # external id for this client in Insale stored in Varbind
     external_id = varbinds.find_by(varbindable: rec)&.value
     return [false, ["No Insale varbind value for client"]] if external_id.to_s.strip.blank?
