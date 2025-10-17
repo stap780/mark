@@ -24,22 +24,22 @@ class Client < ApplicationRecord
   end
 
   # Hotwire broadcasts
-  after_create_commit do
-    broadcast_prepend_to [self.account, :clients],
-                        target: [self.account, :clients],
-                        partial: "clients/client",
-                        locals: { client: self, current_account: self.account }
-  end
+  # after_create_commit do
+  #   broadcast_prepend_to [dom_id(account), :clients],
+  #                       target: [dom_id(account), :clients],
+  #                       partial: "clients/client",
+  #                       locals: { client: self, current_account: account }
+  # end
 
   after_update_commit do
-    broadcast_replace_to [self.account, :clients],
-                        target: dom_id(self),
+    broadcast_replace_to [dom_id(account), :clients],
+                        target: dom_id(self, dom_id(account)),
                         partial: "clients/client",
-                        locals: { client: self, current_account: self.account }
+                        locals: { client: self, current_account: account }
   end
 
   after_destroy_commit do
-    broadcast_remove_to [self.account, :clients], target: dom_id(self)
+    broadcast_remove_to [dom_id(account), :clients], target: dom_id(self, dom_id(account))
   end
 
 

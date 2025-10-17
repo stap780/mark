@@ -15,8 +15,6 @@ class Product < ApplicationRecord
 
   validates :title, presence: true
 
-  include ActionView::RecordIdentifier
-
   after_update_commit do
     broadcast_replace_to [dom_id(account), :products], 
         target: dom_id(self, dom_id(account)),

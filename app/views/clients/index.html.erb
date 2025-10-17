@@ -18,7 +18,7 @@
         class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
   </div>
 </div>
-<%= turbo_stream_from [current_account, :clients] %>
+<%= turbo_stream_from [dom_id(current_account), :clients] %>
 <div class="bg-white rounded-lg shadow divide-y">
   <div class="grid grid-cols-[50px_40px_1fr_200px_150px_200px] gap-4 p-4 font-medium text-gray-700">
     <div>#</div>
@@ -28,7 +28,7 @@
     <div>Phone</div>
     <div></div>
   </div>
-  <%= turbo_frame_tag dom_id(current_account, :clients) do %>
+  <%= turbo_frame_tag [dom_id(current_account), :clients]  do %>
     <%= render @clients %>
     <%= render "shared/paginate", f: @clients %>
   <% end %>
