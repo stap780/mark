@@ -1,4 +1,4 @@
-<%= turbo_frame_tag dom_id(product, dom_id(current_account)),, class: "grid grid-cols-[50px_40px_1fr_200px_150px_200px] gap-4 p-4 items-center" do %>
+<%= turbo_frame_tag dom_id(client, dom_id(current_account)), class: "grid grid-cols-[50px_40px_1fr_200px_150px_200px] gap-4 p-4 items-center" do %>
   <div class="truncate"><%= client.id %></div>
   <div>
     <%= link_to insales_info_account_client_path(current_account, client),
