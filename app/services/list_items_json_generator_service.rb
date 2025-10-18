@@ -58,6 +58,7 @@ class ListItemsJsonGeneratorService
     external_value = list_item.item.varbinds.find_by(varbindable: insale)&.value
     # here list_item.item_type is a Product
     {
+      id: list_item.id,
       item_type: list_item.item_type,
       external_item_id: external_value,
       created_at: list_item.created_at.iso8601,

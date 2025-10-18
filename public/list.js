@@ -1,7 +1,7 @@
 (function() {
   
   const S3_BASE = 'https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23';
-  let DEBUG = false;
+  let DEBUG = false; // Debug disabled
   
   // S3 URL builders
   function buildS3AccountListsUrl(accountId) {
@@ -12,7 +12,7 @@
   }
   
   // Version logging
-  console.log('[list][v_0.2][loaded]');
+  console.log('[list][v_0.48][loaded]');
   
   // Immediate debug check
   console.log('[list][debug] Script loaded, DEBUG:', DEBUG);
@@ -21,6 +21,12 @@
   function debugLog(){
     if (!DEBUG) return;
     try { console.log('[list]', ...arguments); } catch(e) { /* noop */ }
+  }
+  
+  // Special debug function for pagination
+  function paginationDebugLog(){
+    if (!DEBUG) return;
+    try { console.log('[pagination]', ...arguments); } catch(e) { /* noop */ }
   }
 
   function getAccountIdFromScript() {
@@ -132,10 +138,6 @@
     var wrapper = document.createElement('div');
     wrapper.setAttribute('style', 'display:flex;gap:12px;align-items:center;flex-wrap:wrap;');
     debugLog('createListsContainer:init', { lists_count: (lists||[]).length, containerSelector: containerSelector, attach: attach });
-
-    // var listEl = document.createElement('div');
-    // listEl.setAttribute('style', 'display:flex;gap:12px;align-items:center;flex-wrap:wrap;');
-    // wrapper.appendChild(listEl);
 
     (lists || []).forEach(function(list) {
       debugLog('createListsContainer:item', list);
@@ -300,7 +302,7 @@
             h2.textContent = block.name || ('List #' + block.id);
             h2.setAttribute('style', 'font-size:20px;margin:0 0 12px;');
             var grid = document.createElement('div');
-            grid.setAttribute('style', 'display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;');
+            grid.setAttribute('style', 'display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:12px;');
             grid.setAttribute('class', 'twc-list-cards');
             section.appendChild(h2);
             section.appendChild(grid);
@@ -375,6 +377,896 @@
     }).catch(function(err){ debugLog('favorites:page:no_client', err && err.message ? err.message : err); });
   }
 
+  // Favorites page renderer: builds sections per list using S3 data directly (no ajaxAPI call)
+  function renderFavoritesPageFromS3Direct(accountId) {
+    if (!/favorites/i.test(window.location.href)) { return; }
+    
+    // Prevent multiple simultaneous calls
+    if (window._renderFavoritesPageFromS3DirectRunning) {
+      debugLog('renderFavoritesPageFromS3Direct:already_running', { accountId: accountId });
+      return;
+    }
+    window._renderFavoritesPageFromS3DirectRunning = true;
+    return getClient().then(function(client){
+      var clientId = client && client.id;
+      if (!clientId) return;
+      var url = buildS3ClientListItemsUrl(accountId, clientId) + '?t=' + Date.now();
+      debugLog('favorites:page:direct:url', url);
+      return fetch(url, { credentials: 'omit', cache: 'no-cache' })
+        .then(function(r){ if (!r.ok) throw new Error('S3 not available'); return r.json(); })
+             .then(function(data){
+               var listsData = (data && data.lists) || [];
+               window.currentListsData = listsData; // Store globally for recreateEntireSection
+               debugLog('favorites:page:direct:data', listsData);
+          var main = document.querySelector('.lists-wrapper');
+          debugLog('favorites:page:direct:main_selector', { found: !!main, selector: '.lists-wrapper' });
+          if (!main) {
+            main = document.querySelector('main');
+            debugLog('favorites:page:direct:main_selector', { found: !!main, selector: 'main' });
+          }
+          if (!main) {
+            main = document.querySelector('body');
+            debugLog('favorites:page:direct:main_selector', { found: !!main, selector: 'body' });
+          }
+          if (!main) {
+            debugLog('favorites:page:direct:no_main_container', 'No suitable container found');
+            return;
+          }
+          
+          debugLog('favorites:page:direct:main_clearing', { main: main, tagName: main.tagName, childrenBeforeClear: main.children.length });
+          main.innerHTML = '';
+          debugLog('favorites:page:direct:main_cleared', { main: main, childrenAfterClear: main.children.length });
+          debugLog('favorites:page:direct:processing_lists', { listsCount: listsData.length, listsData: listsData });
+          
+          // Add MutationObserver to main container to track DOM changes
+          if (window.MutationObserver && main) {
+            var mainObserver = new MutationObserver(function(mutations) {
+              mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList') {
+                  debugLog('favorites:page:direct:main_mutation', { 
+                    addedNodes: mutation.addedNodes.length, 
+                    removedNodes: mutation.removedNodes.length,
+                    currentChildren: main.children.length
+                  });
+                }
+              });
+            });
+            mainObserver.observe(main, { childList: true, subtree: false });
+          }
+          
+               listsData.forEach(function(block, index){
+                 var items = block.items || [];
+                 debugLog('renderFavoritesPageFromS3Direct:processing_list', { 
+                   index: index,
+                   listId: block.id, 
+                   itemsCount: items.length, 
+                   listName: block.name,
+                   block: block
+                 });
+                 
+                 if (!items.length) {
+                   debugLog('renderFavoritesPageFromS3Direct:skipping_empty_list', { listId: block.id, listName: block.name });
+                   return;
+                 }
+                 
+                 var section = document.createElement('section');
+                 section.setAttribute('style', 'margin:20px 0;padding: 20px;');
+                 section.setAttribute('data-list-id', String(block.id)); // Ensure it's a string
+                 
+                 var h2 = document.createElement('h2');
+                 h2.textContent = block.name || ('List #' + block.id);
+                 h2.setAttribute('style', 'font-size:20px;margin:0 0 12px;');
+                 
+                 var grid = document.createElement('div');
+                 grid.setAttribute('style', 'display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:12px;');
+                 grid.setAttribute('class', 'twc-list-cards');
+                 grid.setAttribute('data-list-id', String(block.id)); // Ensure it's a string
+                 
+                 section.appendChild(h2);
+                 section.appendChild(grid);
+                 if (main) { 
+                   main.appendChild(section); 
+                   
+                   // Add MutationObserver to track section content changes
+                   if (window.MutationObserver) {
+                     var sectionObserver = new MutationObserver(function(mutations) {
+                       mutations.forEach(function(mutation) {
+                         if (mutation.type === 'childList') {
+                           debugLog('renderFavoritesPageFromS3Direct:section_mutation', { 
+                             listId: block.id,
+                             addedNodes: mutation.addedNodes.length, 
+                             removedNodes: mutation.removedNodes.length,
+                             currentChildren: section.children.length,
+                             targetTagName: mutation.target.tagName,
+                             targetClassName: mutation.target.className
+                           });
+                         } else if (mutation.type === 'characterData') {
+                           debugLog('renderFavoritesPageFromS3Direct:text_mutation', { 
+                             listId: block.id,
+                             targetTagName: mutation.target.tagName,
+                             currentChildren: section.children.length
+                           });
+                         }
+                       });
+                     });
+                     sectionObserver.observe(section, { childList: true, subtree: true, characterData: true });
+                   }
+                   
+                   // Store original innerHTML to detect changes
+                   var originalHTML = section.innerHTML;
+                   var checkHTML = function() {
+                     if (section.innerHTML !== originalHTML) {
+                       debugLog('renderFavoritesPageFromS3Direct:innerHTML_changed', { 
+                         listId: block.id,
+                         originalLength: originalHTML.length,
+                         newLength: section.innerHTML.length,
+                         currentChildren: section.children.length,
+                         addedContent: section.innerHTML.substring(originalHTML.length, originalHTML.length + 200) + '...'
+                       });
+                       originalHTML = section.innerHTML; // Update for next check
+                     }
+                   };
+                   
+                   // Check for innerHTML changes every 10ms for the first 200ms
+                   var checkInterval = setInterval(function() {
+                     checkHTML();
+                   }, 10);
+                   setTimeout(function() {
+                     clearInterval(checkInterval);
+                   }, 200);
+                   
+                   debugLog('renderFavoritesPageFromS3Direct:section_added', { 
+                     listId: block.id, 
+                     listName: block.name,
+                     mainChildren: main.children.length,
+                     sectionChildren: section.children.length
+                   });
+                 }
+
+                 // Add pagination for this list
+                 debugLog('renderFavoritesPageFromS3Direct:adding_pagination', { listId: block.id, listIdType: typeof block.id });
+                 addPaginationToSection(section, items, String(block.id), 20, block); // Pass the block data
+               });
+        })
+        .catch(function(err){ debugLog('favorites:page:direct:error', err && err.message ? err.message : err); });
+    }).catch(function(err){ debugLog('favorites:page:direct:no_client', err && err.message ? err.message : err); })
+    .finally(function() {
+      window._renderFavoritesPageFromS3DirectRunning = false;
+    });
+  }
+
+  // Add pagination functionality to a section
+  function addPaginationToSection(section, items, listId, itemsPerPage, listData) {
+    var grid = section.querySelector('.twc-list-cards');
+    if (!grid) return;
+    
+    var totalItems = items.length;
+    var totalPages = Math.ceil(totalItems / itemsPerPage);
+    
+    paginationDebugLog('addPaginationToSection', { listId: listId, totalItems: totalItems, totalPages: totalPages, itemsPerPage: itemsPerPage });
+    
+    if (totalPages <= 1) {
+      // No pagination needed, show all items
+      paginationDebugLog('addPaginationToSection:no_pagination_needed', { listId: listId });
+      renderItemsForPage(grid, items, 0, itemsPerPage, listId, listData);
+      return;
+    }
+    
+    // Create pagination container
+    var paginationContainer = document.createElement('div');
+    paginationContainer.className = 'twc-pagination-container';
+    paginationContainer.setAttribute('style', 'display:flex;justify-content:center;align-items:center;gap:8px;margin:20px 0;');
+    paginationContainer.setAttribute('data-list-id', listId);
+    paginationContainer.setAttribute('data-all-items', JSON.stringify(items));
+    paginationContainer.setAttribute('data-items-per-page', itemsPerPage);
+    
+    // Create pagination controls
+    var paginationControls = createPaginationControls(listId, totalPages, listData);
+    paginationContainer.appendChild(paginationControls);
+    
+    // Add pagination after the grid
+    section.appendChild(paginationContainer);
+    
+    // Also store on grid element for defensive recreation
+    grid.setAttribute('data-all-items', JSON.stringify(items));
+    grid.setAttribute('data-items-per-page', itemsPerPage);
+    
+    // Store references for later use
+    section._paginationContainer = paginationContainer;
+    section._paginationControls = paginationControls;
+    
+    paginationDebugLog('addPaginationToSection:container_added', { 
+      listId: listId, 
+      sectionChildren: section.children.length,
+      paginationContainerExists: !!paginationContainer,
+      paginationControlsExists: !!paginationControls,
+      sectionHTML: section.innerHTML.substring(0, 300) + '...'
+    });
+    
+    // Debug: Check if pagination container is actually in the DOM after a short delay
+    setTimeout(function() {
+      var actualPaginationContainer = section.querySelector('.twc-pagination-container');
+      paginationDebugLog('addPaginationToSection:dom_check', { 
+        listId: listId, 
+        sectionChildren: section.children.length,
+        paginationContainerInDOM: !!actualPaginationContainer,
+        paginationContainerExists: !!paginationContainer,
+        sectionHTML: section.innerHTML.substring(0, 200) + '...'
+      });
+    }, 50);
+    
+    // Add a mutation observer to track when the pagination container is removed
+    if (window.MutationObserver) {
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'childList') {
+            mutation.removedNodes.forEach(function(node) {
+              if (node === paginationContainer || (node.nodeType === 1 && node.classList && node.classList.contains('twc-pagination-container'))) {
+                paginationDebugLog('addPaginationToSection:pagination_container_removed', { 
+                  listId: listId, 
+                  removedNode: node.tagName || node.nodeType,
+                  sectionChildren: section.children.length,
+                  removedBy: mutation.target.tagName || 'unknown'
+                });
+              }
+            });
+          }
+        });
+      });
+      observer.observe(section, { childList: true, subtree: true });
+      
+      // Store observer for cleanup
+      section._paginationObserver = observer;
+    }
+    
+         // Show first page initially
+         // paginationDebugLog('addPaginationToSection:showing_first_page', { listId: listId });
+         renderItemsForPage(grid, items, 0, itemsPerPage, listId, listData);
+    
+    // Use setTimeout to ensure DOM is updated before calling updatePaginationState
+    // Store reference to the section to avoid issues with DOM queries
+    var sectionRef = section;
+    setTimeout(function() {
+      paginationDebugLog('setTimeout:callback', { 
+        listId: listId, 
+        sectionFound: !!sectionRef,
+        hasPaginationContainer: sectionRef ? !!sectionRef.querySelector('.twc-pagination-container') : false,
+        sectionChildren: sectionRef ? sectionRef.children.length : 0
+      });
+      
+      if (sectionRef && sectionRef.querySelector('.twc-pagination-container')) {
+        updatePaginationState(listId, 1, totalPages);
+      }
+    }, 100);
+  }
+  
+  // Recreate pagination for a section that lost its pagination container
+  function recreatePaginationForSection(section, items, listId, itemsPerPage, totalPages) {
+    paginationDebugLog('recreatePaginationForSection:start', { listId: listId, totalPages: totalPages });
+    
+    // Create pagination container
+    var paginationContainer = document.createElement('div');
+    paginationContainer.className = 'twc-pagination-container';
+    paginationContainer.setAttribute('style', 'display:flex;justify-content:center;align-items:center;gap:8px;margin:20px 0;');
+    paginationContainer.setAttribute('data-list-id', listId);
+    paginationContainer.setAttribute('data-all-items', JSON.stringify(items));
+    paginationContainer.setAttribute('data-items-per-page', itemsPerPage);
+    
+    // Create pagination controls
+    var paginationControls = createPaginationControls(listId, totalPages, listData);
+    paginationContainer.appendChild(paginationControls);
+    
+    // Add pagination after the grid
+    section.appendChild(paginationContainer);
+    
+    // Store references for later use
+    section._paginationContainer = paginationContainer;
+    section._paginationControls = paginationControls;
+    
+    // paginationDebugLog('recreatePaginationForSection:completed', { 
+    //   listId: listId, 
+    //   sectionChildren: section.children.length,
+    //   paginationContainerExists: !!paginationContainer
+    // });
+    
+    // Update pagination state
+    updatePaginationState(listId, 1, totalPages);
+  }
+  
+  // Handle item removal from pagination
+  function handleItemRemoval(listId, removedItemId) {
+    paginationDebugLog('handleItemRemoval:start', { listId: listId, removedItemId: removedItemId });
+    
+    // Find the section and pagination container
+    var section = document.querySelector('[data-list-id="' + listId + '"]');
+    if (!section) {
+      paginationDebugLog('handleItemRemoval:section_not_found', { listId: listId });
+      return;
+    }
+    
+    var paginationContainer = section.querySelector('.twc-pagination-container');
+    if (!paginationContainer) {
+      paginationDebugLog('handleItemRemoval:pagination_not_found', { listId: listId });
+      return;
+    }
+    
+    // Get current items from stored data
+    var storedItems = paginationContainer.getAttribute('data-all-items');
+    if (!storedItems) {
+      paginationDebugLog('handleItemRemoval:no_stored_items', { listId: listId });
+      return;
+    }
+    
+    try {
+      var items = JSON.parse(storedItems);
+      var originalCount = items.length;
+      
+      // Remove the item from the stored data
+      items = items.filter(function(item) {
+        return item.external_item_id !== removedItemId;
+      });
+      
+      var newCount = items.length;
+      paginationDebugLog('handleItemRemoval:item_removed', { 
+        listId: listId, 
+        originalCount: originalCount, 
+        newCount: newCount 
+      });
+      
+      // Update stored data
+      paginationContainer.setAttribute('data-all-items', JSON.stringify(items));
+      
+      // Also update grid data
+      var grid = section.querySelector('.twc-list-cards');
+      if (grid) {
+        grid.setAttribute('data-all-items', JSON.stringify(items));
+      }
+      
+      // Recalculate pagination
+      var itemsPerPage = parseInt(paginationContainer.getAttribute('data-items-per-page')) || 20;
+      var totalPages = Math.ceil(items.length / itemsPerPage);
+      
+      // Update pagination controls
+      var controls = paginationContainer.querySelector('.twc-pagination-controls');
+      if (controls) {
+        controls.setAttribute('data-total-pages', totalPages);
+      }
+      
+      // Re-render current page
+      var currentPage = parseInt(controls.getAttribute('data-current-page')) || 1;
+      if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+      }
+      
+      paginationDebugLog('handleItemRemoval:recalculating', { 
+        listId: listId, 
+        totalPages: totalPages, 
+        currentPage: currentPage 
+      });
+      
+      // Re-render the current page
+      if (grid && items.length > 0) {
+        var startIndex = (currentPage - 1) * itemsPerPage;
+        // Get currentListData from global data
+        var currentListData = null;
+        if (window.currentListsData) {
+          currentListData = window.currentListsData.find(function(list) {
+            return String(list.id) === String(listId);
+          });
+        }
+        renderItemsForPage(grid, items, startIndex, itemsPerPage, listId, currentListData);
+        updatePaginationState(listId, currentPage, totalPages);
+      } else if (items.length === 0) {
+        // No items left, remove pagination
+        paginationContainer.remove();
+        paginationDebugLog('handleItemRemoval:no_items_left', { listId: listId });
+      }
+      
+    } catch (e) {
+      paginationDebugLog('handleItemRemoval:error', { listId: listId, error: e.message });
+    }
+  }
+  
+  // Recreate entire section when it has been corrupted
+  function recreateEntireSection(listId, items, itemsPerPage, totalPages, listData) {
+    paginationDebugLog('recreateEntireSection:start', { listId: listId, totalPages: totalPages, hasItems: !!items });
+    
+    // Find the main container
+    var main = document.querySelector('.lists-wrapper') || document.querySelector('main') || document.querySelector('body');
+    if (!main) {
+      paginationDebugLog('recreateEntireSection:no_main_container', { listId: listId });
+      return;
+    }
+    
+    // Remove ALL sections with this list ID (there might be duplicates)
+    var corruptedSections = document.querySelectorAll('[data-list-id="' + listId + '"]');
+    paginationDebugLog('recreateEntireSection:removing_sections', { 
+      listId: listId, 
+      foundSections: corruptedSections.length 
+    });
+    
+    corruptedSections.forEach(function(section, index) {
+      paginationDebugLog('recreateEntireSection:removing_section', { 
+        listId: listId, 
+        sectionIndex: index,
+        sectionChildren: section.children.length
+      });
+      section.remove();
+    });
+    
+    // Try to find the original list data from the global data
+    var originalList = null;
+    var listName = 'List #' + listId; // Default fallback
+    try {
+      // Look for the list name in the current listsData if available
+      if (typeof window.currentListsData !== 'undefined' && Array.isArray(window.currentListsData)) {
+        originalList = window.currentListsData.find(function(list) {
+          return String(list.id) === String(listId);
+        });
+        if (originalList && originalList.name) {
+          listName = originalList.name;
+        }
+      }
+    } catch (e) {
+      paginationDebugLog('recreateEntireSection:name_fallback', { listId: listId, error: e.message });
+    }
+    
+    // If we don't have items, try to get them from the original list data
+    if (!items && originalList && originalList.items) {
+      items = originalList.items;
+      paginationDebugLog('recreateEntireSection:items_recovered', { listId: listId, itemsCount: items.length });
+    }
+    
+    // Create new section
+    var section = document.createElement('section');
+    section.setAttribute('style', 'margin:20px 0;padding: 20px;');
+    section.setAttribute('data-list-id', String(listId));
+    
+    var h2 = document.createElement('h2');
+    h2.textContent = listName;
+    h2.setAttribute('style', 'font-size:20px;margin:0 0 12px;');
+    
+    var grid = document.createElement('div');
+    grid.setAttribute('style', 'display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:12px;');
+    grid.setAttribute('class', 'twc-list-cards');
+    grid.setAttribute('data-list-id', String(listId));
+    
+    section.appendChild(h2);
+    section.appendChild(grid);
+    main.appendChild(section);
+    
+    paginationDebugLog('recreateEntireSection:section_created', { 
+      listId: listId, 
+      listName: listName,
+      sectionChildren: section.children.length,
+      hasItems: !!items
+    });
+    
+    // Now add pagination to the new section if we have items
+    if (items && items.length > 0) {
+      addPaginationToSection(section, items, listId, itemsPerPage || 20, listData || originalList);
+    } else {
+      paginationDebugLog('recreateEntireSection:no_items_to_paginate', { listId: listId });
+    }
+  }
+    
+  // Create pagination controls (Previous, page numbers, Next)
+  function createPaginationControls(listId, totalPages, listData) {
+    paginationDebugLog('createPaginationControls:start', { listId: listId, totalPages: totalPages });
+    
+    var controls = document.createElement('div');
+    controls.className = 'twc-pagination-controls';
+    controls.setAttribute('style', 'display:flex;gap:4px;align-items:center;');
+    
+    // Previous button
+    var prevBtn = document.createElement('button');
+    prevBtn.textContent = '‹';
+    prevBtn.className = 'twc-pagination-btn twc-pagination-prev';
+    prevBtn.setAttribute('style', 'padding:8px 12px;border:1px solid #ddd;background:#fff;cursor:pointer;border-radius:4px;');
+    prevBtn.setAttribute('data-list-id', listId);
+    prevBtn.setAttribute('data-action', 'prev');
+    controls.appendChild(prevBtn);
+    
+    // Page numbers container
+    var pageNumbersContainer = document.createElement('div');
+    pageNumbersContainer.className = 'twc-pagination-numbers';
+    pageNumbersContainer.setAttribute('style', 'display:flex;gap:4px;');
+    pageNumbersContainer.setAttribute('data-list-id', listId);
+    controls.appendChild(pageNumbersContainer);
+    
+    // Next button
+    var nextBtn = document.createElement('button');
+    nextBtn.textContent = '›';
+    nextBtn.className = 'twc-pagination-btn twc-pagination-next';
+    nextBtn.setAttribute('style', 'padding:8px 12px;border:1px solid #ddd;background:#fff;cursor:pointer;border-radius:4px;');
+    nextBtn.setAttribute('data-list-id', listId);
+    nextBtn.setAttribute('data-action', 'next');
+    controls.appendChild(nextBtn);
+    
+    // Bind click handlers
+    controls.addEventListener('click', function(e) {
+      if (e.target.classList.contains('twc-pagination-btn')) {
+        var action = e.target.getAttribute('data-action');
+        var currentPage = parseInt(controls.getAttribute('data-current-page') || '1');
+        var newPage;
+        
+        if (action === 'prev') {
+          newPage = Math.max(1, currentPage - 1);
+        } else if (action === 'next') {
+          newPage = Math.min(totalPages, currentPage + 1);
+        } else if (e.target.hasAttribute('data-page')) {
+          newPage = parseInt(e.target.getAttribute('data-page'));
+        } else {
+          // Try to parse page number from text content
+          newPage = parseInt(e.target.textContent);
+        }
+        
+        if (newPage && newPage !== currentPage && newPage >= 1 && newPage <= totalPages) {
+          paginationDebugLog('pagination:click', { listId: listId, currentPage: currentPage, newPage: newPage, action: action });
+          goToPage(listId, newPage, totalPages, listData);
+        }
+      }
+    });
+    
+    paginationDebugLog('createPaginationControls:completed', { 
+      listId: listId, 
+      controlsChildren: controls.children.length,
+      prevBtn: !!prevBtn,
+      nextBtn: !!nextBtn,
+      pageNumbersContainer: !!pageNumbersContainer
+    });
+    
+    return controls;
+  }
+  
+  // Render items for a specific page
+  function renderItemsForPage(grid, items, startIndex, itemsPerPage, listId, listData) {
+    paginationDebugLog('renderItemsForPage:start', { 
+      listId: listId, 
+      startIndex: startIndex, 
+      itemsPerPage: itemsPerPage, 
+      totalItems: items.length, 
+      gridExists: !!grid,
+      listData: listData,
+      hasListData: !!listData
+    });
+    
+    if (!grid) {
+      paginationDebugLog('renderItemsForPage:no_grid', { listId: listId });
+      return;
+    }
+    
+    // Clear existing items
+    grid.innerHTML = '';
+    
+    var endIndex = Math.min(startIndex + itemsPerPage, items.length);
+    var pageItems = items.slice(startIndex, endIndex);
+    
+    paginationDebugLog('renderItemsForPage:items', { endIndex: endIndex, pageItemsCount: pageItems.length, firstItem: pageItems[0] });
+    
+    pageItems.forEach(function(item, index) {
+      try {
+        var card = buildMiniCardFromS3Data(item, [], listData);
+        if (card) {
+          grid.appendChild(card);
+        } else {
+          paginationDebugLog('renderItemsForPage:card_creation_failed', { index: index, item: item });
+        }
+      } catch (e) {
+        paginationDebugLog('renderItemsForPage:card_error', { index: index, error: e.message, item: item });
+      }
+    });
+    
+    paginationDebugLog('renderItemsForPage:completed', { renderedCount: pageItems.length, gridChildrenCount: grid.children.length });
+  }
+  
+  // Go to specific page
+  function goToPage(listId, page, totalPages, listData) {
+    paginationDebugLog('goToPage:start', { listId: listId, page: page, totalPages: totalPages });
+    
+    // Try different selectors to find the section
+    var section = document.querySelector('[data-list-id="' + listId + '"]');
+    if (!section) {
+      // Try finding by class and data attribute
+      section = document.querySelector('section[data-list-id="' + listId + '"]');
+    }
+    if (!section) {
+      // Try finding all sections and check their data-list-id
+      var allSections = document.querySelectorAll('section');
+      for (var i = 0; i < allSections.length; i++) {
+        if (allSections[i].getAttribute('data-list-id') === String(listId)) {
+          section = allSections[i];
+          break;
+        }
+      }
+    }
+    
+    if (!section) {
+      paginationDebugLog('goToPage:section_not_found', { listId: listId, allSections: document.querySelectorAll('section').length });
+      // Debug: log all sections and their data-list-id attributes
+      var allSections = document.querySelectorAll('section');
+      allSections.forEach(function(s, index) {
+        paginationDebugLog('goToPage:section_debug', { index: index, dataListId: s.getAttribute('data-list-id'), className: s.className });
+      });
+      return;
+    }
+    
+    var grid = section.querySelector('.twc-list-cards');
+    var paginationContainer = section._paginationContainer || section.querySelector('.twc-pagination-container');
+    
+    paginationDebugLog('goToPage:elements_found', { 
+      section: !!section, 
+      grid: !!grid, 
+      container: !!paginationContainer,
+      sectionDataListId: section ? section.getAttribute('data-list-id') : 'none',
+      sectionChildren: section ? section.children.length : 0,
+      sectionChildrenDetails: section ? Array.from(section.children).map(function(child, index) {
+        return { index: index, tagName: child.tagName, className: child.className };
+      }) : [],
+      sectionHTML: section ? section.innerHTML.substring(0, 200) + '...' : 'none'
+    });
+    
+    if (!grid || !paginationContainer) {
+      paginationDebugLog('goToPage:grid_or_container_not_found', { 
+        grid: !!grid, 
+        container: !!paginationContainer,
+        sectionChildren: section ? section.children.length : 0
+      });
+      return;
+    }
+    
+    // Get all items for this list
+    var allItems = paginationContainer.getAttribute('data-all-items');
+    var itemsPerPage = parseInt(paginationContainer.getAttribute('data-items-per-page')) || 20;
+    
+    if (!allItems) {
+      paginationDebugLog('goToPage:no_items_data');
+      return;
+    }
+    
+    try {
+      var items = JSON.parse(allItems);
+      var startIndex = (page - 1) * itemsPerPage;
+      
+      paginationDebugLog('goToPage:rendering', { itemsCount: items.length, startIndex: startIndex, itemsPerPage: itemsPerPage });
+      
+      renderItemsForPage(grid, items, startIndex, itemsPerPage, listId, listData);
+      updatePaginationState(listId, page, totalPages);
+      
+      paginationDebugLog('goToPage:completed', { page: page });
+    } catch (e) {
+      paginationDebugLog('pagination:error', e);
+    }
+  }
+  
+  // Update pagination state (active page, button states)
+  function updatePaginationState(listId, currentPage, totalPages) {
+    paginationDebugLog('updatePaginationState:start', { listId: listId, currentPage: currentPage, totalPages: totalPages });
+    
+    var section = document.querySelector('[data-list-id="' + listId + '"]');
+    if (!section) {
+      paginationDebugLog('updatePaginationState:section_not_found', { listId: listId });
+      return;
+    }
+    
+    // Try to get pagination container from stored reference first, then fallback to querySelector
+    var paginationContainer = section._paginationContainer || section.querySelector('.twc-pagination-container');
+    
+    paginationDebugLog('updatePaginationState:container_found', { 
+      listId: listId, 
+      container: !!paginationContainer,
+      fromStored: !!section._paginationContainer,
+      fromQuery: !!section.querySelector('.twc-pagination-container'),
+      sectionChildren: section.children.length,
+      sectionHTML: section.innerHTML.substring(0, 200) + '...',
+      sectionChildrenDetails: Array.from(section.children).map(function(child, index) {
+        return { index: index, tagName: child.tagName, className: child.className };
+      })
+    });
+    
+    if (!paginationContainer) {
+      paginationDebugLog('updatePaginationState:container_not_found', { 
+        listId: listId, 
+        sectionChildren: section.children.length,
+        sectionHTML: section.innerHTML.substring(0, 200) + '...'
+      });
+      
+      // Try to recreate pagination if it's missing
+      var grid = section.querySelector('.twc-list-cards');
+      if (grid) {
+        paginationDebugLog('updatePaginationState:attempting_recreation', { listId: listId });
+        // Get stored items from the grid's data attribute
+        var storedItems = grid.getAttribute('data-all-items');
+        var storedItemsPerPage = grid.getAttribute('data-items-per-page');
+        if (storedItems) {
+          try {
+            var items = JSON.parse(storedItems);
+            var itemsPerPage = storedItemsPerPage ? parseInt(storedItemsPerPage) : 20;
+            var totalPages = Math.ceil(items.length / itemsPerPage);
+            addPaginationToSection(section, items, listId, itemsPerPage, null);
+            paginationDebugLog('updatePaginationState:recreation_success', { listId: listId });
+          } catch (e) {
+            paginationDebugLog('updatePaginationState:recreation_failed', { listId: listId, error: e.message });
+          }
+        } else {
+          paginationDebugLog('updatePaginationState:no_stored_items', { listId: listId });
+        }
+      } else {
+        paginationDebugLog('updatePaginationState:no_grid_found', { listId: listId });
+        // Try to recreate the entire section if it's corrupted
+        recreateEntireSection(listId, null, 20, 0, null);
+      }
+      return;
+    }
+    
+    var controls = paginationContainer.querySelector('.twc-pagination-controls');
+    var pageNumbersContainer = paginationContainer.querySelector('.twc-pagination-numbers');
+    
+    if (!controls || !pageNumbersContainer) {
+      // paginationDebugLog('updatePaginationState:controls_not_found', { 
+      //   listId: listId, 
+      //   controls: !!controls, 
+      //   pageNumbersContainer: !!pageNumbersContainer 
+      // });
+      return;
+    }
+    
+    // Update current page attribute
+    controls.setAttribute('data-current-page', currentPage);
+    
+    // Update prev/next button states
+    var prevBtn = controls.querySelector('.twc-pagination-prev');
+    var nextBtn = controls.querySelector('.twc-pagination-next');
+    
+    if (prevBtn) {
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.style.opacity = currentPage === 1 ? '0.5' : '1';
+      prevBtn.style.cursor = currentPage === 1 ? 'not-allowed' : 'pointer';
+    }
+    
+    if (nextBtn) {
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.style.opacity = currentPage === totalPages ? '0.5' : '1';
+      nextBtn.style.cursor = currentPage === totalPages ? 'not-allowed' : 'pointer';
+    }
+    
+    // Update page numbers
+    pageNumbersContainer.innerHTML = '';
+    
+    // Show page numbers (max 5 visible at a time)
+    var startPage = Math.max(1, currentPage - 2);
+    var endPage = Math.min(totalPages, currentPage + 2);
+    
+    for (var i = startPage; i <= endPage; i++) {
+      var pageBtn = document.createElement('button');
+      pageBtn.textContent = i;
+      pageBtn.className = 'twc-pagination-btn twc-pagination-page';
+      pageBtn.setAttribute('style', 'padding:8px 12px;border:1px solid #ddd;background:' + (i === currentPage ? '#007bff' : '#fff') + ';color:' + (i === currentPage ? '#fff' : '#333') + ';cursor:pointer;border-radius:4px;');
+      pageBtn.setAttribute('data-list-id', listId);
+      pageBtn.setAttribute('data-page', i);
+      pageNumbersContainer.appendChild(pageBtn);
+    }
+  }
+
+  // Build mini card from S3 data directly
+  function buildMiniCardFromS3Data(item, listsData, currentListData) {
+    var card = document.createElement('div');
+    var url = item.item_link || '#';
+    card.setAttribute('style', 'display:flex;flex-direction:column;gap:8px;height:100%;border:1px solid #e5e7eb;border-radius:8px;padding:10px;text-decoration:none;color:#111827;background:#fff;');
+    card.className = 'twc-list-card';
+    
+    // Wrap image in twc-list-card-img-wrap
+    var imgWrap = document.createElement('div');
+    imgWrap.className = 'twc-list-card-img-wrap';
+    
+    // Create link wrapper for image
+    var imgLink = document.createElement('a');
+    imgLink.setAttribute('href', url);
+    imgLink.setAttribute('style', 'display:block;');
+    
+    var img = document.createElement('img');
+    img.setAttribute('src', item.item_image || '');
+    img.setAttribute('alt', item.item_title || '');
+    img.setAttribute('style', 'width:100%;height:180px;object-fit:cover;border-radius:6px;display:block;');
+    
+    imgLink.appendChild(img);
+    imgWrap.appendChild(imgLink);
+    
+    // Wrap title in twc-list-card-title-wrap
+    var titleWrap = document.createElement('div');
+    titleWrap.className = 'twc-list-card-title-wrap';
+    
+    var title = document.createElement('a');
+    title.setAttribute('href', url);
+    title.setAttribute('style', 'margin-top:8px;font-size:14px;line-height:1.3;color:#333;text-decoration:none;');
+    title.textContent = item.item_title || ('#' + item.external_item_id);
+    title.className = 'twc-list-card-title';
+    
+    titleWrap.appendChild(title);
+    
+    // Wrap controls in twc-list-card-controls-wrap
+    var controlsWrap = document.createElement('div');
+    controlsWrap.className = 'twc-list-card-controls-wrap';
+    
+    // Controls host for lists buttons
+    var controlsHost = document.createElement('div');
+    controlsHost.setAttribute('data-ui-favorites-trigger-twc', item.external_item_id || '');
+    controlsHost.setAttribute('style', 'margin-top:auto;');
+    
+    // Show icon that corresponds to the current list
+    debugLog('buildMiniCardFromS3Data:currentListData', { 
+      currentListData: currentListData, 
+      hasCurrentListData: !!currentListData,
+      itemId: item.external_item_id 
+    });
+    
+    if (currentListData) {
+      var listItem = document.createElement('span');
+      listItem.setAttribute('style', 'display:inline-flex;align-items:center;gap:8px;cursor:pointer;width:24px;z-index: 100;');
+      listItem.setAttribute('class', 'twc-list-item');
+      listItem.setAttribute('data-list-id', String(currentListData.id));
+      listItem.setAttribute('data-list-name', currentListData.name || '');
+      listItem.setAttribute('data-icon-style', currentListData.icon_style || 'icon_one');
+      listItem.setAttribute('data-icon-color', currentListData.icon_color || '#999999');
+      listItem.setAttribute('data-added', 'true'); // Item is in this list
+      
+      var iconHtml = renderIcon(currentListData.icon_style || 'icon_one', currentListData.icon_color || '#999999', true);
+      listItem.innerHTML = iconHtml;
+      
+      controlsHost.appendChild(listItem);
+      debugLog('buildMiniCardFromS3Data:icon_added', { 
+        listId: currentListData.id, 
+        listName: currentListData.name,
+        iconStyle: currentListData.icon_style 
+      });
+    } else {
+      debugLog('buildMiniCardFromS3Data:no_currentListData', { 
+        itemId: item.external_item_id,
+        currentListData: currentListData 
+      });
+    }
+    
+    controlsWrap.appendChild(controlsHost);
+    
+    // Price
+    var priceWrap = document.createElement('div');
+    priceWrap.className = 'twc-list-card-price-wrap';
+    
+    var price = document.createElement('div');
+    price.setAttribute('style', 'font-size:16px;font-weight:bold;color:#333;margin-top:8px;');
+    price.textContent = item.item_price || '0';
+    price.className = 'twc-list-card-price';
+    
+    priceWrap.appendChild(price);
+    
+    // Buy button
+    var buyButtonWrap = document.createElement('div');
+    buyButtonWrap.className = 'twc-list-card-buy-button-wrap';
+    
+    var buyButton = document.createElement('a');
+    buyButton.setAttribute('href', url);
+    buyButton.setAttribute('style', 'display:flex;align-items:center;justify-content:center;width:100%;padding:8px 12px;background:#007bff;color:white;text-decoration:none;border-radius:4px;margin-top:8px;');
+    buyButton.className = 'twc-list-card-buy-button';
+    
+    // Add cart SVG icon
+    var cartIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    cartIcon.setAttribute('width', '16');
+    cartIcon.setAttribute('height', '16');
+    cartIcon.setAttribute('viewBox', '0 0 640 512');
+    cartIcon.setAttribute('fill', 'white');
+    cartIcon.innerHTML = '<path d="M24-16C10.7-16 0-5.3 0 8S10.7 32 24 32l45.3 0c3.9 0 7.2 2.8 7.9 6.6l52.1 286.3c6.2 34.2 36 59.1 70.8 59.1L456 384c13.3 0 24-10.7 24-24s-10.7-24-24-24l-255.9 0c-11.6 0-21.5-8.3-23.6-19.7l-5.1-28.3 303.6 0c30.8 0 57.2-21.9 62.9-52.2L568.9 69.9C572.6 50.2 557.5 32 537.4 32l-412.7 0-.4-2c-4.8-26.6-28-46-55.1-46L24-16zM208 512a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm224 0a48 48 0 1 0 0-96 48 48 0 1 0 0 96z"/>';
+    
+    buyButton.appendChild(cartIcon);
+    buyButtonWrap.appendChild(buyButton);
+        
+    card.appendChild(imgWrap);
+    card.appendChild(titleWrap);
+    card.appendChild(controlsWrap);
+    card.appendChild(priceWrap);
+    card.appendChild(buyButtonWrap);
+    return card;
+  }
+
   function buildMiniCard(product, externalProductId) {
     var card = document.createElement('div');
     var url = product && (product.url || product.link || ('/products/' + (product.id || '')));
@@ -395,7 +1287,7 @@
     var img = document.createElement('img');
     img.setAttribute('src', imgUrl || '');
     img.setAttribute('alt', product.title || '');
-    img.setAttribute('style', 'width:100%;height:140px;object-fit:cover;border-radius:6px;display:block;');
+    img.setAttribute('style', 'width:100%;height:180px;object-fit:cover;border-radius:6px;display:block;');
     
     imgLink.appendChild(img);
     imgWrap.appendChild(imgLink);
@@ -584,7 +1476,21 @@
                 // If on favorites page, remove the enclosing product card from the grid
                 if (/favorites/i.test(window.location.href)) {
                   var card = itemNode.closest('.twc-list-card');
-                  if (card && card.parentNode) { card.parentNode.removeChild(card); }
+                  if (card && card.parentNode) { 
+                    // Get the productId and listId BEFORE removing the card
+                    var section = card.closest('[data-list-id]');
+                    var productId = itemNode.closest('[data-ui-favorites-trigger-twc]').getAttribute('data-ui-favorites-trigger-twc');
+                    var listId = section ? section.getAttribute('data-list-id') : null;
+                    
+                    // Remove the card from DOM
+                    card.parentNode.removeChild(card);
+                    
+                    // Update pagination after removing item
+                    if (section && listId && productId) {
+                      // Use the new handleItemRemoval function
+                      handleItemRemoval(listId, productId);
+                    }
+                  }
                 }
                 // Update header info after remove (delay for S3 refresh)
                 delayedHeaderUpdate(accountId, 300);
@@ -622,12 +1528,31 @@
         updateFavoritesTriggers(data.lists);
         // After rendering, initialize active states
         // initListItemStates(accountId);
-        // Fallback/init via S3 cache as well
-        initListItemStatesFromS3(accountId);
-        // Update header info
-        updateHeaderInfo(accountId);
-        // If favorites page, render content
-        renderFavoritesPageFromS3(accountId);
+        // Only run initListItemStatesFromS3 if NOT on favorites page
+        if (!/favorites/i.test(window.location.href)) {
+          initListItemStatesFromS3(accountId).then(function() {
+            // Add a small delay to ensure initListItemStatesFromS3 has completely finished
+            setTimeout(function() {
+              // Update header info
+              updateHeaderInfo(accountId);
+              // renderFavoritesPageFromS3(accountId);
+              // Render favorites page using direct S3 data
+              renderFavoritesPageFromS3Direct(accountId);
+            }, 50);
+          }).catch(function(err) {
+            debugLog('initListItemStatesFromS3:failed', err && err.message ? err.message : err);
+            // Still render favorites page even if initListItemStatesFromS3 fails
+            updateHeaderInfo(accountId);
+            renderFavoritesPageFromS3Direct(accountId);
+          });
+        } else {
+          // On favorites page, skip initListItemStatesFromS3 completely and go directly to rendering
+          updateHeaderInfo(accountId);
+          // Only render if not already rendered (avoid recreating pagination)
+          if (!document.querySelector('[data-list-id]')) {
+            renderFavoritesPageFromS3Direct(accountId);
+          }
+        }
       })
       .catch(function(err){ debugLog('dom:error', err && err.message ? err.message : err); console.error(err); });
 
