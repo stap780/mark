@@ -1,0 +1,22 @@
+<%= turbo_frame_tag dom_id(current_account, dom_id(user)), class: "grid grid-cols-[1fr_150px_100px] gap-4 p-4 items-center" do %>
+  <div class="text-sm font-medium"><%= user.email_address %></div>
+  <div class="text-sm">
+    <span class="px-2 py-1 text-xs rounded-full <%= user.admin? ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800' %>">
+      <%= user.role.humanize %>
+    </span>
+  </div>
+  <div class="flex justify-end items-center space-x-2">
+    <%= link_to "Edit", edit_account_user_path(current_account, user), 
+          data: { turbo_frame: :offcanvas, turbo_prefetch: false },
+          class: "text-violet-700 hover:underline" %>
+    <% unless user == Current.user %>
+      <%= link_to account_user_path(current_account, user),
+        data: { turbo_method: :delete, turbo_confirm: "Delete user?" },
+        class: "float-right p-2 rounded-md bg-red-300 hover:bg-red-400 flex items-center justify-center" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

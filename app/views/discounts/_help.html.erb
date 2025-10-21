@@ -1,0 +1,46 @@
+<div class="bg-blue-50 p-4 rounded-lg">  
+  <div class="space-y-4 text-sm text-blue-800">
+    <div>
+      <h4 class="font-medium mb-2">Как работают скидки:</h4>
+      <p>Скидки применяются в порядке указанном в поле "Position". Каждая скидка проверяет условие в поле "Rule" и если оно выполняется, применяет скидку согласно полям "Shift" и "Points".</p>
+    </div>
+    
+    <div>
+      <h4 class="font-medium mb-2">Liquid шаблоны:</h4>
+      <p>Все поля используют синтаксис Liquid для динамических вычислений.</p>
+    </div>
+    
+    <div>
+      <p>В результате проверок всех условий должна остаться фраза - do_work. Она должна присутствовать один раз в коде liquid.</p>
+      <p>Если прдполагается скидка в размере самого дешёвого товара в корзине, то в результате проверок всех условий должна остаться фраза - do_work_with_lower_price. Она должна присутствовать один раз в коде liquid.</p>
+    </div>
+    <div>
+      <p>Примеры правил:</p>
+    </div>
+    <div>
+<pre><code>{% if order_lines.size == 2 %}do_work{% else %}false{% endif %}</code></pre>
+    </div>
+    <div>
+<pre><code>{% if order_lines.size == 3 %}do_work_with_lower_price{% else %}false{% endif %}</code></pre>
+    </div>
+    <div>
+<pre><code>
+{% assign muj_coll = "" %}
+{% for item in order_lines %}
+  {% if item.colls contains "Мужская одежда" %}
+    {% assign muj_coll = muj_coll | append: "," | append: "Мужская одежда" %}
+  {% endif %}
+{% endfor %}
+{% assign muj_coll_array = muj_coll | remove_first: "," | split: "," %}
+{% if order_lines.size == muj_coll_array.size and muj_coll_array.size == 2 %}do_work{%else%}false{% endif %}
+</code></pre>
+    </div>
+    <div>
+      <p>
+        <a href="https://liquidjs.com/playground.html" target="_blank" class="text-green-600 font-bold">
+          ПЕСОЧНИЦА
+        </a> где можно проверять условия - В качестве данных Пример данных</p>
+    </div>
+
+  </div>
+</div>

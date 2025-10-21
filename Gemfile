@@ -56,6 +56,7 @@ gem "liquid"
 gem 'rack-cors'
 gem "ransack"
 gem "will_paginate"
+gem 'acts_as_list'
 
 
 group :development, :test do

@@ -75,6 +75,12 @@ Rails.application.routes.draw do
     resources :lists do
       resources :list_items, only: [:index, :create, :destroy]
     end
+    resources :discounts do
+      member do
+        patch :sort
+      end
+    end
+    resources :users
     # # Optional flat endpoints for list_items API
     # resources :list_items, only: [:index]
   end
@@ -84,6 +90,11 @@ Rails.application.routes.draw do
     scope "/accounts/:account_id" do
       resources :lists, only: [] do
         resources :list_items, only: [:index, :create, :destroy]
+      end
+      resources :discounts, only: [] do
+        collection do
+          post :calc
+        end
       end
     end
   end

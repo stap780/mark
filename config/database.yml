@@ -9,18 +9,18 @@ development:
     <<: *default
     # database: mark_development
     adapter: sqlite3 # Override default for development
-    database: storage/mark_development.sqlite3
+    database: db/development.sqlite3
   queue:
     <<: *default
     # database: mark_development_queue
     adapter: sqlite3 # Override default for development
-    database: storage/mark_development_queue.sqlite3
+    database: db/development_queue.sqlite3
     migrations_paths: db/queue_migrate
   cable:
     <<: *default
     # database: mark_development_cable
     adapter: sqlite3 # Override default for development
-    database: storage/mark_development_cable.sqlite3
+    database: db/development_cable.sqlite3
     migrations_paths: db/cable_migrate
 
 test:
@@ -28,12 +28,12 @@ test:
     <<: *default
     # database: mark_test
     adapter: sqlite3 # Override default for development
-    database: storage/mark_test.sqlite3
+    database: db/test.sqlite3
   queue:
     <<: *default
     # database: mark_test_queue
     adapter: sqlite3 # Override default for development
-    database: storage/mark_test_queue.sqlite3
+    database: db/test_queue.sqlite3
     migrations_paths: db/queue_migrate
 
 production:

@@ -1,0 +1,63 @@
+<%= form_with model: [current_account, @user], 
+      data: { turbo_frame: :offcanvas },
+      class: "contents" do |form| %>
+  
+  <%= render "shared/errors", object: @user %>
+
+  <div class="my-5">
+    <%= form.label :email_address, class: "block text-sm font-medium text-gray-700" %>
+    <%= form.email_field :email_address, 
+          class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": @user.errors[:email_address].none?, "border-red-400 focus:outline-red-600": @user.errors[:email_address].any?}],
+          placeholder: "user@example.com" %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :password, class: "block text-sm font-medium text-gray-700" %>
+    <%= form.password_field :password, 
+          class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": @user.errors[:password].none?, "border-red-400 focus:outline-red-600": @user.errors[:password].any?}],
+          placeholder: @user.persisted? ? "Leave blank to keep current password" : "Password" %>
+    <% if @user.persisted? %>
+      <p class="mt-1 text-sm text-gray-500">Leave blank to keep current password</p>
+    <% end %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :password_confirmation, class: "block text-sm font-medium text-gray-700" %>
+    <%= form.password_field :password_confirmation, 
+          class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": @user.errors[:password_confirmation].none?, "border-red-400 focus:outline-red-600": @user.errors[:password_confirmation].any?}],
+          placeholder: "Confirm password" %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :role, class: "block text-sm font-medium text-gray-700" %>
+    <% if current_account.users.where(role: 'admin').exists? && !@user.admin? %>
+      <!-- Если уже есть админ и это не текущий пользователь, показываем только member -->
+      <%= form.select :role, 
+            options_for_select([
+              ['Member', 'member']
+            ], @user.role),
+            {},
+            class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": @user.errors[:role].none?, "border-red-400 focus:outline-red-600": @user.errors[:role].any?}] %>
+      <p class="mt-1 text-sm text-gray-500">Only one admin allowed per account</p>
+    <% else %>
+      <!-- Обычный выбор ролей -->
+      <%= form.select :role, 
+            options_for_select([
+              ['Member', 'member'],
+              ['Admin', 'admin']
+            ], @user.role),
+            {},
+            class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": @user.errors[:role].none?, "border-red-400 focus:outline-red-600": @user.errors[:role].any?}] %>
+    <% end %>
+  </div>
+
+  <div class="flex justify-start space-x-3 pt-4">
+    <%= form.submit @user.persisted? ? "Update User" : "Create User",
+          class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    <button type="button" 
+            class="inline-flex items-center px-3 py-1 bg-white text-violet-700 border border-violet-600 rounded-md hover:bg-violet-50"
+            data-action="click->offcanvas#close">
+      Cancel
+    </button>
+  </div>
+<% end %>

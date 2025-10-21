@@ -10,10 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_15_112432) do
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "pg_catalog.plpgsql"
-
+ActiveRecord::Schema[8.0].define(version: 2025_10_20_142448) do
   create_table "accounts", force: :cascade do |t|
     t.string "name", null: false
     t.boolean "active", default: true
@@ -61,6 +58,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_15_112432) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_clients_on_account_id"
+  end
+
+  create_table "discounts", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "title"
+    t.string "rule"
+    t.string "move"
+    t.string "shift"
+    t.string "points"
+    t.string "notice"
+    t.integer "position", default: 1, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_discounts_on_account_id"
   end
 
   create_table "insales", force: :cascade do |t|
@@ -191,6 +202,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_15_112432) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "clients", "accounts"
+  add_foreign_key "discounts", "accounts"
   add_foreign_key "insales", "accounts"
   add_foreign_key "list_items", "clients"
   add_foreign_key "list_items", "lists"

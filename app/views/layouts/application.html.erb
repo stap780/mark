@@ -39,25 +39,45 @@
                   class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
                   hover:bg-violet-500 hover:bg-opacity-75 
                   #{active_class if request.path == account_dashboard_path(current_account)}"%>
-            <%= link_to "Insales", account_insales_path(current_account),
-                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
-                hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/insales')}" %>
-            <%= link_to "Swatches", account_swatch_groups_path(current_account),
-                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
-                hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/swatch_groups')}" %>
+            <%= link_to "Clients", account_clients_path(current_account),
+                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white "+
+                        "hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/clients')}" %>
             <%= link_to "Products",account_products_path(account_id: current_account&.id),
                 class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
                 hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/products')}"%>
-            <%= link_to "Clients", account_clients_path(current_account),
+            <%= link_to "Discounts", account_discounts_path(current_account),
                 class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white "+
-                       "hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/clients')}" %>
+                        "hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/discounts')}" %>
             <%= link_to "Lists", account_lists_path(current_account),
                 class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white "+
-                       "hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/lists')}" %>
+                        "hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/lists')}" %>
+            <%= link_to "Swatches", account_swatch_groups_path(current_account),
+                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
+                hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/swatch_groups')}" %>
             <%= link_to "Jobs", "/jobs",
                 class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
                 hover:bg-violet-500 hover:bg-opacity-75",
                 data: { turbo: false } if current_account&.admin? %>
+            
+            <!-- Settings Accordion -->
+            <div data-controller="accordion" 
+                 data-accordion-open-value="<%= request.path.include?('/insales') || request.path.include?('/users') %>">
+              <button type="button" 
+                      data-action="click->accordion#toggle"
+                      class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/insales') || request.path.include?('/users')}">
+                <span>Settings</span>
+                <svg data-accordion-target="arrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              
+              <div data-accordion-target="content" class="hidden ml-4 space-y-1">
+                <%= link_to "Insales", account_insales_path(current_account),
+                    class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/insales')}" %>
+                <%= link_to "Users", account_users_path(current_account),
+                    class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/users')}" %>
+              </div>
+            </div>
           </nav>
         </div>
 

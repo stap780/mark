@@ -1,0 +1,18 @@
+<%= turbo_frame_tag dom_id(current_account, dom_id(discount)), class: "grid grid-cols-[30px_50px_1fr_200px_150px] gap-4 p-4 items-center", data: {sort_url: sort_account_discount_path(current_account, discount), sort_item_id: discount.id } do %>
+  <div class="truncate"><%= discount.id %></div>
+  <%= sortable_with_badge(discount.position) %>
+  <div class="text-sm font-medium"><%= discount.title %></div>
+  <div class="text-sm text-gray-600 truncate"><%= discount.notice %></div>
+  <div class="flex justify-end items-center space-x-2">
+    <%= link_to "Edit", edit_account_discount_path(current_account, discount), 
+          data: { turbo_frame: :offcanvas, turbo_prefetch: false  },
+          class: "text-violet-700 hover:underline" %>
+    <%= link_to account_discount_path(current_account || discount.account, discount),
+      data: { turbo_method: :delete, turbo_confirm: "Delete discount?" },
+      class: "float-right p-2 rounded-md bg-red-300 hover:bg-red-400 flex items-center justify-center" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    <% end %>          
+  </div>
+<% end %>

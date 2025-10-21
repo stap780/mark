@@ -5,6 +5,7 @@ class Account < ApplicationRecord
   has_many :products, dependent: :destroy
   has_many :lists, dependent: :destroy
   has_many :clients, dependent: :destroy
+  has_many :discounts, dependent: :destroy
   validates :name, presence: true
 
   # Set current account context

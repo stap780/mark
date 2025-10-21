@@ -1,0 +1,76 @@
+<%= form_with(model: [current_account, discount], class: "contents") do |form| %>
+  <%= render "shared/errors", object: discount %>
+
+  <% tablists = [
+    {handle: 'general', title: 'Основное'}, 
+    {handle: 'help', title: 'Помощь'}, 
+    {handle: 'example', title: 'Пример данных'}
+  ] %>
+
+  <div data-controller="tabs">
+    <!-- Tab Navigation -->
+    <div class="border-b border-gray-200 mb-6">
+      <nav class="-mb-px flex space-x-8">
+        <% tablists.each_with_index do |tab, index| %>
+          <button type="button" 
+                  data-tabs-target="tab" 
+                  data-tab="<%= tab[:handle] %>" 
+                  data-action="click->tabs#select"
+                  class="py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap <%= index == 0 ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' %>">
+            <%= tab[:title] %>
+          </button>
+        <% end %>
+      </nav>
+    </div>
+
+     <!-- Tab Content -->
+     <div data-tabs-target="content" data-tab="general">
+       <div class="my-5">
+         <%= form.label :title, class: "block text-sm font-medium text-gray-700" %>
+         <%= form.text_field :title, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": discount.errors[:title].none?, "border-red-400 focus:outline-red-600": discount.errors[:title].any?}] %>
+       </div>
+
+       <div class="my-5">
+         <%= form.label :rule, class: "block text-sm font-medium text-gray-700" %>
+         <%= form.text_area :rule, rows: 10, placeholder: "Liquid template см помощь", class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": discount.errors[:rule].none?, "border-red-400 focus:outline-red-600": discount.errors[:rule].any?}] %>
+       </div>
+
+       <div class="my-5 grid grid-cols-3 gap-4">
+         <div>
+           <%= form.label :move, class: "block text-sm font-medium text-gray-700" %>
+           <%= form.select :move, [['-','minus'],['+','plus']], {include_blank: false}, {class: "block shadow-sm rounded-md border px-3 py-2 mt-2 w-full border-gray-400 focus:outline-blue-600"} %>
+         </div>
+
+         <div>
+           <%= form.label :shift, class: "block text-sm font-medium text-gray-700" %>
+           <%= form.text_field :shift, {type: "number", class: "block shadow-sm rounded-md border px-3 py-2 mt-2 w-full border-gray-400 focus:outline-blue-600", min: "0"} %>
+         </div>
+
+         <div>
+           <%= form.label :points, class: "block text-sm font-medium text-gray-700" %>
+           <%= form.select :points, [['%','percent'], ['ед.','money']], {include_blank: false}, {class: "block shadow-sm rounded-md border px-3 py-2 mt-2 w-full border-gray-400 focus:outline-blue-600"} %>
+         </div>
+       </div>
+
+       <div class="my-5">
+         <%= form.label :notice, class: "block text-sm font-medium text-gray-700" %>
+         <%= form.text_area :notice, rows: 3, placeholder: "Message to show customer (e.g., '10% off your order!')", class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": discount.errors[:notice].none?, "border-red-400 focus:outline-red-600": discount.errors[:notice].any?}] %>
+         <p class="mt-1 text-sm text-gray-500">Message displayed to customer when discount is applied</p>
+       </div>
+
+       <div class="inline">
+         <%= form.submit class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
+       </div>
+
+     </div>
+
+    <div data-tabs-target="content" data-tab="help" class="hidden">
+      <%= render 'help' %>
+    </div>
+
+    <div data-tabs-target="content" data-tab="example" class="hidden">
+      <%= render 'code_example' %>
+    </div>
+  </div>
+
+<% end %>

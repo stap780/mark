@@ -1,4 +1,6 @@
 <%= render 'shared/offcanvas_inner', title: SwatchGroup.field_i18n(field) do %>
+  <% have_mobile = field == 'product_page_style_mob' || field == 'collection_page_style_mob' %>
+  <% have_pc = field == 'product_page_style' || field == 'collection_page_style' %>
   <div data-style-selector-field-value="<%= field %>">
     <% SwatchGroup::STYLE_GROUPS.each do |group_label, options| %>
       <div class="mb-4 border rounded-md">
@@ -22,7 +24,7 @@
           <% desktop_opts = options.select { |label, _| label.to_s.downcase.include?("desktop") } %>
           <% mobile_opts  = options.select { |label, _| label.to_s.downcase.include?("mobile") } %>
           <div class="p-3 grid grid-cols-2 gap-4">
-            <div>
+            <% if have_pc %>
               <div class="grid grid-cols-1 gap-2">
                 <% desktop_opts.each do |label, value| %>
                   <%= link_to pick_style_account_swatch_groups_path(current_account, field: field, value: value),
@@ -35,8 +37,8 @@
                   <% end %>
                 <% end %>
               </div>
-            </div>
-            <div>
+            <% end %>
+            <% if have_mobile %>
               <div class="grid grid-cols-1 gap-2">
                 <% mobile_opts.each do |label, value| %>
                   <%= link_to pick_style_account_swatch_groups_path(current_account, field: field, value: value),
@@ -49,7 +51,7 @@
                   <% end %>
                 <% end %>
               </div>
-            </div>
+            <% end %>
           </div>
         <% else %>
           <div class="p-3 grid grid-cols-1 gap-2">

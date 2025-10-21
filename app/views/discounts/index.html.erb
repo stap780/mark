@@ -1,0 +1,21 @@
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-xl font-semibold">Discounts</h1>
+  <div class="flex space-x-2">
+    <%= link_to "New", new_account_discount_path(current_account),
+          data: { turbo_frame: :offcanvas },
+          class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+  </div>
+</div>
+<%= turbo_stream_from dom_id(current_account, :discounts) %>
+<div class="bg-white rounded-lg shadow divide-y">
+  <div class="grid grid-cols-[30px_50px_1fr_200px_150px] gap-4 p-4 font-medium text-gray-700">
+    <div>#</div>
+    <div>Pos</div>
+    <div>Title</div>
+    <div>Notice</div>
+    <div></div>
+  </div>
+  <%= turbo_frame_tag dom_id(current_account, :discounts), data: { controller: "sortable" }  do %>
+    <%= render @discounts %>
+  <% end %>
+</div>
