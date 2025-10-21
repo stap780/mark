@@ -1,4 +1,7 @@
 class Api::DiscountsController < ApplicationController
+  # Отключаем CSRF защиту для API endpoints
+  skip_before_action :verify_authenticity_token
+  
   # POST /api/accounts/:account_id/discounts/calc
   # Принимает полную структуру данных заказа из Insales
   # Возвращает примененную скидку или ошибку
