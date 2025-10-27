@@ -1,15 +1,15 @@
 <div class="flex items-center justify-between mb-4">
   <h1 class="text-xl font-semibold"><%= @swatch_group.name %></h1>
   <div class="space-x-2">
-    <%= link_to "Edit", edit_account_swatch_group_path(current_account, @swatch_group), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
-    <%= link_to "Toggle status", toggle_status_account_swatch_group_path(current_account, @swatch_group), method: :patch, class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
-    <%= link_to "Regenerate JSON", regenerate_json_account_swatch_groups_path(current_account), method: :post, class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+    <%= link_to t(:edit), edit_account_swatch_group_path(current_account, @swatch_group), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    <%= link_to t(:toggle_status), toggle_status_account_swatch_group_path(current_account, @swatch_group), method: :patch, class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+    <%= link_to t(:regenerate_json), regenerate_json_account_swatch_groups_path(current_account), method: :post, class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
   </div>
   </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
   <div class="bg-white rounded-lg shadow p-4">
-    <h2 class="text-lg font-semibold mb-4">Assigned products</h2>
+    <h2 class="text-lg font-semibold mb-4"><%= t(:assigned_products) %></h2>
     <div class="space-y-2">
       <% @assigned_products.each do |sgp| %>
         <div class="flex items-center justify-between p-2 border rounded">
@@ -18,15 +18,15 @@
             <img src="<%= v&.image_link.presence || sgp.product.image_link %>" class="h-8 w-8 object-cover rounded" onerror="this.style.display='none'">
             <div>
               <div class="font-medium"><%= sgp.product.title %></div>
-              <div class="text-sm text-gray-600">Label: <%= sgp.swatch_label %> • Value: <%= sgp.swatch_value %>
+              <div class="text-sm text-gray-600"><%= t(:label) %>: <%= sgp.swatch_label %> • <%= t(:value) %>: <%= sgp.swatch_value %>
                 <% if v %>
-                  • Price: <%= v.price %>
+                  • <%= t(:price) %>: <%= v.price %>
                 <% end %>
               </div>
             </div>
           </div>
           <div class="space-x-2">
-            <%= link_to "Remove", account_swatch_group_swatch_group_product_path(current_account, @swatch_group, sgp), data: { turbo_method: :delete, turbo_confirm: "Remove product?" }, class: "text-red-600 hover:underline" %>
+            <%= link_to t(:remove), account_swatch_group_swatch_group_product_path(current_account, @swatch_group, sgp), data: { turbo_method: :delete, turbo_confirm: t(:remove_product) }, class: "text-red-600 hover:underline" %>
           </div>
         </div>
       <% end %>
@@ -34,7 +34,7 @@
   </div>
 
   <div class="bg-white rounded-lg shadow p-4">
-    <h2 class="text-lg font-semibold mb-4">Add product to group</h2>
+    <h2 class="text-lg font-semibold mb-4"><%= t(:add_product_to_group) %></h2>
     <%= form_with url: account_swatch_group_swatch_group_products_path(current_account, @swatch_group), scope: :swatch_group_product, class: "space-y-3" do |f| %>
       <div>
         <%= f.label :product_id, class: "block text-sm font-medium text-gray-700" %>
@@ -55,7 +55,7 @@
         <%= f.text_field :custom_image_url, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
       </div>
       <div>
-        <%= f.submit "Add", class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+        <%= f.submit t(:add), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
       </div>
     <% end %>
   </div>

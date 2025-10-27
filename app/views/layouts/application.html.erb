@@ -32,29 +32,30 @@
             <div class="h-8 w-8 bg-white rounded-lg flex items-center justify-center"></div>
             <span class="ml-3 text-lg font-semibold">Mark</span>
           </div>
+          
           <!-- Nav -->
           <nav class="flex-1 px-4 pb-4 space-y-1">
             <% active_class = "bg-violet-500 bg-opacity-75" %>
-            <%= link_to 'Dashboard', account_dashboard_path(current_account),
+            <%= link_to t(:dashboard), account_dashboard_path(current_account),
                   class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
                   hover:bg-violet-500 hover:bg-opacity-75 
                   #{active_class if request.path == account_dashboard_path(current_account)}"%>
-            <%= link_to "Clients", account_clients_path(current_account),
+            <%= link_to t(:clients), account_clients_path(current_account),
                 class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white "+
                         "hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/clients')}" %>
-            <%= link_to "Products",account_products_path(account_id: current_account&.id),
+            <%= link_to t(:products),account_products_path(account_id: current_account&.id),
                 class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
                 hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/products')}"%>
-            <%= link_to "Discounts", account_discounts_path(current_account),
+            <%= link_to t(:discounts), account_discounts_path(current_account),
                 class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white "+
                         "hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/discounts')}" %>
-            <%= link_to "Lists", account_lists_path(current_account),
+            <%= link_to t(:lists), account_lists_path(current_account),
                 class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white "+
                         "hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/lists')}" %>
-            <%= link_to "Swatches", account_swatch_groups_path(current_account),
+            <%= link_to t(:swatches), account_swatch_groups_path(current_account),
                 class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
                 hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/swatch_groups')}" %>
-            <%= link_to "Jobs", "/jobs",
+            <%= link_to t(:jobs), "/jobs",
                 class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
                 hover:bg-violet-500 hover:bg-opacity-75",
                 data: { turbo: false } if current_account&.admin? %>
@@ -65,16 +66,16 @@
               <button type="button" 
                       data-action="click->accordion#toggle"
                       class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/insales') || request.path.include?('/users')}">
-                <span>Settings</span>
+                <span><%= t(:settings) %></span>
                 <svg data-accordion-target="arrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
               </button>
               
               <div data-accordion-target="content" class="hidden ml-4 space-y-1">
-                <%= link_to "Insales", account_insales_path(current_account),
+                <%= link_to t(:insales), account_insales_path(current_account),
                     class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/insales')}" %>
-                <%= link_to "Users", account_users_path(current_account),
+                <%= link_to t(:users), account_users_path(current_account),
                     class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/users')}" %>
               </div>
             </div>
@@ -86,11 +87,17 @@
           <!-- Top bar -->
           <div class="bg-white shadow">
             <div class="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-end">
-              <div class="flex items-center space-x-4 ml-3">
-                <span class="text-gray-700 text-sm font-medium">
-                  <%= Current.user&.email_address %>
-                </span>
-                <%= button_to "Sign out", session_path, method: :delete,
+              <div class="menu-right flex items-center space-x-4 ml-3">
+              <!-- Language Switcher -->
+                <div class="langiages flex items-center space-x-2 text-sm">
+                  <%= link_to "EN", switch_locale_path(:en), 
+                      class: current_locale == :en ? 'font-bold underline' : 'opacity-75 hover:opacity-100' %>
+                  <span class="text-violet-300">|</span>
+                  <%= link_to "RU", switch_locale_path(:ru), 
+                      class: current_locale == :ru ? 'font-bold underline' : 'opacity-75 hover:opacity-100' %>
+                </div>
+                <span class="text-gray-700 text-sm font-medium"><%= Current.user&.email_address %></span>
+                <%= button_to t(:sign_out), session_path, method: :delete,
                       class: "inline-flex items-center px-3 py-1 text-sm font-medium rounded-md text-gray-700 hover:text-gray-900 cursor-pointer" %>
               </div>
             </div>

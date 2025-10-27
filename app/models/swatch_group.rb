@@ -37,8 +37,8 @@ class SwatchGroup < ApplicationRecord
       ["Square mobile - Large", "square_mobile_large"]
     ],
     "Do not show" => [
-      ["Desktop hide", "hide"],
-      ["Mobile hide", "hide"]
+      ["Desktop hide", "desktop_hide"],
+      ["Mobile hide", "mobile_hide"]
     ]
   }.freeze
   SWATCH_IMAGE_SOURCE = [
@@ -63,7 +63,39 @@ class SwatchGroup < ApplicationRecord
 
   def self.style_label_for(value)
     return nil if value.blank?
-    STYLE_LABEL_BY_VALUE[value] || value
+    
+    # Try to get translated label first
+    key = "activerecord.swatch_group.styles.#{value}"
+    translated_label = I18n.t(key, default: nil)
+    
+    # Fall back to original label if translation not found
+    translated_label.presence || STYLE_LABEL_BY_VALUE[value] || value
+  end
+  
+  # Returns translated style groups
+  def self.translated_style_groups
+    STYLE_GROUPS.map do |group_label, options|
+      # Translate group label
+      group_key = "swatch_group_style_groups.#{group_label.downcase}"
+      translated_group_label = I18n.t(group_key, default: group_label)
+      
+      # Translate individual option labels
+      translated_options = options.map do |label, value|
+        translated_label = style_label_for(value)
+        [translated_label, value]
+      end
+      
+      [translated_group_label, translated_options]
+    end.to_h
+  end
+  
+  # Returns translated image sources
+  def self.translated_image_sources
+    SWATCH_IMAGE_SOURCE.map do |label, value|
+      key = "activerecord.swatch_group.image_sources.#{value}"
+      translated_label = I18n.t(key, default: label)
+      [translated_label, value]
+    end
   end
 
   validates :product_page_style, inclusion: { in: ALLOWED_STYLE_VALUES }

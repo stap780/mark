@@ -1,30 +1,20 @@
 <%= render 'shared/offcanvas_inner', title: SwatchGroup.field_i18n(field) do %>
-  <% have_mobile = field == 'product_page_style_mob' || field == 'collection_page_style_mob' %>
-  <% have_pc = field == 'product_page_style' || field == 'collection_page_style' %>
+  <% for_mobile = field == 'product_page_style_mob' || field == 'collection_page_style_mob' %>
+  <% for_pc = field == 'product_page_style' || field == 'collection_page_style' %>
   <div data-style-selector-field-value="<%= field %>">
-    <% SwatchGroup::STYLE_GROUPS.each do |group_label, options| %>
+    <% SwatchGroup.translated_style_groups.each do |group_label, options| %>
       <div class="mb-4 border rounded-md">
-        <div class="px-3 py-2 font-medium bg-gray-50 border-b flex items-center justify-between">
+        <div class="px-3 py-2 font-medium bg-gray-50 border-b flex items-center justify-between group_label">
           <span><%= group_label %></span>
-          <% if group_label == "Circular swatch" %>
-            <span class="flex items-center gap-2 text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5">
-                <circle cx="10" cy="10" r="10" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6">
-                <circle cx="12" cy="12" r="12" />
-              </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" fill="currentColor" class="h-7 w-7">
-                <circle cx="14" cy="14" r="14" />
-              </svg>
-            </span>
-          <% end %>
+          <%= render 'circular_view' if group_label.to_s.downcase.include?("круглый") || group_label == "Circular swatch" %>
         </div>
-        <% if group_label == "Circular swatch" || group_label == "Square button" %>
-          <% desktop_opts = options.select { |label, _| label.to_s.downcase.include?("desktop") } %>
-          <% mobile_opts  = options.select { |label, _| label.to_s.downcase.include?("mobile") } %>
+
+        <% desktop_opts = options.select { |_, value| value.to_s.include?("desktop") } %>
+        <% mobile_opts  = options.select { |_, value| value.to_s.include?("mobile") } %>
+
+        <% if group_label.to_s.downcase.include?("круглый") || group_label.to_s.downcase.include?("квадрат") || group_label == "Circular swatch" || group_label == "Square button" %>
           <div class="p-3 grid grid-cols-2 gap-4">
-            <% if have_pc %>
+            <% if for_pc %>
               <div class="grid grid-cols-1 gap-2">
                 <% desktop_opts.each do |label, value| %>
                   <%= link_to pick_style_account_swatch_groups_path(current_account, field: field, value: value),
@@ -32,13 +22,13 @@
                               class: "flex items-center justify-between w-full rounded-md border px-3 py-2 text-left hover:bg-gray-50 #{'ring-2 ring-violet-500' if value == current_value}" do %>
                     <span class="text-sm text-gray-800"><%= label %></span>
                     <% if value == current_value %>
-                      <span class="text-violet-600 text-xs">Selected</span>
+                      <span class="text-violet-600 text-xs"><%= t(:selected) %></span>
                     <% end %>
                   <% end %>
                 <% end %>
               </div>
             <% end %>
-            <% if have_mobile %>
+            <% if for_mobile %>
               <div class="grid grid-cols-1 gap-2">
                 <% mobile_opts.each do |label, value| %>
                   <%= link_to pick_style_account_swatch_groups_path(current_account, field: field, value: value),
@@ -46,7 +36,38 @@
                               class: "flex items-center justify-between w-full rounded-md border px-3 py-2 text-left hover:bg-gray-50 #{'ring-2 ring-violet-500' if value == current_value}" do %>
                     <span class="text-sm text-gray-800"><%= label %></span>
                     <% if value == current_value %>
-                      <span class="text-violet-600 text-xs">Selected</span>
+                      <span class="text-violet-600 text-xs"><%= t(:selected) %></span>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% elsif group_label.to_s.downcase.include?("не показывать") || group_label.to_s.downcase.include?("do not show") %>
+          <div class="p-3 grid grid-cols-2 gap-4">
+            <% if for_pc %>
+              <div class="grid grid-cols-1 gap-2">
+                <% desktop_opts.each do |label, value| %>
+                  <%= link_to pick_style_account_swatch_groups_path(current_account, field: field, value: value),
+                              data: { turbo_method: :post, turbo_frame: :_top },
+                              class: "flex items-center justify-between w-full rounded-md border px-3 py-2 text-left hover:bg-gray-50 #{'ring-2 ring-violet-500' if value == current_value}" do %>
+                    <span class="text-sm text-gray-800"><%= label %></span>
+                    <% if value == current_value %>
+                      <span class="text-violet-600 text-xs"><%= t(:selected) %></span>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              </div>
+            <% end %>
+            <% if for_mobile %>
+              <div class="grid grid-cols-1 gap-2">
+                <% mobile_opts.each do |label, value| %>
+                  <%= link_to pick_style_account_swatch_groups_path(current_account, field: field, value: value),
+                              data: { turbo_method: :post, turbo_frame: :_top },
+                              class: "flex items-center justify-between w-full rounded-md border px-3 py-2 text-left hover:bg-gray-50 #{'ring-2 ring-violet-500' if value == current_value}" do %>
+                    <span class="text-sm text-gray-800"><%= label %></span>
+                    <% if value == current_value %>
+                      <span class="text-violet-600 text-xs"><%= t(:selected) %></span>
                     <% end %>
                   <% end %>
                 <% end %>
@@ -54,15 +75,13 @@
             <% end %>
           </div>
         <% else %>
-          <div class="p-3 grid grid-cols-1 gap-2">
+          <div class="p-3 grid grid-cols-1 gap-2 not-circular-and-square-swatch">
             <% options.each do |label, value| %>
               <%= link_to pick_style_account_swatch_groups_path(current_account, field: field, value: value),
                           data: { turbo_method: :post, turbo_frame: :_top },
                           class: "flex items-center justify-between w-full rounded-md border px-3 py-2 text-left hover:bg-gray-50 #{'ring-2 ring-violet-500' if value == current_value}" do %>
-                <span class="text-sm text-gray-800"><%= label %></span>
-                <% if value == current_value %>
-                  <span class="text-violet-600 text-xs">Selected</span>
-                <% end %>
+                <%= content_tag(:span, label, class: "text-sm text-gray-800") %>
+                <%= content_tag(:span, t(:selected), class: "text-violet-600 text-xs") if value == current_value %>
               <% end %>
             <% end %>
           </div>
@@ -71,7 +90,7 @@
     <% end %>
 
     <div class="flex justify-end">
-      <button type="button" class="px-3 py-1 rounded-md border text-gray-700 hover:bg-gray-50" data-action="style-selector#close">Cancel</button>
+      <button type="button" class="px-3 py-1 rounded-md border text-gray-700 hover:bg-gray-50" data-action="style-selector#close"><%= t(:cancel) %></button>
     </div>
   </div>
 <% end %>

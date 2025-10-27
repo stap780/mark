@@ -1,7 +1,7 @@
 /**
  * Modern ES6 Class-based Lists Manager
  * Refactored from list.js with pagination support
- * Version: v_1.2.1
+ * Version: v_1.2.7
  */
 
 // Configuration constants
@@ -10,7 +10,7 @@ const CONFIG = {
   apiBase: 'https://app.teletri.ru/api',
   itemsPerPage: 20,
   maxVisiblePages: 100,
-  version: 'v_1.2.1'
+  version: 'v_1.2.7'
 };
 
 // Debug logging utility
@@ -26,7 +26,9 @@ class Logger {
   }
 
   error(...args) {
-    console.error('[ListsManager]', ...args);
+    if (this.debug) {
+      console.error('[ListsManager]', ...args);
+    }
   }
 }
 
@@ -1043,13 +1045,9 @@ class ListsManager {
         try {
           const url = new URL(src, window.location.origin);
           const id = url.searchParams.get('id');
-          const dbg = url.searchParams.get('debug');
-          if (dbg === '1' || dbg === 'true') {
-            console.log('[ListsManager] DEBUG mode ENABLED');
-          }
           if (id) return id;
         } catch (e) {
-          console.log('[ListsManager] Error parsing URL:', e);
+          // Ignore URL parsing errors
         }
       }
     }
@@ -1162,9 +1160,7 @@ class ListsManager {
       this.eventHandler.bindEvents();
       this.debugSectionContents();
       this.logger.log('=== Event binding completed ===');
-      
-      this.logger.log(`Initialization completed (${CONFIG.version})`);
-      
+            
     } catch (error) {
       this.logger.error('Initialization failed:', error);
       // As a safety net, try guest mode too
@@ -1252,7 +1248,7 @@ class ListsManager {
           name: list.name,
           icon_style: list.icon_style || 'icon_one',
           icon_color: list.icon_color || '#999999',
-          items: [] // badge 0 in guest mode
+          items: list.items || [] // Use actual items if available
         });
         headerContainer.appendChild(listIcon);
       });
@@ -1445,16 +1441,41 @@ class ListsManager {
 
 // Initialize when DOM is ready
 (function() {
-  console.log(`[ListsManager] Class-based implementation loaded (${CONFIG.version})`);
+  // Global debug flag
+  let globalDebug = false;
+  
+  // Check debug parameter from script URL
+  const scripts = document.getElementsByTagName('script');
+  for (let i = 0; i < scripts.length; i++) {
+    const src = scripts[i].getAttribute('src') || '';
+    if (src.includes('list.js')) {
+      try {
+        const url = new URL(src, window.location.origin);
+        const dbg = url.searchParams.get('debug');
+        globalDebug = dbg === '1' || dbg === 'true';
+        break;
+      } catch (e) {
+        // Ignore URL parsing errors
+      }
+    }
+  }
+  
+  if (globalDebug) {
+    console.log(`[ListsManager] Class-based implementation loaded (${CONFIG.version})`);
+    console.log(`[ListsManager] Debug mode enabled`);
+  }
+  
   
   function runInitialization() {
     const accountId = ListsManager.getAccountIdFromScript();
     if (!accountId) {
-      console.log('[ListsManager] No account ID found');
+      if (globalDebug) {
+        console.log('[ListsManager] No account ID found');
+      }
       return;
     }
     
-    const manager = new ListsManager(accountId, { debug: true });
+    const manager = new ListsManager(accountId, { debug: globalDebug });
     manager.initialize();
   }
   

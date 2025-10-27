@@ -1,15 +1,15 @@
-<%= render 'shared/offcanvas_inner', title: 'Add items from products XML' do %>
+<%= render 'shared/offcanvas_inner', title: t(:add_items_from_xml) do %>
   <%= form_with url: search_account_swatch_group_path(current_account, @swatch_group), 
     method: :get, 
     data: { turbo_frame: :picker_results, controller: "search", "search-target": "form" } do %>
     <%= text_field_tag :q, params[:q],
-          placeholder: "Type to search...",
+          placeholder: t(:type_to_search),
           autocomplete: "off",
           class: "mt-1 mb-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5",
           data: { action: "input->search#search" } %>
   <% end %>
   <%= turbo_frame_tag :picker_results do %>
-    <div class="text-xs text-gray-500">Type to search...</div>
+    <div class="text-xs text-gray-500"><%= t(:type_to_search) %></div>
   <% end %>
 <% end %>
 

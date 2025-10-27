@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   if defined?(MissionControl::Jobs::Engine)
     mount MissionControl::Jobs::Engine, at: "/jobs"
   end
+  
   resource :session
   resources :passwords, param: :token
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -17,6 +18,9 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   root "sessions#new"
+  
+  # Locale switching
+  get "switch_locale/:locale", to: "application#switch_locale", as: :switch_locale
 
 
   # Account-scoped routes

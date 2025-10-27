@@ -4,10 +4,16 @@ class ApplicationController < ActionController::Base
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
 
+  before_action :set_locale
   before_action :load_session
-  before_action :set_current_account
-  before_action :ensure_user_in_current_account
-  helper_method :current_account
+  before_action :set_current_account, except: [:switch_locale]
+  before_action :ensure_user_in_current_account, except: [:switch_locale]
+  helper_method :current_account, :current_locale
+  
+  def switch_locale
+    session[:locale] = params[:locale]
+    redirect_back fallback_location: root_path
+  end
 
   private
 
@@ -48,4 +54,13 @@ class ApplicationController < ActionController::Base
   def current_account
     Current.account
   end
+  
+  def set_locale
+    I18n.locale = session[:locale] || I18n.default_locale
+  end
+  
+  def current_locale
+    I18n.locale
+  end
+  
 end
