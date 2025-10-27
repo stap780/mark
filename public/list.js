@@ -1,7 +1,7 @@
 /**
  * Modern ES6 Class-based Lists Manager
  * Refactored from list.js with pagination support
- * Version: v_1.2.7
+ * Version: v_1.3.0
  */
 
 // Configuration constants
@@ -10,7 +10,7 @@ const CONFIG = {
   apiBase: 'https://app.teletri.ru/api',
   itemsPerPage: 20,
   maxVisiblePages: 100,
-  version: 'v_1.2.7'
+  version: 'v_1.3.0'
 };
 
 // Debug logging utility
@@ -1089,15 +1089,17 @@ class ListsManager {
   }
 
   /**
-   * Load CSS dynamically
+   * Load CSS dynamically without blocking render
    */
   async loadCSS() {
     return new Promise((resolve) => {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = 'https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23/scripts/list.css';
+      link.media = 'print'; // Не блокирует рендер
       link.onload = () => {
-        this.logger.log('CSS loaded');
+        link.media = 'all'; // Активировать стили после загрузки
+        this.logger.log('CSS loaded (non-blocking)');
         resolve();
       };
       link.onerror = () => {
@@ -1175,9 +1177,12 @@ class ListsManager {
    */
   async setupGuestMode() {
     const logger = this.logger;
-    const ui = this.uiRenderer;
     logger.log('[GuestMode] Enabled');
-    // Load lists from S3: list_{accountId}.json
+    
+    // 1. Show placeholder icons immediately
+    this.renderPlaceholderIcons();
+    
+    // 2. Load lists from S3: list_{accountId}.json
     let guestLists = [];
     try {
       if (this.accountId) {
@@ -1195,15 +1200,18 @@ class ListsManager {
     } catch (e) {
       logger.log('[GuestMode] Failed to load list_{accountId}.json');
     }
-    // If lists are not available, do not render anything in guest mode
+    
+    // 3. If lists are not available, do not render anything in guest mode
     if (!guestLists.length) {
       logger.log('[GuestMode] No lists available, skipping icon rendering');
       return;
     }
-    // Render triggers and header icons using shared helpers
+    
+    // 4. Replace placeholders with real icons
     this.renderTriggersFromLists(guestLists);
     this.renderHeaderFromLists(guestLists);
-    // Bind alert on clicks (idempotent: harmless if added twice)
+    
+    // 5. Bind alert on clicks (idempotent: harmless if added twice)
     document.addEventListener('click', (event) => {
       if (!event.target || !event.target.classList) return;
       if (event.target.classList.contains('twc-list-item') || event.target.classList.contains('twc-header-list-item')) {
@@ -1214,20 +1222,40 @@ class ListsManager {
   }
 
   /**
-   * Shared: render triggers for category/product hosts from lists
+   * Render placeholder icons immediately (before data loads)
    */
-  renderTriggersFromLists(lists) {
+  renderPlaceholderIcons() {
     const nodes = document.querySelectorAll('[data-ui-favorites-trigger]');
-    this.logger.log(`[Shared] Found ${nodes.length} elements with data-ui-favorites-trigger`);
+    this.logger.log(`Rendering placeholder icons for ${nodes.length} elements`);
+    
     nodes.forEach(node => {
       const productId = node.getAttribute('data-ui-favorites-trigger');
-      const container = this.uiRenderer.createListsContainer(lists, { attach: false });
+      // Create empty containers with proper dimensions
+      const placeholder = document.createElement('div');
+      placeholder.className = 'twc-lists-container';
+      placeholder.style.width = '72px'; // Approximate width for 3 icons
+      placeholder.style.height = '24px';
+      placeholder.innerHTML = ''; // Empty, will be filled later
       node.innerHTML = '';
-      node.appendChild(container);
+      node.appendChild(placeholder);
+      
       if (productId) {
         node.removeAttribute('data-ui-favorites-trigger');
         node.setAttribute('data-ui-favorites-trigger-twc', productId);
       }
+    });
+  }
+
+  /**
+   * Shared: render triggers for category/product hosts from lists
+   */
+  renderTriggersFromLists(lists) {
+    const nodes = document.querySelectorAll('[data-ui-favorites-trigger-twc]');
+    this.logger.log(`[Shared] Found ${nodes.length} elements with data-ui-favorites-trigger-twc`);
+    nodes.forEach(node => {
+      const container = this.uiRenderer.createListsContainer(lists, { attach: false });
+      node.innerHTML = '';
+      node.appendChild(container);
     });
   }
 
@@ -1439,7 +1467,7 @@ class ListsManager {
   }
 }
 
-// Initialize when DOM is ready
+// Initialize immediately (optimized for faster rendering)
 (function() {
   // Global debug flag
   let globalDebug = false;
@@ -1479,6 +1507,11 @@ class ListsManager {
     manager.initialize();
   }
   
-  // Always initialize on DOMContentLoaded
-  document.addEventListener('DOMContentLoaded', runInitialization);
+  // Start immediately if DOM is already ready, otherwise wait for DOMContentLoaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', runInitialization);
+  } else {
+    // DOM already loaded, start immediately
+    runInitialization();
+  }
 })();
