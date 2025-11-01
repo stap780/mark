@@ -1,0 +1,43 @@
+<div class="bg-white rounded-lg shadow p-4">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-xl font-semibold">Incase #<%= @incase.id %></h1>
+    <div class="flex space-x-2">
+      <%= button_to 'Update Status', update_status_account_incase_path(current_account, @incase), method: :patch, params: { status: 'in_progress' }, class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div class="p-3 bg-gray-50 rounded">
+      <p class="text-sm text-gray-600">Status</p>
+      <p class="font-medium"><%= @incase.status %></p>
+    </div>
+    <div class="p-3 bg-gray-50 rounded">
+      <p class="text-sm text-gray-600">Created</p>
+      <p class="font-medium"><%= l @incase.created_at, format: :short %></p>
+    </div>
+    <div class="p-3 bg-gray-50 rounded">
+      <p class="text-sm text-gray-600">Webform</p>
+      <p class="font-medium"><%= @incase.webform.title %> (<%= @incase.webform.kind %>)</p>
+    </div>
+    <div class="p-3 bg-gray-50 rounded">
+      <p class="text-sm text-gray-600">Client</p>
+      <p class="font-medium"><%= @incase.client.name %></p>
+      <p class="text-sm text-gray-500"><%= @incase.client.email %></p>
+      <p class="text-sm text-gray-500"><%= @incase.client.phone %></p>
+    </div>
+  </div>
+
+  <h3 class="text-lg font-semibold mb-2">Items</h3>
+  <div class="bg-gray-50 rounded-lg p-4 space-y-2">
+    <% @incase.incase_items.each do |it| %>
+      <div class="flex items-center justify-between p-2 border-b">
+        <div>
+          <span class="font-medium"><%= it.item_type %>#<%= it.item_id %></span>
+          <span class="text-sm text-gray-500 ml-2">qty: <%= it.quantity %></span>
+          <span class="text-sm text-gray-500 ml-2">price: <%= it.price %></span>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+

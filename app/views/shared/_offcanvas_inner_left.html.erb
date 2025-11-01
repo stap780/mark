@@ -1,9 +1,9 @@
 <%= turbo_frame_tag :offcanvas do %>
   <div data-controller="offcanvas">
     <!-- Backdrop -->
-    <div data-offcanvas-backdrop class="fixed inset-0 bg-gray-900/40 hidden opacity-0 transition-opacity duration-300 ease-out" data-action="click->offcanvas#close"></div>
-    <!-- Panel wrapper -->
-    <div data-offcanvas-panel class="offcanvas-right fixed inset-y-0 right-0 bg-white shadow-xl transform transition-transform duration-300 ease-out translate-x-full overflow-y-auto" 
+    <div data-offcanvas-backdrop class="fixed inset-0 bg-transparent hidden opacity-0 transition-opacity duration-300 ease-out" data-action="click->offcanvas#close"></div>
+    <!-- Panel wrapper - слева -->
+    <div data-offcanvas-panel class="offcanvas-left fixed inset-y-0 left-0 bg-white shadow-xl transform transition-transform duration-300 ease-out -translate-x-full overflow-y-auto" 
       style="max-width: <%= local_assigns[:width] || '40rem' %>;width: 100%;">
       <div class="p-4 border-b flex items-center justify-between">
         <h2 class="text-lg font-semibold"><%= title %></h2>
@@ -15,3 +15,4 @@
     </div>
   </div>
 <% end %>
+

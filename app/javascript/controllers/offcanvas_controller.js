@@ -44,7 +44,9 @@ export default class extends Controller {
 
 		this._backdrop.classList.remove("hidden")
 		requestAnimationFrame(() => this._backdrop.classList.remove("opacity-0"))
+		// Remove both translate classes to support left and right panels
 		this._panel.classList.remove("translate-x-full")
+		this._panel.classList.remove("-translate-x-full")
 	}
 
 	close() {
@@ -56,7 +58,12 @@ export default class extends Controller {
 			return
 		}
 
-		this._panel.classList.add("translate-x-full")
+		// Check if panel is on left or right side
+		if (this._panel.classList.contains("left-0")) {
+			this._panel.classList.add("-translate-x-full")
+		} else {
+			this._panel.classList.add("translate-x-full")
+		}
 		this._backdrop.classList.add("opacity-0")
 
 		setTimeout(() => {

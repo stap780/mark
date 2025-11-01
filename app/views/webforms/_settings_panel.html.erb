@@ -1,0 +1,54 @@
+<% if target == :field_settings %>
+  <% model_for_form = [current_account, webform, field] %>
+  <% url_for_form = build_account_webform_webform_field_path(current_account, webform, field) %>
+<% else %>
+  <% model_for_form = [current_account, webform] %>
+  <% url_for_form = build_account_webform_path(current_account, webform) %>
+<% end %>
+
+<%= form_with model: model_for_form, url: url_for_form, method: :patch,
+      data: { controller: "auto-submit", "auto-submit-delay-value": 350, turbo_stream: true},
+      local: false,
+      class: "space-y-4" do |f| %>
+  
+  <% settings_hash = target == :field_settings ? (field.settings || {}) : (webform.settings || {}) %>
+  <% settings_data = settings_hash.with_indifferent_access rescue settings_hash %>
+  <%= f.fields_for :settings, settings_hash do |sf| %>
+  
+  <div class="grid grid-cols-3 gap-4">
+    <% WebformSettings::DEFAULT.keys.each do |key| %>
+      <div class="<%= ['border_radius'].include?(key.to_s) ? 'col-span-2' : '' %>">
+        <% label = key.to_s.humanize %>
+        <% case key.to_s %>
+        <% when /color$/ %>
+          <%= sf.label key, label, class: "block text-sm font-medium text-gray-700" %>
+          <%= sf.text_field key,
+              value: settings_data[key.to_s],
+              type: "color",
+              class: "mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm" %>
+        <% when /present$/ %>
+          <%= sf.label key, label, class: "block text-sm font-medium text-gray-700" %>
+          <%= sf.check_box key,
+              { checked: settings_data[key.to_s], class: "mt-1 h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded" },
+              "true", "false" %>
+        <% when 'width', 'font_size', 'padding_x', 'padding_y', 'margin_x', 'margin_y', 'border_width', 'border_radius', 'box_shadow_offset_x', 'box_shadow_offset_y', 'box_shadow_blur', 'box_shadow_spread' %>
+          <%= sf.label key, "#{label} (px)", class: "block text-sm font-medium text-gray-700" %>
+          <div class="mt-1 flex items-center gap-2">
+            <%= sf.number_field key,
+                value: (settings_data[key.to_s].to_s =~ /px\z/ ? settings_data[key.to_s].to_s.gsub(/px\z/, '') : settings_data[key.to_s]),
+                min: 0,
+                step: 1,
+                class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
+          </div>
+        <% else %>
+          <%= sf.label key, label, class: "block text-sm font-medium text-gray-700" %>
+          <%= sf.text_field key,
+              value: settings_data[key.to_s],
+              class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <% end %>
+<% end %>

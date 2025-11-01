@@ -21,6 +21,7 @@ export default class extends Controller {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
+              'Accept': 'text/vnd.turbo-stream.html',
               'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
             },
             body: JSON.stringify({
@@ -34,6 +35,14 @@ export default class extends Controller {
           }
           
           this.updatePositions()
+          
+          // Обрабатываем Turbo Stream ответ
+          const contentType = response.headers.get('content-type')
+          if (contentType && contentType.includes('text/vnd.turbo-stream.html')) {
+            const html = await response.text()
+            Turbo.renderStreamMessage(html)
+          }
+          
           this.dispatch('move', { detail: { content: 'Item sorted' } })
         } catch(error) {
           console.error('Sort error:', error)

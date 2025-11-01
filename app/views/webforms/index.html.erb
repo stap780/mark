@@ -1,0 +1,23 @@
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-xl font-semibold">Webforms</h1>
+  <div class="flex space-x-2">
+    <%= link_to "New", new_account_webform_path(current_account),
+        data: { turbo_frame: :offcanvas },
+        class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+  </div>
+</div>
+
+<%= turbo_stream_from dom_id(current_account, :webforms) %>
+<div class="bg-white rounded-lg shadow divide-y">
+  <div class="grid grid-cols-[80px_1fr_150px_100px_150px] gap-4 p-4 font-medium text-gray-700">
+    <div>#</div>
+    <div>Title</div>
+    <div>Kind</div>
+    <div>Status</div>
+    <div></div>
+  </div>
+  <%= turbo_frame_tag dom_id(current_account, :webforms) do %>
+    <%= render @webforms %>
+  <% end %>
+  
+</div>

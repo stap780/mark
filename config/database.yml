@@ -7,33 +7,33 @@ default: &default
 development:
   primary:
     <<: *default
-    # database: mark_development
-    adapter: sqlite3 # Override default for development
-    database: db/development.sqlite3
+    database: mark_development
+    # adapter: sqlite3 # Override default for development
+    # database: db/development.sqlite3
   queue:
     <<: *default
-    # database: mark_development_queue
-    adapter: sqlite3 # Override default for development
-    database: db/development_queue.sqlite3
+    database: mark_development_queue
+    # adapter: sqlite3 # Override default for development
+    # database: db/development_queue.sqlite3
     migrations_paths: db/queue_migrate
   cable:
     <<: *default
-    # database: mark_development_cable
-    adapter: sqlite3 # Override default for development
-    database: db/development_cable.sqlite3
+    database: mark_development_cable
+    # adapter: sqlite3 # Override default for development
+    # database: db/development_cable.sqlite3
     migrations_paths: db/cable_migrate
 
 test:
   primary:
     <<: *default
-    # database: mark_test
-    adapter: sqlite3 # Override default for development
-    database: db/test.sqlite3
+    database: mark_test
+    # adapter: sqlite3 # Override default for development
+    # database: db/test.sqlite3
   queue:
     <<: *default
-    # database: mark_test_queue
-    adapter: sqlite3 # Override default for development
-    database: db/test_queue.sqlite3
+    database: mark_test_queue
+    # adapter: sqlite3 # Override default for development
+    # database: db/test_queue.sqlite3
     migrations_paths: db/queue_migrate
 
 production:

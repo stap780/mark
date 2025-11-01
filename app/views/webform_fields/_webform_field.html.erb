@@ -1,0 +1,27 @@
+<%= turbo_frame_tag dom_id(current_account, dom_id(field)), 
+    class: "grid grid-cols-[50px_1fr_70px_70px_150px] gap-4 p-4 items-center",
+    data: {sort_url: sort_account_webform_webform_field_path(current_account, webform, field), sort_item_id: field.id } do %>
+  <%= sortable_with_badge(field.position) %>
+  <div class="text-sm font-medium truncate">
+    <%= field.name %> <span class="text-gray-500">(<%= field.label %>)</span>
+  </div>
+  <div class="text-sm text-gray-600"><%= field.field_type %></div>
+  <div class="text-sm text-gray-600">
+    <% if field.required %><span class="text-red-600">Required</span><% else %>Optional<% end %>
+  </div>
+  <div class="flex justify-end items-center space-x-2">
+    <%= link_to "Edit", edit_account_webform_webform_field_path(current_account, webform, field),
+        data: { turbo_frame: :offcanvas, turbo_prefetch: false },
+        class: "text-violet-700 hover:underline" %>
+    <%= link_to "Design", design_account_webform_webform_field_path(current_account, webform, field),
+        data: { turbo_frame: :offcanvas, turbo_prefetch: false },
+        class: "text-violet-700 hover:underline" %>
+    <%= link_to account_webform_webform_field_path(current_account, webform, field),
+        data: { turbo_method: :delete, turbo_confirm: "Delete field?" },
+        class: "p-2 rounded-md bg-red-300 hover:bg-red-400 flex items-center justify-center" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    <% end %>
+  </div>
+<% end %>

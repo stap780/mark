@@ -1,0 +1,23 @@
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-xl font-semibold">Incases</h1>
+</div>
+
+<div class="bg-white rounded-lg shadow divide-y">
+  <div class="grid grid-cols-[80px_160px_120px_2fr_2fr] gap-4 p-4 font-medium text-gray-700">
+    <div>#</div>
+    <div>Created</div>
+    <div>Status</div>
+    <div>Webform</div>
+    <div>Client</div>
+  </div>
+  <% @incases.each do |i| %>
+    <div class="grid grid-cols-[80px_160px_120px_2fr_2fr] gap-4 p-4 hover:bg-gray-50">
+      <div><%= link_to i.id, account_incase_path(current_account, i), class: "text-violet-600 hover:text-violet-800" %></div>
+      <div><%= l i.created_at, format: :short %></div>
+      <div><%= i.status %></div>
+      <div><%= i.webform.title %> (<%= i.webform.kind %>)</div>
+      <div><%= i.client.name %> <%= i.client.email %></div>
+    </div>
+  <% end %>
+</div>
+

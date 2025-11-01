@@ -65,8 +65,6 @@ class Insale < ApplicationRecord
   end
 
   # Add webhook for orders/create for the current account
-  # If no explicit address is provided, use the account's configured api_link
-  # (caller is responsible for ensuring api_link contains a full URL if needed)
   def self.add_order_webhook(address: nil)
     rec = Current.account&.insales&.first
     return [false, ["No Insale configuration for this account"]] unless rec
@@ -74,7 +72,7 @@ class Insale < ApplicationRecord
     return [false, ["API not working"]] unless api_work?
 
     webh_list = InsalesApi::Webhook.all
-    target_address = address || rec.api_link
+    target_address = address || "#{Rails.application.config.public_host}/api/accounts/#{Current.account.id}/webhooks/insales/order"
     check_present = webh_list.any? { |w| w.topic == "orders/create" && w.address == target_address }
 
     if check_present

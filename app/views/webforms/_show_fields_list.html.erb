@@ -1,0 +1,20 @@
+<div class="flex items-center justify-between mb-4">
+  <h2 class="text-lg font-semibold">Fields</h2>
+  <%= link_to "Add Field", new_account_webform_webform_field_path(current_account, webform),
+      data: { turbo_frame: :offcanvas },
+      class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+</div>
+<div class="bg-white rounded-lg shadow divide-y">
+  <div class="grid grid-cols-[50px_1fr_70px_70px_150px] gap-4 p-4 font-medium text-gray-700">
+    <div>Pos</div>
+    <div>Name</div>
+    <div>Type</div>
+    <div>Required</div>
+    <div></div>
+  </div>
+  <%= turbo_frame_tag dom_id(current_account, dom_id(webform, :webform_fields)), data: { controller: "sortable" } do %>
+    <% webform.webform_fields.order(:position).each do |f| %>
+      <%= render 'webform_fields/webform_field', field: f, webform: webform %>
+    <% end %>
+  <% end %>
+</div>

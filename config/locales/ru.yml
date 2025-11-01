@@ -1,7 +1,7 @@
 ru:
   hello: "Привет мир"
   save: "Сохранить"
-  back: "Назад"
+  back: "← Назад"
   cancel: "Отмена"
   update: "Обновить"
   
@@ -54,6 +54,7 @@ ru:
   activerecord:
     models:
       swatch_group: "Группа"
+      webform_field: "Поле формы"
     attributes:
       swatch_group:
         name: "Название"
@@ -68,6 +69,19 @@ ru:
         css_class_preview: "CSS класс превью"
         product_page_image_source: "Страница товара. Источник изображения"
         collection_page_image_source: "Страница коллекции. Источник изображения"
+      webform_field:
+        name: "Имя"
+        label: "Метка"
+        field_type: "Тип поля"
+        required: "Обязательное"
+    errors:
+      models:
+        webform_field:
+          attributes:
+            name:
+              taken: "уже занято в этой форме"
+      messages:
+        taken: "уже занято"
     columns:
       number: "#"
       name: "Название"

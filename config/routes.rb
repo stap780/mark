@@ -59,6 +59,7 @@ Rails.application.routes.draw do
     end
 
     resources :products do
+      resources :varbinds
       member do
         get :insales_info
       end
@@ -73,9 +74,7 @@ Rails.application.routes.draw do
       end
       resources :varbinds
     end
-    resources :products do
-      resources :varbinds
-    end
+
     resources :lists do
       resources :list_items, only: [:index, :create, :destroy]
     end
@@ -84,14 +83,33 @@ Rails.application.routes.draw do
         patch :sort
       end
     end
+    resources :incases do
+      member do
+        patch :update_status
+      end
+    end
+    resources :webforms do
+      member do
+        get :preview
+        get :schema
+        patch :build
+      end
+      resources :webform_fields, except: [:show] do
+        member do
+          get :design
+          patch :build
+          patch :sort
+        end
+      end
+    end
     resources :users
-    # # Optional flat endpoints for list_items API
-    # resources :list_items, only: [:index]
+
   end
 
   # API routes for storefront (outside account scope)
   namespace :api do
     scope "/accounts/:account_id" do
+      resources :incases, only: [:create]
       resources :lists, only: [] do
         resources :list_items, only: [:index, :create, :destroy]
       end
@@ -99,6 +117,9 @@ Rails.application.routes.draw do
         collection do
           post :calc
         end
+      end
+      namespace :webhooks do
+        post 'insales/order', to: 'insales#order'
       end
     end
   end

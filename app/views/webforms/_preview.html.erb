@@ -1,0 +1,58 @@
+<% s = (schema[:settings] || {}).with_indifferent_access rescue (schema[:settings] || {}) %>
+<% def px_value(v, fallback = nil)
+     return fallback if v.nil?
+     str = v.to_s.strip
+     return str if str =~ /px\z/i
+     return "#{str}px" if str.match?(/\A-?\d+(?:\.\d+)?\z/)
+     fallback
+   end %>
+ 
+<% container_style = [
+  "background: #{s['background_color']}",
+  "color: #{s['font_color']}",
+  "line-height: 1",
+  "padding: #{px_value(s['padding_y'])} #{px_value(s['padding_x'])}",
+  "margin: #{px_value(s['margin_y'])} #{px_value(s['margin_x'])}",
+  "border-radius: #{px_value(s['border_radius'])}",
+  "max-width: #{px_value(s['width'])}",
+  "width: 100%",
+  "height: auto",
+  "font-size: #{px_value(s['font_size'])}",
+  "border: #{px_value(s['border_width'])} solid #{s['border_color']}",
+  "box-shadow: #{[px_value(s['box_shadow_offset_x']), px_value(s['box_shadow_offset_y']), px_value(s['box_shadow_blur']), px_value(s['box_shadow_spread']), s['box_shadow_color']].join(' ')}"
+].join('; ') %>
+
+<div class="webform-preview" style="<%= container_style %>">
+  <form>
+    <% schema[:fields].each do |field| %>
+      <% fs = (field[:settings] || {}).with_indifferent_access rescue (field[:settings] || {}) %>
+      <% style = [
+        "font-size: #{px_value(fs['font_size'])}",
+        "line-height: 1",
+        "color: #{fs['font_color']}",
+        "padding: #{px_value(fs['padding_y'])} #{px_value(fs['padding_x'])}",
+        "margin: #{px_value(fs['margin_y'])} #{px_value(fs['margin_x'])}",
+        "border-radius: #{px_value(fs['border_radius'])}",
+        "width: #{px_value(fs['width'])}",
+        "border: #{px_value(fs['border_width'])} solid #{fs['border_color']}",
+        "box-shadow: #{[px_value(fs['box_shadow_offset_x']), px_value(fs['box_shadow_offset_y']), px_value(fs['box_shadow_blur']), px_value(fs['box_shadow_spread']), fs['box_shadow_color']].join(' ')}"
+      ].join('; ') %>
+
+      <% case field[:type] %>
+      <% when 'email' %>
+        <% placeholder = (fs['placeholder'] || field[:label]) %>
+        <input type="email" placeholder="<%= placeholder %>" <%= 'required' if field[:required] %> style="<%= style %>">
+      <% when 'text' %>
+        <div class="text-field" style="<%= style %>"><%= field[:label] %></div>
+      <% when 'textarea' %>
+        <% placeholder = (fs['placeholder'] || field[:label]) %>
+        <textarea placeholder="<%= placeholder %>" <%= 'required' if field[:required] %> rows="4" style="<%= style %>"></textarea>
+      <% when 'button' %>
+        <button type="submit" style="<%= [style, "background: #{fs['background_color']}"].join('; ') %>"><%= field[:label] %></button>
+      <% else %>
+        <% placeholder = field[:label] %>
+        <input type="text" placeholder="<%= placeholder %>" <%= 'required' if field[:required] %> style="<%= style %>">
+      <% end %>
+    <% end %>
+  </form>
+</div>

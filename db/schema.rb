@@ -10,7 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_20_142448) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_29_152000) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_catalog.plpgsql"
+
   create_table "accounts", force: :cascade do |t|
     t.string "name", null: false
     t.boolean "active", default: true
@@ -49,7 +52,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_20_142448) do
   end
 
   create_table "clients", force: :cascade do |t|
-    t.bigint "account_id", null: false
+    t.integer "account_id", null: false
     t.string "name"
     t.string "surname"
     t.string "email"
@@ -74,11 +77,37 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_20_142448) do
     t.index ["account_id"], name: "index_discounts_on_account_id"
   end
 
+  create_table "incase_items", force: :cascade do |t|
+    t.integer "incase_id", null: false
+    t.string "item_type", null: false
+    t.bigint "item_id", null: false
+    t.integer "quantity"
+    t.decimal "price", precision: 12, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["incase_id", "item_type", "item_id"], name: "index_incase_items_on_incase_id_and_item_type_and_item_id"
+    t.index ["incase_id"], name: "index_incase_items_on_incase_id"
+  end
+
+  create_table "incases", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "status", default: "new", null: false
+    t.integer "webform_id", null: false
+    t.integer "client_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "created_at"], name: "index_incases_on_account_id_and_created_at"
+    t.index ["account_id", "status"], name: "index_incases_on_account_id_and_status"
+    t.index ["account_id"], name: "index_incases_on_account_id"
+    t.index ["client_id"], name: "index_incases_on_client_id"
+    t.index ["webform_id"], name: "index_incases_on_webform_id"
+  end
+
   create_table "insales", force: :cascade do |t|
     t.string "api_key"
     t.string "api_password"
     t.string "api_link"
-    t.bigint "account_id", null: false
+    t.integer "account_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "product_xml"
@@ -86,12 +115,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_20_142448) do
   end
 
   create_table "list_items", force: :cascade do |t|
-    t.bigint "list_id", null: false
+    t.integer "list_id", null: false
     t.string "item_type", null: false
-    t.bigint "item_id", null: false
+    t.integer "item_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "client_id", null: false
+    t.integer "client_id", null: false
     t.index ["client_id"], name: "index_list_items_on_client_id"
     t.index ["item_type", "item_id"], name: "index_list_items_on_item"
     t.index ["list_id", "client_id", "item_type", "item_id"], name: "index_list_items_on_list_client_and_item", unique: true
@@ -99,7 +128,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_20_142448) do
   end
 
   create_table "lists", force: :cascade do |t|
-    t.bigint "account_id", null: false
+    t.integer "account_id", null: false
     t.string "name"
     t.integer "items_count"
     t.datetime "created_at", null: false
@@ -111,7 +140,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_20_142448) do
   end
 
   create_table "products", force: :cascade do |t|
-    t.bigint "account_id", null: false
+    t.integer "account_id", null: false
     t.string "title"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -119,7 +148,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_20_142448) do
   end
 
   create_table "sessions", force: :cascade do |t|
-    t.bigint "user_id", null: false
+    t.integer "user_id", null: false
     t.string "ip_address"
     t.string "user_agent"
     t.datetime "created_at", null: false
@@ -128,8 +157,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_20_142448) do
   end
 
   create_table "swatch_group_products", force: :cascade do |t|
-    t.bigint "swatch_group_id", null: false
-    t.bigint "product_id"
+    t.integer "swatch_group_id", null: false
+    t.integer "product_id"
     t.string "swatch_value"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -143,7 +172,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_20_142448) do
   end
 
   create_table "swatch_groups", force: :cascade do |t|
-    t.bigint "account_id", null: false
+    t.integer "account_id", null: false
     t.string "name", null: false
     t.string "option_name", null: false
     t.integer "status", default: 0
@@ -167,7 +196,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_20_142448) do
     t.string "password_digest", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "account_id", null: false
+    t.integer "account_id", null: false
     t.string "role", default: "member", null: false
     t.index ["account_id"], name: "index_users_on_account_id"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
@@ -175,7 +204,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_20_142448) do
 
   create_table "varbinds", force: :cascade do |t|
     t.string "varbindable_type", null: false
-    t.bigint "varbindable_id", null: false
+    t.integer "varbindable_id", null: false
     t.string "value", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -187,7 +216,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_20_142448) do
   end
 
   create_table "variants", force: :cascade do |t|
-    t.bigint "product_id", null: false
+    t.integer "product_id", null: false
     t.string "barcode"
     t.string "sku"
     t.decimal "price", precision: 12, scale: 2
@@ -199,10 +228,41 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_20_142448) do
     t.index ["sku"], name: "index_variants_on_sku"
   end
 
+  create_table "webform_fields", force: :cascade do |t|
+    t.integer "webform_id", null: false
+    t.string "name", null: false
+    t.string "label", null: false
+    t.string "field_type", null: false
+    t.boolean "required", default: false, null: false
+    t.jsonb "settings"
+    t.integer "position"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["webform_id", "name"], name: "index_webform_fields_on_webform_id_and_name", unique: true
+    t.index ["webform_id"], name: "index_webform_fields_on_webform_id"
+  end
+
+  create_table "webforms", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "title", null: false
+    t.string "kind", null: false
+    t.string "status", default: "inactive", null: false
+    t.jsonb "settings"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "kind", "status"], name: "index_webforms_on_account_id_and_kind_and_status"
+    t.index ["account_id", "kind"], name: "index_webforms_on_account_kind_singleton", unique: true, where: "((kind)::text = ANY ((ARRAY['order'::character varying, 'notify'::character varying, 'preorder'::character varying, 'abandoned_cart'::character varying])::text[]))"
+    t.index ["account_id"], name: "index_webforms_on_account_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "clients", "accounts"
   add_foreign_key "discounts", "accounts"
+  add_foreign_key "incase_items", "incases"
+  add_foreign_key "incases", "accounts"
+  add_foreign_key "incases", "clients"
+  add_foreign_key "incases", "webforms"
   add_foreign_key "insales", "accounts"
   add_foreign_key "list_items", "clients"
   add_foreign_key "list_items", "lists"
@@ -214,4 +274,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_20_142448) do
   add_foreign_key "swatch_groups", "accounts"
   add_foreign_key "users", "accounts"
   add_foreign_key "variants", "products"
+  add_foreign_key "webform_fields", "webforms"
+  add_foreign_key "webforms", "accounts"
 end

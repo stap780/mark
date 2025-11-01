@@ -55,6 +55,12 @@
             <%= link_to t(:swatches), account_swatch_groups_path(current_account),
                 class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
                 hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/swatch_groups')}" %>
+            <%= link_to "Webforms", account_webforms_path(current_account),
+                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
+                hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/webforms')}" %>
+            <%= link_to "Incases", account_incases_path(current_account),
+                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
+                hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/incases')}" %>
             <%= link_to t(:jobs), "/jobs",
                 class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
                 hover:bg-violet-500 hover:bg-opacity-75",
