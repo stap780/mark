@@ -74,10 +74,15 @@ class WebformFieldsController < ApplicationController
         flash.now[:success] = t('.success')
         format.turbo_stream do
           render turbo_stream: turbo_close_offcanvas_flash + [
-            turbo_stream.update(
+            turbo_stream.replace(
               dom_id(current_account, dom_id(@webform_field)),
               partial: "webform_fields/webform_field",
               locals: { account: current_account, webform: @webform, field: @webform_field }
+            ),
+            turbo_stream.update(
+              dom_id(current_account, dom_id(@webform, :preview)),
+              partial: "webforms/preview",
+              locals: { schema: @schema }
             )
           ]
         end
