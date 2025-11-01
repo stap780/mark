@@ -1,7 +1,8 @@
-<div class="">
+<div class="inline-flex items-center gap-4">
   <%= link_to t('back'), account_webforms_path(current_account),
       class: "inline-flex items-center px-3 py-1 bg-white text-violet-600 border border-violet-500 rounded-md hover:bg-violet-50",
       data: { turbo: false } %>
+  <%= tag.div @webform.title, class: "text-lg font-semibold" %>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">

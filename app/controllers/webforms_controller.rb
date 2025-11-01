@@ -23,7 +23,13 @@ class WebformsController < ApplicationController
       if @webform.save
         flash.now[:success] = t('.success')
         format.turbo_stream do
-          render turbo_stream: turbo_close_offcanvas_flash
+          render turbo_stream: turbo_close_offcanvas_flash + [
+            turbo_stream.append(
+              dom_id(current_account, :webforms),
+              partial: "webforms/webform",
+              locals: { current_account: current_account, webform: @webform }
+            )
+          ]
         end
         format.html { redirect_to account_webform_path(current_account, @webform), notice: t('.success') }
       else
@@ -39,7 +45,13 @@ class WebformsController < ApplicationController
       if @webform.update(webform_params)
         flash.now[:success] = t('.success')
         format.turbo_stream do
-          render turbo_stream: turbo_close_offcanvas_flash 
+          render turbo_stream: turbo_close_offcanvas_flash + [
+            turbo_stream.replace(
+              dom_id(current_account, dom_id(@webform)),
+              partial: "webforms/webform",
+              locals: { current_account: current_account, webform: @webform }
+            )
+          ]
         end
         format.html { redirect_to account_webform_path(current_account, @webform), notice: t('.success') }
       else
@@ -75,15 +87,9 @@ class WebformsController < ApplicationController
     end
     respond_to do |format|
       format.turbo_stream do
-        if check_destroy == true
-          render turbo_stream: [
-            render_turbo_flash
-          ]
-        else
-          render turbo_stream: [
-            render_turbo_flash
-          ]
-        end
+        render turbo_stream: [
+          render_turbo_flash
+        ]
       end
       format.html { redirect_to account_webforms_path(current_account), notice: t('.success')}
       format.json { head :no_content }

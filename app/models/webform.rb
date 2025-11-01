@@ -17,12 +17,12 @@ class Webform < ApplicationRecord
 
   after_create_commit :set_default_fields_and_settings
 
-  after_create_commit do
-    broadcast_append_to dom_id(account, :webforms),
-                        target: dom_id(account, :webforms),
-                        partial: "webforms/webform",
-                        locals: { webform: self, current_account: account }
-  end
+  # after_create_commit do
+  #   broadcast_append_to dom_id(account, :webforms),
+  #                       target: dom_id(account, :webforms),
+  #                       partial: "webforms/webform",
+  #                       locals: { webform: self, current_account: account }
+  # end
 
   # after_update_commit do
   #   broadcast_replace_to dom_id(account, :webforms),
