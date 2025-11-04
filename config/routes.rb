@@ -1,7 +1,18 @@
 Rails.application.routes.draw do
-  # Admin-only Jobs dashboard
+
+  # Super-admin namespace for managing accounts and users across all accounts
+  # Admin-only Jobs dashboard (mounted under /admin)
   if defined?(MissionControl::Jobs::Engine)
-    mount MissionControl::Jobs::Engine, at: "/jobs"
+    namespace :admin do
+      mount MissionControl::Jobs::Engine, at: "/jobs", as: :jobs
+    end
+  end
+  namespace :admin do
+    get 'dashboard', to: 'dashboard#index', as: :dashboard
+    resources :users, only: [:index]
+    resources :accounts do
+      resources :users, except: [:index, :show]
+    end
   end
   
   resource :session
@@ -22,8 +33,7 @@ Rails.application.routes.draw do
   # Locale switching
   get "switch_locale/:locale", to: "application#switch_locale", as: :switch_locale
 
-
-  # Account-scoped routes
+  # Account-scoped routes (must be before accounts resources to avoid route conflicts)
   scope "/accounts/:account_id", as: :account do
     get "dashboard", to: "dashboard#index"
     resources :insales do
@@ -106,6 +116,7 @@ Rails.application.routes.draw do
 
   end
 
+
   # API routes for storefront (outside account scope)
   namespace :api do
     scope "/accounts/:account_id" do
@@ -123,4 +134,5 @@ Rails.application.routes.draw do
       end
     end
   end
+
 end

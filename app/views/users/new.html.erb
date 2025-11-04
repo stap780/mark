@@ -1,3 +1,3 @@
 <%= render 'shared/offcanvas_inner', title: 'New User', width: '30rem' do %>
-  <%= render "form" %>
+  <%= render "form", account: current_account, user: @user, account_user: @account_user %>
 <% end %>

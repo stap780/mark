@@ -1,0 +1,23 @@
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-xl font-semibold">Accounts</h1>
+  <div class="flex space-x-2">
+    <%= link_to "New Account", new_admin_account_path,
+          data: { turbo_frame: :offcanvas },
+          class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+  </div>
+</div>
+
+<div class="bg-white rounded-lg shadow divide-y">
+  <div class="grid grid-cols-[1fr_120px_150px_100px] gap-4 p-4 font-medium text-gray-700">
+    <div>Name</div>
+    <div>User count</div>
+    <div>Admin?</div>
+    <div></div>
+  </div>
+  <%= turbo_frame_tag "accounts_list" do %>
+    <% @accounts.each do |account| %>
+      <%= render "admin/accounts/account", account: account %>
+    <% end %>
+  <% end %>
+</div>
+

@@ -4,7 +4,8 @@ class SessionsController < ApplicationController
 
   def new
     if Current.session&.user
-      return redirect_to account_dashboard_path(Current.session.user.account_id)
+      first_account = Current.session.user.accounts.first
+      return redirect_to account_dashboard_path(first_account.id) if first_account
     end
   end
 
@@ -24,6 +25,8 @@ class SessionsController < ApplicationController
 
   private
     def after_authentication_url
-      account_dashboard_path(account_id: Current.session.user.account_id)
+      first_account = Current.session.user.accounts.first
+      return new_session_path unless first_account
+      account_dashboard_path(first_account)
     end
 end

@@ -15,4 +15,24 @@ module ApplicationHelper
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
     </svg>'.html_safe
   end
+
+  def link_to_sidebar(text, path, active_if: nil, **options)
+    base_classes = "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75"
+    active_class = "bg-violet-500 bg-opacity-75"
+    
+    active = if active_if.nil?
+      request.path.include?(path.to_s)
+    elsif active_if.is_a?(Proc)
+      active_if.call
+    elsif active_if.is_a?(String) || active_if.is_a?(Symbol)
+      request.path.include?(active_if.to_s)
+    else
+      active_if
+    end
+    
+    classes = "#{base_classes} #{active_class if active}"
+    options[:class] = classes
+    
+    link_to text, path, options
+  end
 end

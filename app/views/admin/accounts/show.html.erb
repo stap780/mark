@@ -1,0 +1,27 @@
+<div class="inline-flex items-center gap-4 mb-4">
+  <%= link_to t('back'), admin_accounts_path,
+      class: "inline-flex items-center px-3 py-1 bg-white text-violet-600 border border-violet-500 rounded-md hover:bg-violet-50" %>
+  <%= tag.div @account.name, class: "text-lg font-semibold" %>
+</div>
+
+<%= turbo_stream_from dom_id(@account, :users) %>
+<div class="p-4">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-medium">User List</h3>
+    <%= link_to "New User", new_admin_account_user_path(@account),
+          data: { turbo_frame: :offcanvas },
+          class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+  </div>
+  <div class="bg-white rounded-lg shadow divide-y">
+    <div class="grid grid-cols-[1fr_150px_100px] gap-4 p-4 font-medium text-gray-700">
+      <div>Email</div>
+      <div>Role</div>
+      <div></div>
+    </div>
+    <%= turbo_frame_tag dom_id(@account, :users) do %>
+      <% @account.users.each do |user| %>
+        <%= render "admin/accounts/user", user: user, account: @account %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

@@ -1,5 +1,6 @@
 class Account < ApplicationRecord
-  has_many :users
+  has_many :account_users, dependent: :destroy
+  has_many :users, through: :account_users
   has_many :insales, dependent: :destroy
   has_many :swatch_groups, dependent: :destroy
   has_many :products, dependent: :destroy

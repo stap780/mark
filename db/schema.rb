@@ -10,9 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_29_152000) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_02_103143) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "account_users", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "account_id", null: false
+    t.string "role", default: "member", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_account_users_on_account_id"
+    t.index ["role"], name: "index_account_users_on_role"
+    t.index ["user_id", "account_id"], name: "index_account_users_on_user_id_and_account_id", unique: true
+    t.index ["user_id"], name: "index_account_users_on_user_id"
+  end
 
   create_table "accounts", force: :cascade do |t|
     t.string "name", null: false
@@ -196,9 +208,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_29_152000) do
     t.string "password_digest", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "account_id", null: false
-    t.string "role", default: "member", null: false
-    t.index ["account_id"], name: "index_users_on_account_id"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
@@ -255,6 +264,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_29_152000) do
     t.index ["account_id"], name: "index_webforms_on_account_id"
   end
 
+  add_foreign_key "account_users", "accounts"
+  add_foreign_key "account_users", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "clients", "accounts"
@@ -272,7 +283,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_29_152000) do
   add_foreign_key "swatch_group_products", "products"
   add_foreign_key "swatch_group_products", "swatch_groups"
   add_foreign_key "swatch_groups", "accounts"
-  add_foreign_key "users", "accounts"
   add_foreign_key "variants", "products"
   add_foreign_key "webform_fields", "webforms"
   add_foreign_key "webforms", "accounts"

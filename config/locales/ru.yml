@@ -76,6 +76,10 @@ ru:
         required: "Обязательное"
     errors:
       models:
+        account_user:
+          attributes:
+            role:
+              only_one_admin_per_account: "может быть только один администратор на аккаунт"
         webform_field:
           attributes:
             name:

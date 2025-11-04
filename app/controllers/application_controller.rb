@@ -30,22 +30,24 @@ class ApplicationController < ActionController::Base
   end
 
   def set_current_account
-    # Current.account = Account.find_by(id: params[:account_id])
     Current.account =
     if params[:account_id].present?
       Account.find_by(id: params[:account_id])
     elsif Current.session&.user
-      # If user is admin, you might want a preferred/default account:
-      Current.session.user.account || Account.where(admin: true).first
+      # Приоритет: первый аккаунт пользователя или админ-аккаунт
+      Current.session.user.accounts.first || Account.where(admin: true).first
     end
   end
 
   def ensure_user_in_current_account
     return unless Current.session && Current.account
     # Allow global admin account to access any account scope
-    return if Current.session.user && Current.session.user.account&.admin?
+    user_accounts = Current.session.user&.accounts || []
+    admin_account = user_accounts.find { |acc| acc.admin? }
+    return if admin_account
+    
     # Ensure the authenticated user belongs to the current account
-    if Current.session.user.account_id != Current.account.id
+    unless Current.user.accounts.include?(Current.account)
       terminate_session
       redirect_to new_session_path, alert: "Please sign in for this account."
     end

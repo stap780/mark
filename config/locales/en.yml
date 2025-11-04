@@ -83,7 +83,10 @@ en:
   activerecord:
     models:
       swatch_group: "Swatch Group"
+      account_user: "Account User"
     attributes:
+      account_user:
+        role: "Role"
       swatch_group:
         name: "Name"
         option_name: "Option Name"
@@ -97,6 +100,12 @@ en:
         css_class_preview: "Preview CSS class"
         product_page_image_source: "Product page image source"
         collection_page_image_source: "Collection page image source"
+    errors:
+      models:
+        account_user:
+          attributes:
+            role:
+              only_one_admin_per_account: "can only have one admin per account"
     columns:
       number: "#"
       name: "Name"

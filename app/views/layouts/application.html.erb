@@ -35,56 +35,42 @@
           
           <!-- Nav -->
           <nav class="flex-1 px-4 pb-4 space-y-1">
-            <% active_class = "bg-violet-500 bg-opacity-75" %>
-            <%= link_to t(:dashboard), account_dashboard_path(current_account),
-                  class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
-                  hover:bg-violet-500 hover:bg-opacity-75 
-                  #{active_class if request.path == account_dashboard_path(current_account)}"%>
-            <%= link_to t(:clients), account_clients_path(current_account),
-                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white "+
-                        "hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/clients')}" %>
-            <%= link_to t(:products),account_products_path(account_id: current_account&.id),
-                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
-                hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/products')}"%>
-            <%= link_to t(:discounts), account_discounts_path(current_account),
-                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white "+
-                        "hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/discounts')}" %>
-            <%= link_to t(:lists), account_lists_path(current_account),
-                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white "+
-                        "hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/lists')}" %>
-            <%= link_to t(:swatches), account_swatch_groups_path(current_account),
-                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
-                hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/swatch_groups')}" %>
-            <%= link_to "Webforms", account_webforms_path(current_account),
-                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
-                hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/webforms')}" %>
-            <%= link_to "Incases", account_incases_path(current_account),
-                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
-                hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/incases')}" %>
-            <%= link_to t(:jobs), "/jobs",
-                class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white 
-                hover:bg-violet-500 hover:bg-opacity-75",
-                data: { turbo: false } if current_account&.admin? %>
-            
-            <!-- Settings Accordion -->
-            <div data-controller="accordion" 
-                 data-accordion-open-value="<%= request.path.include?('/insales') || request.path.include?('/users') %>">
-              <button type="button" 
-                      data-action="click->accordion#toggle"
-                      class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/insales') || request.path.include?('/users')}">
-                <span><%= t(:settings) %></span>
-                <svg data-accordion-target="arrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-              </button>
+            <% if current_account.admin? %>
+
+              <%= link_to_sidebar 'Admin Dashboard', admin_dashboard_path, active_if: '/admin/dashboard' %>
+              <%= link_to_sidebar t(:users), admin_users_path, active_if: '/admin/users' %>
+              <%= link_to_sidebar t(:accounts), admin_accounts_path, active_if: '/admin/accounts' %>
+              <%= link_to_sidebar t(:jobs), admin_jobs_path, active_if: '/admin/jobs', data: { turbo: false } %>
+
+            <% else %>
+
+              <%= link_to_sidebar t(:dashboard), account_dashboard_path(current_account), active_if: '/dashboard' %>
+              <%= link_to_sidebar "Incases", account_incases_path(current_account), active_if: '/incases' %>
+              <%= link_to_sidebar t(:clients), account_clients_path(current_account), active_if: '/clients' %>
+              <%= link_to_sidebar t(:products), account_products_path(current_account), active_if: '/products' %>
+              <%= link_to_sidebar t(:discounts), account_discounts_path(current_account), active_if: '/discounts' %>
+              <%= link_to_sidebar t(:lists), account_lists_path(current_account), active_if: '/lists' %>
+              <%= link_to_sidebar t(:swatches), account_swatch_groups_path(current_account), active_if: '/swatch_groups' %>
+              <%= link_to_sidebar "Webforms", account_webforms_path(current_account), active_if: '/webforms' %>
               
-              <div data-accordion-target="content" class="hidden ml-4 space-y-1">
-                <%= link_to t(:insales), account_insales_path(current_account),
-                    class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/insales')}" %>
-                <%= link_to t(:users), account_users_path(current_account),
-                    class: "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 #{active_class if request.path.include?('/users')}" %>
+              <div data-controller="accordion" 
+                  data-accordion-open-value="<%= request.path.include?('/insales') || request.path.include?('/users') %>">
+                <button type="button" data-action="click->accordion#toggle"
+                        class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 <%= 'bg-violet-500 bg-opacity-75' if request.path.include?('/insales') || request.path.include?('/users') %>">
+                  <span><%= t(:settings) %></span>
+                  <svg data-accordion-target="arrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                
+                <div data-accordion-target="content" class="hidden ml-4 space-y-1">
+                  <%= link_to_sidebar t(:insales), account_insales_path(current_account), active_if: '/insales' %>
+                  <%= link_to_sidebar t(:users), account_users_path(current_account), active_if: '/users' %>
+                </div>
               </div>
-            </div>
+
+            <% end %>
+
           </nav>
         </div>
 
@@ -96,10 +82,10 @@
               <div class="menu-right flex items-center space-x-4 ml-3">
               <!-- Language Switcher -->
                 <div class="langiages flex items-center space-x-2 text-sm">
-                  <%= link_to "EN", switch_locale_path(:en), 
+                  <%= link_to "EN", switch_locale_path(:en), data: { turbo_prefetch: false },
                       class: current_locale == :en ? 'font-bold underline' : 'opacity-75 hover:opacity-100' %>
                   <span class="text-violet-300">|</span>
-                  <%= link_to "RU", switch_locale_path(:ru), 
+                  <%= link_to "RU", switch_locale_path(:ru), data: { turbo_prefetch: false },
                       class: current_locale == :ru ? 'font-bold underline' : 'opacity-75 hover:opacity-100' %>
                 </div>
                 <span class="text-gray-700 text-sm font-medium"><%= Current.user&.email_address %></span>
@@ -118,6 +104,7 @@
             </div>
             
             <%= turbo_frame_tag :offcanvas %>
+            <%= turbo_frame_tag :offcanvas_left %>
 
           </main>
         </div>
