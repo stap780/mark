@@ -55,9 +55,10 @@ class Payment < ApplicationRecord
     if status == "succeeded" && subscription.incomplete?
       # Активируем подписку при успешной оплате
       # Используем уже установленные даты периода из подписки, если они есть
-      # Если дат нет - устанавливаем период от текущего времени
+      # Если дат нет - устанавливаем период от текущего времени с учетом интервала плана
       period_start = subscription.current_period_start || Time.current
-      period_end = subscription.current_period_end || (period_start + 1.month)
+      period_months = subscription.plan&.interval_months || 1
+      period_end = subscription.current_period_end || (period_start + period_months.months)
       
       subscription.update!(
         status: :active,

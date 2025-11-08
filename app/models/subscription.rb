@@ -40,15 +40,18 @@ class Subscription < ApplicationRecord
   def set_period_dates
     return if current_period_start.present? && current_period_end.present?
 
+    # Получаем количество месяцев из интервала плана
+    period_months = plan&.interval_months || 1
+
     existing_subscription = account&.current_subscription
     if existing_subscription && existing_subscription.current_period_end && existing_subscription.current_period_end > Time.current
       # Новая подписка начинается после окончания текущей
       self.current_period_start = existing_subscription.current_period_end
-      self.current_period_end = current_period_start + 1.month
+      self.current_period_end = current_period_start + period_months.months
     else
       # Новая подписка начинается сейчас
       self.current_period_start = Time.current
-      self.current_period_end = current_period_start + 1.month
+      self.current_period_end = current_period_start + period_months.months
     end
   end
 

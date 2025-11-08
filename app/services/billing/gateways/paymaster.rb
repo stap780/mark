@@ -2,11 +2,12 @@ module Billing
   module Gateways
     class Paymaster < Base
       def create_subscription(account:, plan:, **options)
+        period_months = plan.interval_months
         subscription = account.subscriptions.create!(
           plan_id: plan.id,
           status: :incomplete,
           current_period_start: Time.current,
-          current_period_end: Time.current + 1.month
+          current_period_end: Time.current + period_months.months
         )
 
         payment = subscription.payments.create!(
