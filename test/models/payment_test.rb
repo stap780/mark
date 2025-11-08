@@ -290,5 +290,89 @@ class PaymentTest < ActiveSupport::TestCase
     assert subscription.current_period_end > Time.current
     assert @account.subscription_active?
   end
+
+  test "can activate new subscription when old subscription exists but new starts after old ends" do
+    # Create active subscription
+    old_subscription = Subscription.create!(
+      account: @account,
+      plan: @plan,
+      status: :active,
+      current_period_start: Time.current,
+      current_period_end: 1.month.from_now
+    )
+
+    # Create new subscription that starts after old ends
+    new_subscription = Subscription.create!(
+      account: @account,
+      plan: @plan,
+      status: :incomplete,
+      current_period_start: old_subscription.current_period_end,
+      current_period_end: old_subscription.current_period_end + 1.month
+    )
+
+    # Create and succeed payment for new subscription
+    payment = Payment.create!(
+      subscription: new_subscription,
+      amount: @plan.price,
+      status: :pending,
+      processor: :invoice
+    )
+
+    # Payment should succeed and activate new subscription
+    payment.update!(status: :succeeded)
+    new_subscription.reload
+    old_subscription.reload
+
+    # New subscription should be active
+    assert_equal "active", new_subscription.status
+
+    # Old subscription should remain active (not canceled)
+    assert_equal "active", old_subscription.status
+
+    # current_subscription should return old subscription (its period is active now)
+    current = @account.current_subscription
+    assert_equal old_subscription.id, current.id
+  end
+
+  test "new subscription becomes current when old subscription period ends" do
+    # Create old subscription that ended in the past
+    old_subscription = Subscription.create!(
+      account: @account,
+      plan: @plan,
+      status: :active,
+      current_period_start: 2.months.ago,
+      current_period_end: 1.month.ago
+    )
+
+    # Create new subscription that starts now (after old ended)
+    new_subscription = Subscription.create!(
+      account: @account,
+      plan: @plan,
+      status: :incomplete,
+      current_period_start: Time.current,
+      current_period_end: 1.month.from_now
+    )
+
+    # Activate new subscription
+    payment = Payment.create!(
+      subscription: new_subscription,
+      amount: @plan.price,
+      status: :pending,
+      processor: :invoice
+    )
+    payment.update!(status: :succeeded)
+    new_subscription.reload
+
+    # Check subscription_active? - should cancel old and find new
+    assert @account.subscription_active?
+
+    # current_subscription should return new subscription
+    current = @account.current_subscription
+    assert_equal new_subscription.id, current.id
+
+    # Old subscription should be canceled
+    old_subscription.reload
+    assert_equal "canceled", old_subscription.status
+  end
 end
 

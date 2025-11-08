@@ -61,8 +61,28 @@ class Subscription < ApplicationRecord
     existing_active = account.subscriptions
                             .where(status: [:active, :trialing])
                             .where.not(id: id)
-    if existing_active.exists?
+    
+    return unless existing_active.exists?
+
+    # Разрешаем активацию новой подписки, если её период начинается после окончания старой
+    # Старая подписка остается активной до своего окончания
+    existing_active.each do |existing|
+      # Если старая подписка уже истекла - разрешаем активацию новой (старая будет отменена автоматически при проверке subscription_active?)
+      if existing.current_period_end && existing.current_period_end < Time.current
+        next
+      end
+
+      # Если новая подписка начинается после окончания старой - разрешаем активацию
+      # Старая подписка остается активной, но новая тоже может быть активной (периоды не пересекаются)
+      if current_period_start && existing.current_period_end && 
+         current_period_start >= existing.current_period_end
+        # Периоды не пересекаются - разрешаем обе подписки быть активными
+        next
+      end
+
+      # Если периоды пересекаются - блокируем активацию
       errors.add(:status, :only_one_active_subscription)
+      break
     end
   end
 end

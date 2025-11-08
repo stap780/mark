@@ -13,6 +13,25 @@ module Billable
   end
 
   def current_subscription
+    # Возвращаем подписку, у которой период сейчас активен (текущее время между start и end)
+    # Если такой нет, возвращаем подписку, которая начнется в будущем (но уже запланирована)
+    # Если и такой нет, возвращаем самую новую активную подписку
+    now = Time.current
+    
+    # Сначала ищем подписку с активным периодом (сейчас)
+    active_now = subscriptions.active.find do |sub|
+      sub.current_period_start && sub.current_period_end &&
+      sub.current_period_start <= now && now <= sub.current_period_end
+    end
+    return active_now if active_now
+    
+    # Если нет активной сейчас, ищем подписку, которая начнется в будущем (уже запланирована)
+    future_subscription = subscriptions.active.find do |sub|
+      sub.current_period_start && sub.current_period_start > now
+    end
+    return future_subscription if future_subscription
+    
+    # Если ничего не найдено, возвращаем самую новую активную подписку
     subscriptions.active.order(created_at: :desc).first
   end
 
@@ -23,17 +42,28 @@ module Billable
   # Проверяет, что у аккаунта есть активная подписка и период не истек
   # Автоматически отменяет подписку, если период истек
   def subscription_active?
-    subscription = current_subscription
-    return false unless subscription
-    return false unless subscription.active?
+    now = Time.current
     
-    # Если период истек - автоматически отменяем подписку
-    if subscription.current_period_end && subscription.current_period_end < Time.current
-      subscription.update!(status: :canceled)
-      return false
+    # Ищем подписку с активным периодом сейчас (текущее время между start и end)
+    active_subscription = subscriptions.active.find do |sub|
+      sub.current_period_start && sub.current_period_end &&
+      sub.current_period_start <= now && now <= sub.current_period_end
     end
     
-    subscription.current_period_end.nil? || subscription.current_period_end > Time.current
+    # Если есть активная подписка сейчас - возвращаем true
+    return true if active_subscription
+    
+    # Если нет активной сейчас, проверяем истекшие подписки и отменяем их
+    expired_subscriptions = subscriptions.active.select do |sub|
+      sub.current_period_end && sub.current_period_end < now
+    end
+    
+    expired_subscriptions.each do |sub|
+      sub.update!(status: :canceled)
+    end
+    
+    # Возвращаем false, так как нет активной подписки сейчас
+    false
   end
 end
 

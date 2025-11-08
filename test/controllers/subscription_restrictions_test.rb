@@ -176,5 +176,69 @@ class SubscriptionRestrictionsTest < ActionDispatch::IntegrationTest
     
     assert @account.subscription_active?
   end
+
+  test "can have multiple active subscriptions if periods don't overlap" do
+    # Создаем первую активную подписку
+    old_subscription = Subscription.create!(
+      account: @account,
+      plan: @plan,
+      status: :active,
+      current_period_start: Time.current,
+      current_period_end: 1.month.from_now
+    )
+
+    # Создаем вторую подписку, которая начинается после окончания первой
+    new_subscription = Subscription.create!(
+      account: @account,
+      plan: @plan,
+      status: :active,
+      current_period_start: old_subscription.current_period_end,
+      current_period_end: old_subscription.current_period_end + 1.month
+    )
+
+    # Обе подписки должны быть активными
+    old_subscription.reload
+    new_subscription.reload
+    assert_equal "active", old_subscription.status
+    assert_equal "active", new_subscription.status
+
+    # current_subscription должен вернуть старую (её период активен сейчас)
+    current = @account.current_subscription
+    assert_equal old_subscription.id, current.id
+
+    # subscription_active? должна вернуть true (есть активная сейчас)
+    assert @account.subscription_active?
+  end
+
+  test "new subscription becomes current when old subscription ends" do
+    # Создаем старую подписку, которая заканчивается в прошлом
+    old_subscription = Subscription.create!(
+      account: @account,
+      plan: @plan,
+      status: :active,
+      current_period_start: 2.months.ago,
+      current_period_end: 1.month.ago
+    )
+
+    # Создаем новую подписку, которая начинается сейчас
+    new_subscription = Subscription.create!(
+      account: @account,
+      plan: @plan,
+      status: :active,
+      current_period_start: Time.current,
+      current_period_end: 1.month.from_now
+    )
+
+    # subscription_active? должна отменить старую и найти новую
+    assert @account.subscription_active?
+
+    # current_subscription должен вернуть новую подписку
+    current = @account.current_subscription
+    assert_equal new_subscription.id, current.id
+
+    # Старая подписка должна быть отменена
+    old_subscription.reload
+    assert_equal "canceled", old_subscription.status
+  end
 end
 

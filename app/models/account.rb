@@ -13,6 +13,8 @@ class Account < ApplicationRecord
   has_many :incases, dependent: :destroy
   validates :name, presence: true
 
+  after_create :create_trial_subscription
+
   # Set current account context
   def self.current
     Thread.current[:current_account_id] ? Account.find(Thread.current[:current_account_id]) : nil
@@ -39,6 +41,44 @@ class Account < ApplicationRecord
 
   def self.ransackable_associations(auth_object = nil)
     ["subscriptions", "users", "account_users"]
+  end
+
+  private
+
+  # Создает пробную подписку на 30 дней при создании аккаунта
+  def create_trial_subscription
+    # Пропускаем для админ-аккаунтов
+    return if admin?
+
+    # Пропускаем, если уже есть активная или пробная подписка
+    return if subscriptions.where(status: [:active, :trialing]).exists?
+
+    # Находим или создаем план "Basic" с пробным периодом 30 дней
+    trial_plan = Plan.find_or_create_by!(name: "Trial") do |plan|
+      plan.price = 0
+      plan.interval = "monthly"
+      plan.active = true
+      plan.trial_days = 30
+    end
+
+    # Обновляем trial_days, если план уже существует, но имеет другое значение
+    if trial_plan.trial_days != 30
+      trial_plan.update!(trial_days: 30)
+    end
+
+    # Вычисляем даты пробного периода (точно 30 дней)
+    period_start = Time.current
+    period_end = period_start + 30.days
+
+    # Создаем подписку со статусом trialing
+    # set_period_dates установит даты на основе интервала плана (1 месяц),
+    # но мы переопределим их на 30 дней
+    subscription = subscriptions.create!(
+      plan: trial_plan,
+      status: :trialing,
+      current_period_start: period_start,
+      current_period_end: period_end
+    )
   end
 end
 
