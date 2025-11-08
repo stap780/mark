@@ -1,0 +1,33 @@
+<%= turbo_frame_tag dom_id(current_account, dom_id(subscription)) do %>
+  <div class="grid grid-cols-[160px_1fr_1fr_1fr_160px] gap-4 p-4 items-center">
+    <div class="text-sm text-gray-900"><%= subscription.created_at.strftime("%d.%m.%Y %H:%M") %></div>
+    <div class="truncate"><%= subscription.plan&.name %></div>
+    <div>
+      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+        <%= subscription.status == 'active' ? 'bg-green-100 text-green-800' : 
+            subscription.status == 'trialing' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' %>">
+        <%= subscription.status.humanize %>
+      </span>
+    </div>
+    <div class="text-sm text-gray-900">
+      <% if subscription.current_period_start && subscription.current_period_end %>
+        <%= subscription.current_period_start.strftime("%d.%m.%Y") %> - 
+        <%= subscription.current_period_end.strftime("%d.%m.%Y") %>
+      <% else %>
+        <%= t('subscriptions.not_available') %>
+      <% end %>
+    </div>
+    <div class="flex justify-end space-x-2">
+      <% payment = subscription.payments.order(created_at: :desc).first || nil %>
+      <%= link_to t('subscriptions.payment'), account_payment_path(current_account, payment), 
+      class: "text-violet-600 hover:underline text-sm", data: {turbo: false} if payment.present? %>
+      <%= link_to_show account_subscription_path(current_account, subscription), class: "text-violet-600 hover:underline text-sm", data: {turbo_frame: :offcanvas} %>
+      <% current_subscription_id = (current_account.current_subscription || current_account.subscriptions.order(created_at: :desc).first)&.id %>
+      <% if subscription.id == current_subscription_id && subscription.status != 'active' && subscription.status != 'canceled' %>
+      <%= button_to t('subscriptions.cancel'), cancel_account_subscription_path(current_account, subscription), method: :patch,
+              form: { data: { turbo_confirm: t('are_you_sure') } },
+              class: "inline-flex items-center px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm" %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

@@ -7,9 +7,8 @@
   </div>
   <div class="text-sm text-gray-800"><%= varbind.value %></div>
   <div class="text-right space-x-2 text-sm flex items-center justify-center">
-    <%= link_to 'Edit', varbind.record.varbind_edit_path(varbind), 
-    data: { turbo_stream: true, turbo_prefetch: false }, 
-    class: 'text-violet-700 hover:underline flex items-center justify-center' %>
+    <%= link_to_edit varbind.record.varbind_edit_path(varbind), 
+    data: { turbo_stream: true, turbo_prefetch: false } %>
     <%= link_to varbind.record.varbind_path(varbind), 
     data: { turbo_method: :delete, turbo_confirm: 'Delete varbind?', turbo_stream: true }, 
     class: 'float-right p-2 rounded-md bg-red-300 hover:bg-red-400 flex items-center justify-center' do %>

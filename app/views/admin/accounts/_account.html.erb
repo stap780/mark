@@ -1,22 +1,34 @@
-<%= turbo_frame_tag dom_id(account), class: "grid grid-cols-[1fr_120px_150px_100px] gap-4 p-4 items-center hover:bg-gray-50" do %>
+<%= turbo_frame_tag dom_id(account), class: "grid grid-cols-[1fr_120px_150px_150px_100px] gap-4 p-4 items-center hover:bg-gray-50" do %>
   <div class="text-sm font-medium text-violet-700"><%= account.name %></div>
   <div class="text-sm text-gray-600">
     <%= account.users.count %>
   </div>
   <div class="text-sm">
     <% if account.admin? %>
-      <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">Admin</span>
+      <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800"><%= t('admin.accounts.admin') %></span>
     <% else %>
-      <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">Regular</span>
+      <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800"><%= t('admin.accounts.regular') %></span>
+    <% end %>
+  </div>
+  <div class="text-sm">
+    <% if account.subscription_active? %>
+      <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800"><%= t('admin.accounts.active') %></span>
+    <% else %>
+      <% subscription = account.current_subscription %>
+      <% if subscription %>
+        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800" title="<%= subscription.status.humanize %>">
+          <%= subscription.status.humanize %>
+        </span>
+      <% else %>
+        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800"><%= t('admin.accounts.no_subscription') %></span>
+      <% end %>
     <% end %>
   </div>
   <div class="flex justify-end items-center space-x-2">
-    <%= link_to "Show", admin_account_path(account), data: { turbo: false },
-          class: "text-violet-700 hover:underline" %>
-    <%= link_to "Edit", edit_admin_account_path(account), data: { turbo_frame: :offcanvas },
-          class: "text-violet-700 hover:underline" %>
+    <%= link_to_show admin_account_path(account), data: { turbo: false } %>
+    <%= link_to_edit edit_admin_account_path(account), data: { turbo_frame: :offcanvas } %>
     <% unless account.admin? && Current.session&.user&.accounts&.include?(account) %>
-      <%= link_to admin_account_path(account), data: { turbo_method: :delete, turbo_confirm: "Delete account?" },
+      <%= link_to admin_account_path(account), data: { turbo_method: :delete, turbo_confirm: t('admin.accounts.delete_account_confirm') },
         class: "float-right p-2 rounded-md bg-red-300 hover:bg-red-400 flex items-center justify-center" do %>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />

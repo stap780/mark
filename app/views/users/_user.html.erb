@@ -1,4 +1,4 @@
-<%= turbo_frame_tag dom_id(current_account, dom_id(user)), class: "grid grid-cols-[1fr_150px_100px] gap-4 p-4 items-center border-b hover:bg-gray-50" do %>
+<%= turbo_frame_tag dom_id(current_account, dom_id(user)), class: "grid grid-cols-[1fr_150px_100px] gap-4 p-4 items-center hover:bg-gray-50" do %>
   <div class="text-sm font-medium"><%= user.email_address %></div>
   <div class="text-sm">
     <span class="px-2 py-1 text-xs rounded-full <%= user.admin_in_account?(current_account) ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800' %>">
@@ -9,8 +9,8 @@
     
     <% if Current.user&.admin_in_account?(current_account) %>
       <% unless user == Current.user %>
-        <%= link_to "Edit", edit_account_user_path(current_account, user), 
-          data: { turbo_frame: :offcanvas }, class: "text-violet-700 hover:underline" %>
+        <%= link_to_edit edit_account_user_path(current_account, user), 
+          data: { turbo_frame: :offcanvas } %>
 
         <%= link_to account_user_path(current_account, user),
           data: { turbo_method: :delete, turbo_confirm: "Delete user?" },

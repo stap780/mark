@@ -1,0 +1,47 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold">Payments</h1>
+  <div class="flex space-x-2">
+    <%= search_form_for @search, url: admin_payments_path, method: :get, html: { class: "flex items-center space-x-2" } do |f| %>
+      <div>
+        <%= f.label :status_eq, "Status", class: "sr-only" %>
+        <%= f.select :status_eq, 
+            options_for_select(Payment.statuses.map { |key, value| [key.humanize, value] }, params.dig(:q, :status_eq)), 
+            { include_blank: "Any" }, 
+            { class: "px-2 py-1 border rounded" } %>
+      </div>
+      <div>
+        <%= f.label :processor_eq, "Processor", class: "sr-only" %>
+        <%= f.select :processor_eq, 
+            options_for_select(Payment.processors.map { |key, value| [key.humanize, value] }, params.dig(:q, :processor_eq)), 
+            { include_blank: "Any" }, 
+            { class: "px-2 py-1 border rounded" } %>
+      </div>
+      <div>
+        <%= f.label :subscription_account_id_eq, "Account ID", class: "sr-only" %>
+        <%= f.number_field :subscription_account_id_eq, placeholder: "Account ID", class: "px-2 py-1 border rounded", style: "width: 140px;" %>
+      </div>
+      <%= f.submit "Filter", class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
+      <%= link_to admin_payments_path, class: "px-3 py-1 bg-gray-100 rounded hover:bg-gray-200", title: "Clear" do %>
+        Clear
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<div class="bg-white rounded-lg shadow divide-y">
+  <div class="grid grid-cols-[80px_1fr_1fr_1fr_1fr_1fr_1fr_120px] gap-4 p-4 font-medium text-gray-700">
+    <div>#</div>
+    <div>Date</div>
+    <div>Account</div>
+    <div>Plan</div>
+    <div>Amount</div>
+    <div>Processor</div>
+    <div>Status</div>
+    <div></div>
+  </div>
+  <%= turbo_frame_tag :admin_payments do %>
+    <%= render @payments %>
+    <%= render "shared/paginate", f: @payments %>
+  <% end %>
+  
+</div>

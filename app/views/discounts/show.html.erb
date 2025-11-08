@@ -2,7 +2,7 @@
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-semibold">Discount Details</h1>
     <div class="flex space-x-2">
-      <%= link_to "Edit", edit_account_discount_path(current_account, @discount), 
+      <%= link_to_edit edit_account_discount_path(current_account, @discount), 
             data: { turbo_frame: :offcanvas },
             class: "px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700" %>
       <%= button_to "Delete", account_discount_path(current_account, @discount), 

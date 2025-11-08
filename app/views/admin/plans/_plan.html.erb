@@ -1,0 +1,22 @@
+<%= turbo_frame_tag dom_id(plan) do %>
+  <div class="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4 p-4 items-center">
+    <div class="truncate font-medium text-gray-900"><%= plan.name %></div>
+    <div class="truncate"><%= plan.price %> ₽</div>
+    <div class="truncate text-gray-600"><%= plan.interval.humanize %></div>
+    <div class="truncate text-gray-600"><%= plan.trial_days %> <%= t('admin.plans.days') %></div>
+    <div class="flex justify-end items-center space-x-2">
+      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+        <%= plan.active? ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+        <%= plan.active? ? t('admin.plans.active') : t('admin.plans.inactive') %>
+      </span>
+      <%= link_to_edit edit_admin_plan_path(plan), data: { turbo_frame: :offcanvas } %>
+      <%= link_to admin_plan_path(plan),
+        data: { turbo_method: :delete, turbo_confirm: t('admin.plans.delete_plan_confirm') },
+        class: "float-right p-2 rounded-md bg-red-300 hover:bg-red-400 flex items-center justify-center" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      <% end %>
+    </div>
+  </div>
+<% end %>

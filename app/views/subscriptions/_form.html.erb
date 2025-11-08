@@ -1,0 +1,22 @@
+<%= form_with model: [current_account, subscription] do |form| %>
+  <%= render "shared/errors", object: form.object %>
+
+  <div class="my-5">
+    <%= form.label :plan_id, t('subscriptions.select_plan'), class: "block text-sm font-medium text-gray-700" %>
+    <%= form.collection_select :plan_id, Plan.active, :id, ->(p) { "#{p.name} - #{p.price}₽/#{t('subscriptions.month')} (#{t('subscriptions.trial')}: #{p.trial_days} #{t('subscriptions.days')})" }, 
+        { prompt: t('subscriptions.choose_plan') },
+        { class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": form.object&.errors&.[](:plan_id)&.none? != false, "border-red-400 focus:outline-red-600": form.object&.errors&.[](:plan_id)&.any?}] } %>
+  </div>
+
+
+  <div class="flex justify-start space-x-3 pt-4">
+    <%= form.submit form.object&.persisted? ? t('subscriptions.update_subscription') : t('subscriptions.create_subscription'),
+          class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    <button type="button" 
+            class="inline-flex items-center px-3 py-1 bg-white text-violet-700 border border-violet-600 rounded-md hover:bg-violet-50"
+            data-action="click->offcanvas#close">
+      <%= t('cancel') %>
+    </button>
+  </div>
+<% end %>
+

@@ -21,7 +21,7 @@
   <div class="truncate"><%= product.title %></div>
   <div class="text-sm text-gray-600"><%= product.variants.size %></div>
   <div class="space-x-2">
-    <%= link_to "Edit", edit_account_product_path(current_account, product), class: "text-violet-700 hover:underline", data: { turbo: false } %>
+    <%= link_to_edit edit_account_product_path(current_account, product), data: { turbo: false } %>
     <%= link_to account_product_path(current_account, product), 
     data: { turbo_method: :delete, turbo_confirm: "Delete product?" }, 
     class: "float-right p-2 rounded-md bg-red-300 hover:bg-red-400 flex items-center justify-center" do %>

@@ -1,0 +1,25 @@
+<%= render 'shared/offcanvas_inner', title: 'Оплатить подписку', width: '30rem' do %>
+  <%= form_with model: [current_account, @subscription, @payment], url: account_subscription_payments_path(current_account, @subscription), method: :post do |f| %>
+    <%= render "shared/errors", object: @payment if @payment %>
+    
+    <%= f.hidden_field :amount, value: @subscription.plan.price %>
+    
+    <div class="mb-5">
+      <%= f.label :processor, "Способ оплаты", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.select :processor,
+            Payment.processors.keys.map { |key| [key.humanize, key] },
+            { prompt: "Выберите способ оплаты" },
+            { class: "block w-full rounded-md border border-gray-300 px-3 py-2" } %>
+    </div>
+
+    <div class="flex justify-start space-x-3 pt-4">
+      <%= f.submit "Оплатить", class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+      <button type="button" 
+              class="inline-flex items-center px-3 py-1 bg-white text-violet-700 border border-violet-600 rounded-md hover:bg-violet-50"
+              data-action="click->offcanvas#close">
+        <%= t('cancel') %>
+      </button>
+    </div>
+  <% end %>
+<% end %>
+

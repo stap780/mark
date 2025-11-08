@@ -4,8 +4,7 @@
   <div class="truncate"><%= swatch_group.option_name %></div>
   <div class="truncate"><%= swatch_group.status %></div>
   <div class="space-x-2 flex items-center justify-center">
-    <%= link_to t(:edit), edit_account_swatch_group_path(swatch_group.account, swatch_group), 
-    class: "text-violet-700 hover:underline flex items-center justify-center",
+    <%= link_to_edit edit_account_swatch_group_path(swatch_group.account, swatch_group), 
     data: { turbo_frame: "_top" } %>
     <%= link_to account_swatch_group_path(swatch_group.account, swatch_group), 
     data: { turbo_method: :delete, turbo_confirm: t(:are_you_sure) }, 

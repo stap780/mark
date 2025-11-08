@@ -1,0 +1,20 @@
+<%= turbo_frame_tag dom_id(payment) do %>
+  <div class="grid grid-cols-[120px_1fr_1fr_1fr_1fr_1fr_120px] gap-4 p-4 items-center">
+    <div class="truncate"><%= payment.id %></div>
+    <div class="truncate"><%= payment.created_at.strftime("%d.%m.%Y %H:%M") %></div>
+    <div class="truncate"><%= payment.subscription&.plan&.name %></div>
+    <div class="truncate"><%= payment.amount %> ₽</div>
+    <div class="truncate"><%= payment.processor.humanize %></div>
+    <div>
+      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+        <%= payment.succeeded? ? 'bg-green-100 text-green-800' : payment.failed? ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' %>">
+        <%= payment.status.humanize %>
+      </span>
+    </div>
+    <div class="flex justify-end items-center space-x-2">
+      <%= link_to_show account_payment_path(current_account, payment), class: "text-violet-600 hover:underline text-sm", data: {turbo: false} %>
+      <%= link_to t('payments.pdf'), account_invoice_path(current_account, payment, format: :pdf), class: "text-violet-600 hover:underline text-sm" if payment.invoice? %>
+    </div>
+  </div>
+<% end %>
+

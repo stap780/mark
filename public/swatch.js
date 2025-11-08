@@ -1,8 +1,6 @@
 /**
  * Swatch.js - Объединение товаров
- * Версия: 1.7.0
- * Дата: 2024-01-15
- * Автор: Teletri Team
+ * Версия: 1.7.1
  * Описание: Скрипт для отображения объединенных товаров (swatches) на страницах интернет-магазинов
  */
 
@@ -11,7 +9,7 @@
     function init() {
         class Swatches {
       constructor() {
-        this.version = "1.7.0";
+        this.version = "1.7.1";
         this.status = false;
         this.S3_BASE =
           "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
@@ -93,7 +91,7 @@
               let options = '';
 
               items.swatches.forEach( opt => {
-                  // Проверяем, соответствует ли это текущему товару
+                  // РџСЂРѕРІРµСЂСЏРµРј, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ Р»Рё СЌС‚Рѕ С‚РµРєСѓС‰РµРјСѓ С‚РѕРІР°СЂСѓ
                   const isSelected = opt.similar_id === currentProductId;
                   const selectedAttr = isSelected ? 'selected' : '';
                   this.debugLog(`Creating option: ${opt.label}, isSelected: ${isSelected}`);
@@ -173,14 +171,14 @@
           const imageSource = data.product_page_image_source;
           const rowClass = 'is-row'
   
-          // Проверяем, нужно ли скрывать блок
-          // Скрываем только если desktop_hide установлен (mobile_hide обрабатывается через CSS)
+          // РџСЂРѕРІРµСЂСЏРµРј, РЅСѓР¶РЅРѕ Р»Рё СЃРєСЂС‹РІР°С‚СЊ Р±Р»РѕРє
+          // РЎРєСЂС‹РІР°РµРј С‚РѕР»СЊРєРѕ РµСЃР»Рё desktop_hide СѓСЃС‚Р°РЅРѕРІР»РµРЅ (mobile_hide РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ С‡РµСЂРµР· CSS)
           const isDesktopHide = itemMdClass && itemMdClass.includes('desktop_hide');
           
           this.debugLog(`[createItemsList] Desktop hide: ${isDesktopHide}`);
   
           if (isDesktopHide) {
-              // Если desktop_hide, полностью скрываем блок
+              // Р•СЃР»Рё desktop_hide, РїРѕР»РЅРѕСЃС‚СЊСЋ СЃРєСЂС‹РІР°РµРј Р±Р»РѕРє
               this.debugLog('[createItemsList] Block hidden (desktop_hide), returning empty string');
               return '';
           }
@@ -208,14 +206,14 @@
   
           this.debugLog(`[createItemsListForCollection] Desktop style: ${itemMdClass}, Mobile style: ${itemMbClass}, Image source: ${imageSource}, Current product: ${currentProductId}`);
   
-          // Проверяем, нужно ли скрывать блок
-          // Скрываем только если desktop_hide установлен (mobile_hide обрабатывается через CSS)
+          // РџСЂРѕРІРµСЂСЏРµРј, РЅСѓР¶РЅРѕ Р»Рё СЃРєСЂС‹РІР°С‚СЊ Р±Р»РѕРє
+          // РЎРєСЂС‹РІР°РµРј С‚РѕР»СЊРєРѕ РµСЃР»Рё desktop_hide СѓСЃС‚Р°РЅРѕРІР»РµРЅ (mobile_hide РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ С‡РµСЂРµР· CSS)
           const isDesktopHide = itemMdClass && itemMdClass.includes('desktop_hide');
           
           this.debugLog(`[createItemsListForCollection] Desktop hide: ${isDesktopHide}`);
   
           if (isDesktopHide) {
-              // Если desktop_hide, полностью скрываем блок
+              // Р•СЃР»Рё desktop_hide, РїРѕР»РЅРѕСЃС‚СЊСЋ СЃРєСЂС‹РІР°РµРј Р±Р»РѕРє
               this.debugLog('[createItemsListForCollection] Block hidden (desktop_hide), returning empty string');
               return '';
           }
@@ -236,26 +234,26 @@
           return propsList;
       }
   
-      addBlockToProductItem(blockData) {
+      addBlockToProductItem(blockData, productItem) {
           this.debugLog('[addBlockToProductItem] Attempting to add swatch block to product page');
           
-          if (document.querySelector('.product__variants')) {
-              const beforeBlock =  document.querySelector('.product__variants');
+          if (productItem.querySelector('.product__variants')) {
+              const beforeBlock =  productItem.querySelector('.product__variants');
               const parentBlock = beforeBlock.parentNode;
   
               this.debugLog('[addBlockToProductItem] Found .product__variants, inserting before it');
               parentBlock.insertBefore(blockData, beforeBlock);
               
   
-          } else if (document.querySelector('.product__title')) {
-              const beforeBlock = document.querySelector('.product__title');
+          } else if (productItem.querySelector('.product__title')) {
+              const beforeBlock = productItem.querySelector('.product__title');
               const parentBlock = beforeBlock.parentNode;
   
               this.debugLog('[addBlockToProductItem] Found .product__title, appending to parent');
               parentBlock.append(blockData)
           } else {
-              // Fallback: просто добавить к первому .product элементу
-              const productElement = document.querySelector('.product');
+              // Fallback: РїСЂРѕСЃС‚Рѕ РґРѕР±Р°РІРёС‚СЊ Рє РїРµСЂРІРѕРјСѓ .product СЌР»РµРјРµРЅС‚Сѓ
+              const productElement = productItem;
               if (productElement) {
                   this.debugLog('[addBlockToProductItem] Fallback: adding to .product element');
                   productElement.insertBefore(blockData, productElement.firstChild);
@@ -270,15 +268,15 @@
       addBlockToPreview(previewElement, blockData) {
           this.debugLog('[addBlockToPreview] Attempting to add swatch block to preview');
           
-          // Ищем элемент product-preview__area-title
+          // РС‰РµРј СЌР»РµРјРµРЅС‚ product-preview__area-title
           const titleElement = previewElement.querySelector('.product-preview__area-title');
           
           if (titleElement) {
-              // Найден заголовок - вставляем после него
+              // РќР°Р№РґРµРЅ Р·Р°РіРѕР»РѕРІРѕРє - РІСЃС‚Р°РІР»СЏРµРј РїРѕСЃР»Рµ РЅРµРіРѕ
               this.debugLog('[addBlockToPreview] Found .product-preview__area-title, inserting after it');
               titleElement.insertAdjacentElement('afterend', blockData);
           } else {
-              // Fallback: добавить в конец preview элемента
+              // Fallback: РґРѕР±Р°РІРёС‚СЊ РІ РєРѕРЅРµС† preview СЌР»РµРјРµРЅС‚Р°
               this.debugLog('[addBlockToPreview] Title not found, appending to preview element');
               previewElement.appendChild(blockData);
           }
@@ -302,7 +300,7 @@
           const productItem = document.querySelector(`.product[data-product-id="${data.product_id}"]`);
           const propsItemsList = this.createItemsList(data);
           
-          // Если список пустой (desktop_hide/mobile_hide), не создаём блок
+          // Р•СЃР»Рё СЃРїРёСЃРѕРє РїСѓСЃС‚РѕР№ (desktop_hide/mobile_hide), РЅРµ СЃРѕР·РґР°С‘Рј Р±Р»РѕРє
           if (!propsItemsList || propsItemsList.trim() === '') {
               this.debugLog('[fillProduct] Block is hidden, skipping creation');
               return;
@@ -316,7 +314,7 @@
               ${propsItemsList}
           `;
   
-          this.addBlockToProductItem(propsWrapper);
+          this.addBlockToProductItem(propsWrapper, productItem);
   
           this.selectListener(propsWrapper);
       }
@@ -331,13 +329,13 @@
           this.debugLog(`[fillPreviews] Creating swatch blocks with style: ${data.collection_page_style}`);
           
           previewItems.forEach((preview, index) => {
-              // Получаем product_id из самого preview элемента
+              // РџРѕР»СѓС‡Р°РµРј product_id РёР· СЃР°РјРѕРіРѕ preview СЌР»РµРјРµРЅС‚Р°
               const currentProductId = preview.getAttribute('data-product-id');
               this.debugLog(`[fillPreviews] Processing preview ${index + 1}, product_id: ${currentProductId}`);
               
               const propsItemsList = this.createItemsListForCollection(data, currentProductId);
               
-              // Если список пустой (desktop_hide/mobile_hide), не создаём блок
+              // Р•СЃР»Рё СЃРїРёСЃРѕРє РїСѓСЃС‚РѕР№ (desktop_hide/mobile_hide), РЅРµ СЃРѕР·РґР°С‘Рј Р±Р»РѕРє
               if (!propsItemsList || propsItemsList.trim() === '') {
                   this.debugLog(`[fillPreviews] Block is hidden for preview ${index + 1}, skipping`);
                   return;
@@ -576,7 +574,7 @@
                       line-height: 20px;
                   }
 
-                  /* Скрытие на мобильных если указан mobile_hide */
+                  /* РЎРєСЂС‹С‚РёРµ РЅР° РјРѕР±РёР»СЊРЅС‹С… РµСЃР»Рё СѓРєР°Р·Р°РЅ mobile_hide */
                   .twc-swatch__item.mobile_hide,
                   .twc-swatch__select.mobile_hide {
                       display: none !important;
@@ -632,7 +630,7 @@
   
       start() {
           this.getClientId();
-          this.debugLog('Swatch.js инициализирован, версия:', this.version);
+          this.debugLog('Swatch.js РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅ, РІРµСЂСЃРёСЏ:', this.version);
           this.createData();
           this.createStyles();
       }

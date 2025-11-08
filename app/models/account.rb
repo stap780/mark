@@ -1,4 +1,6 @@
 class Account < ApplicationRecord
+  include Billable
+
   has_many :account_users, dependent: :destroy
   has_many :users, through: :account_users
   has_many :insales, dependent: :destroy
@@ -29,6 +31,14 @@ class Account < ApplicationRecord
   # Switch to account by ID
   def self.switch_to(account_id)
     Account.find(account_id).switch_to
+  end
+
+  def self.ransackable_attributes(auth_object = nil)
+    ["name", "admin", "active", "created_at", "updated_at"]
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    ["subscriptions", "users", "account_users"]
   end
 end
 

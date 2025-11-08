@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_02_103143) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_07_173705) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -151,6 +151,32 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_02_103143) do
     t.index ["icon_style"], name: "index_lists_on_icon_style"
   end
 
+  create_table "payments", force: :cascade do |t|
+    t.bigint "subscription_id", null: false
+    t.integer "amount", null: false
+    t.string "status", null: false
+    t.datetime "paid_at"
+    t.string "processor", null: false
+    t.jsonb "processor_data"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["processor"], name: "index_payments_on_processor"
+    t.index ["status"], name: "index_payments_on_status"
+    t.index ["subscription_id"], name: "index_payments_on_subscription_id"
+  end
+
+  create_table "plans", force: :cascade do |t|
+    t.string "name", null: false
+    t.integer "price", null: false
+    t.string "interval", null: false
+    t.boolean "active", default: true, null: false
+    t.integer "trial_days", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_plans_on_active"
+    t.index ["name"], name: "index_plans_on_name", unique: true
+  end
+
   create_table "products", force: :cascade do |t|
     t.integer "account_id", null: false
     t.string "title"
@@ -166,6 +192,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_02_103143) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "subscriptions", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "plan_id", null: false
+    t.string "status", null: false
+    t.datetime "current_period_start"
+    t.datetime "current_period_end"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_subscriptions_on_account_id"
+    t.index ["plan_id"], name: "index_subscriptions_on_plan_id"
+    t.index ["status"], name: "index_subscriptions_on_status"
   end
 
   create_table "swatch_group_products", force: :cascade do |t|
@@ -278,8 +317,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_02_103143) do
   add_foreign_key "list_items", "clients"
   add_foreign_key "list_items", "lists"
   add_foreign_key "lists", "accounts"
+  add_foreign_key "payments", "subscriptions"
   add_foreign_key "products", "accounts"
   add_foreign_key "sessions", "users"
+  add_foreign_key "subscriptions", "accounts"
+  add_foreign_key "subscriptions", "plans"
   add_foreign_key "swatch_group_products", "products"
   add_foreign_key "swatch_group_products", "swatch_groups"
   add_foreign_key "swatch_groups", "accounts"

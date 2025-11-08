@@ -10,6 +10,10 @@ Rails.application.routes.draw do
   namespace :admin do
     get 'dashboard', to: 'dashboard#index', as: :dashboard
     resources :users, only: [:index]
+    resources :plans
+    # New: super-admin payments over all accounts
+    resources :payments, only: [:index, :show, :update]
+    # Invoices merged into Payments (filter by processor=invoice)
     resources :accounts do
       resources :users, except: [:index, :show]
     end
@@ -32,6 +36,15 @@ Rails.application.routes.draw do
   
   # Locale switching
   get "switch_locale/:locale", to: "application#switch_locale", as: :switch_locale
+
+  # Billing webhooks
+  namespace :billing do
+    namespace :paymaster do
+      post 'success'
+      post 'fail'
+      post 'result'
+    end
+  end
 
   # Account-scoped routes (must be before accounts resources to avoid route conflicts)
   scope "/accounts/:account_id", as: :account do
@@ -113,6 +126,14 @@ Rails.application.routes.draw do
       end
     end
     resources :users
+    resources :subscriptions do
+      member do
+        patch :cancel
+      end
+      resources :payments, only: [:new, :create]
+    end
+    resources :payments, only: [:index, :show]
+    resources :invoices, only: [:show]
 
   end
 

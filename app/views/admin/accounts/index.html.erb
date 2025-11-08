@@ -1,17 +1,30 @@
 <div class="flex items-center justify-between mb-4">
-  <h1 class="text-xl font-semibold">Accounts</h1>
+  <h1 class="text-xl font-semibold"><%= t('admin.accounts.accounts') %></h1>
   <div class="flex space-x-2">
-    <%= link_to "New Account", new_admin_account_path,
+    <%= search_form_for @search, url: admin_accounts_path, method: :get, html: { class: "flex items-center space-x-2" } do |f| %>
+      <div>
+        <%= f.select :subscriptions_status_eq, 
+            options_for_select(Subscription.statuses.map { |key, value| [key.humanize, value] }, params.dig(:q, :subscriptions_status_eq)), 
+            { include_blank: t('admin.accounts.subscriptions_status') }, 
+            { class: "px-2 py-1 border rounded" } %>
+      </div>
+      <%= f.submit t('filter'), class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
+      <%= link_to admin_accounts_path, class: "px-3 py-1 bg-gray-100 rounded hover:bg-gray-200", title: t('clear') do %>
+        <%= t('clear') %>
+      <% end %>
+    <% end %>
+    <%= link_to t('admin.accounts.new_account'), new_admin_account_path,
           data: { turbo_frame: :offcanvas },
           class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
   </div>
 </div>
 
 <div class="bg-white rounded-lg shadow divide-y">
-  <div class="grid grid-cols-[1fr_120px_150px_100px] gap-4 p-4 font-medium text-gray-700">
-    <div>Name</div>
-    <div>User count</div>
-    <div>Admin?</div>
+  <div class="grid grid-cols-[1fr_120px_150px_150px_100px] gap-4 p-4 font-medium text-gray-700">
+    <div><%= t('admin.accounts.name') %></div>
+    <div><%= t('admin.accounts.user_count') %></div>
+    <div><%= t('admin.accounts.admin') %></div>
+    <div><%= t('admin.accounts.subscription') %></div>
     <div></div>
   </div>
   <%= turbo_frame_tag "accounts_list" do %>

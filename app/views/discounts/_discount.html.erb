@@ -4,9 +4,8 @@
   <div class="text-sm font-medium"><%= discount.title %></div>
   <div class="text-sm text-gray-600 truncate"><%= discount.notice %></div>
   <div class="flex justify-end items-center space-x-2">
-    <%= link_to "Edit", edit_account_discount_path(current_account, discount), 
-          data: { turbo_frame: :offcanvas, turbo_prefetch: false  },
-          class: "text-violet-700 hover:underline" %>
+    <%= link_to_edit edit_account_discount_path(current_account, discount), 
+          data: { turbo_frame: :offcanvas, turbo_prefetch: false } %>
     <%= link_to account_discount_path(current_account || discount.account, discount),
       data: { turbo_method: :delete, turbo_confirm: "Delete discount?" },
       class: "float-right p-2 rounded-md bg-red-300 hover:bg-red-400 flex items-center justify-center" do %>

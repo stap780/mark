@@ -37,10 +37,15 @@
           <nav class="flex-1 px-4 pb-4 space-y-1">
             <% if current_account.admin? %>
 
-              <%= link_to_sidebar 'Admin Dashboard', admin_dashboard_path, active_if: '/admin/dashboard' %>
+              <%= link_to_sidebar t('admin.dashboard'), admin_dashboard_path, active_if: '/admin/dashboard' %>
+              <%= link_to_sidebar t('admin.accounts.accounts'), admin_accounts_path, active_if: '/admin/accounts' %>
               <%= link_to_sidebar t(:users), admin_users_path, active_if: '/admin/users' %>
-              <%= link_to_sidebar t(:accounts), admin_accounts_path, active_if: '/admin/accounts' %>
-              <%= link_to_sidebar t(:jobs), admin_jobs_path, active_if: '/admin/jobs', data: { turbo: false } %>
+              <%= link_to_sidebar t('admin.plans.plans'), admin_plans_path, active_if: '/admin/plans' %>
+              <%= link_to_sidebar t('payments.payments'), admin_payments_path, active_if: '/admin/payments' %>
+              
+              <% if respond_to?(:admin_jobs_path) %>
+                <%= link_to_sidebar t(:jobs), admin_jobs_path, active_if: '/admin/jobs', data: { turbo: false } %>
+              <% end %>
 
             <% else %>
 
@@ -54,9 +59,9 @@
               <%= link_to_sidebar "Webforms", account_webforms_path(current_account), active_if: '/webforms' %>
               
               <div data-controller="accordion" 
-                  data-accordion-open-value="<%= request.path.include?('/insales') || request.path.include?('/users') %>">
+                  data-accordion-open-value="<%= request.path.include?('/insales') || request.path.include?('/users') || request.path.include?('/subscription') || request.path.include?('/payments') %>">
                 <button type="button" data-action="click->accordion#toggle"
-                        class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 <%= 'bg-violet-500 bg-opacity-75' if request.path.include?('/insales') || request.path.include?('/users') %>">
+                        class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 <%= 'bg-violet-500 bg-opacity-75' if request.path.include?('/insales') || request.path.include?('/users') || request.path.include?('/subscription') || request.path.include?('/payments') %>">
                   <span><%= t(:settings) %></span>
                   <svg data-accordion-target="arrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -66,6 +71,8 @@
                 <div data-accordion-target="content" class="hidden ml-4 space-y-1">
                   <%= link_to_sidebar t(:insales), account_insales_path(current_account), active_if: '/insales' %>
                   <%= link_to_sidebar t(:users), account_users_path(current_account), active_if: '/users' %>
+                  <%= link_to_sidebar t('subscriptions.subscriptions'), account_subscriptions_path(current_account), active_if: '/subscriptions' %>
+                  <%= link_to_sidebar t('payments.payments'), account_payments_path(current_account), active_if: '/payments' %>
                 </div>
               </div>
 
@@ -89,8 +96,36 @@
                       class: current_locale == :ru ? 'font-bold underline' : 'opacity-75 hover:opacity-100' %>
                 </div>
                 <span class="text-gray-700 text-sm font-medium"><%= Current.user&.email_address %></span>
-                <%= button_to t(:sign_out), session_path, method: :delete,
-                      class: "inline-flex items-center px-3 py-1 text-sm font-medium rounded-md text-gray-700 hover:text-gray-900 cursor-pointer" %>
+                <div class="relative">
+                  <details class="relative">
+                    <summary class="inline-flex items-center px-3 py-1 text-sm font-medium rounded-md text-gray-700 hover:text-gray-900 cursor-pointer list-none">
+                      <span class="mr-2"><%= current_account&.name || t(:account) %></span>
+                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                      </svg>
+                    </summary>
+                    <div class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                      <div class="py-1">
+                        <%= button_to t(:sign_out), session_path, method: :delete,
+                              class: "w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                      </div>
+                      <div class="border-t border-gray-200"></div>
+                      <div class="py-1 max-h-64 overflow-auto">
+                        <% (Current.user&.accounts || []).each do |account| %>
+                          <%= link_to account_dashboard_path(account), data: { turbo_prefetch: false },
+                                class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-between" do %>
+                            <span class="truncate"><%= account.name %></span>
+                            <% if account.admin? %>
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-500 flex-shrink-0 ml-2" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.721-1.36 3.486 0l6.518 11.59c.75 1.335-.213 2.994-1.743 2.994H3.482c-1.53 0-2.493-1.659-1.743-2.994L8.257 3.1zM11 14a1 1 0 10-2 0 1 1 0 002 0zm-1-2a1 1 0 01-1-1V8a1 1 0 112 0v3a1 1 0 01-1 1z" clip-rule="evenodd" />
+                              </svg>
+                            <% end %>
+                          <% end %>
+                        <% end %>
+                      </div>
+                    </div>
+                  </details>
+                </div>
               </div>
             </div>
           </div>

@@ -8,7 +8,7 @@
     <%= form.label :name, class: "block text-sm font-medium text-gray-700" %>
     <%= form.text_field :name, 
           class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": @account.errors[:name].none?, "border-red-400 focus:outline-red-600": @account.errors[:name].any?}],
-          placeholder: "Account name" %>
+          placeholder: t('admin.accounts.account_name_placeholder') %>
   </div>
 
   <div class="my-5">
@@ -16,18 +16,18 @@
     <div class="mt-2 flex items-center">
       <%= form.check_box :admin, 
             class: ["h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded", {"border-gray-400 focus:outline-blue-600": @account.errors[:admin].none?, "border-red-400 focus:outline-red-600": @account.errors[:admin].any?}] %>
-      <%= form.label :admin, "Admin account", class: "ml-2 text-sm text-gray-700" %>
+      <%= form.label :admin, t('admin.accounts.admin_account'), class: "ml-2 text-sm text-gray-700" %>
     </div>
-    <p class="mt-1 text-sm text-gray-500">Admin accounts have access to all accounts and can manage them. This is SUPER ADMIN</p>
+    <p class="mt-1 text-sm text-gray-500"><%= t('admin.accounts.admin_account_description') %></p>
   </div>
 
   <div class="flex justify-start space-x-3 pt-4">
-    <%= form.submit @account.persisted? ? "Update Account" : "Create Account",
+    <%= form.submit @account.persisted? ? t('admin.accounts.update_account') : t('admin.accounts.create_account'),
           class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
     <button type="button" 
             class="inline-flex items-center px-3 py-1 bg-white text-violet-700 border border-violet-600 rounded-md hover:bg-violet-50"
             data-action="click->offcanvas#close">
-      Cancel
+      <%= t('cancel') %>
     </button>
   </div>
 <% end %>

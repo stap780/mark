@@ -1,0 +1,35 @@
+<div class="max-w-2xl mx-auto">
+  <div class="bg-white rounded-lg shadow p-6">
+  <h1 class="text-2xl font-bold mb-6">Invoice #<%= @payment.id %></h1>
+
+    <div class="mb-6">
+      <p class="text-sm text-gray-500">Invoice issued on: <%= @payment.created_at.strftime("%d.%m.%Y") %></p>
+      <p class="text-sm text-gray-500">Status: 
+        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+          <%= @payment.succeeded? ? 'bg-green-100 text-green-800' : @payment.failed? ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' %>">
+          <%= @payment.status.humanize %>
+        </span>
+      </p>
+    </div>
+
+    <dl class="grid grid-cols-2 gap-4 mb-6">
+      <div>
+        <dt class="text-sm font-medium text-gray-500">Amount</dt>
+        <dd class="mt-1 text-lg font-semibold text-gray-900"><%= @payment.amount %> ₽</dd>
+      </div>
+      <div>
+        <dt class="text-sm font-medium text-gray-500">Plan</dt>
+        <dd class="mt-1 text-sm text-gray-900"><%= @payment.subscription.plan.name %></dd>
+      </div>
+    </dl>
+
+    <div class="mt-6 pt-6 border-t">
+      <%= link_to "Download PDF", account_invoice_path(current_account, @payment, format: :pdf),
+            class: "inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700",
+            target: "_blank" %>
+      <%= link_to "Back to Payments", account_payments_path(current_account),
+            class: "ml-3 inline-flex items-center px-4 py-2 bg-white text-violet-700 border border-violet-600 rounded-md hover:bg-violet-50" %>
+    </div>
+  </div>
+</div>
+

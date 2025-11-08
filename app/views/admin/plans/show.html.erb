@@ -1,0 +1,38 @@
+<div class="max-w-2xl mx-auto">
+  <%= link_to t('admin.plans.back_to_plans'), admin_plans_path,
+        class: "inline-flex items-center text-sm text-violet-600 hover:text-violet-900 mb-4" %>
+
+  <div class="bg-white rounded-lg shadow p-6">
+    <h1 class="text-2xl font-bold mb-6"><%= @plan.name %></h1>
+
+    <dl class="grid grid-cols-2 gap-4">
+      <div>
+        <dt class="text-sm font-medium text-gray-500"><%= t('admin.plans.price') %></dt>
+        <dd class="mt-1 text-lg font-semibold text-gray-900"><%= @plan.price %> ₽</dd>
+      </div>
+      <div>
+        <dt class="text-sm font-medium text-gray-500"><%= t('admin.plans.interval') %></dt>
+        <dd class="mt-1 text-sm text-gray-900"><%= @plan.interval.humanize %></dd>
+      </div>
+      <div>
+        <dt class="text-sm font-medium text-gray-500"><%= t('admin.plans.trial_days') %></dt>
+        <dd class="mt-1 text-sm text-gray-900"><%= @plan.trial_days %> <%= t('admin.plans.days') %></dd>
+      </div>
+      <div>
+        <dt class="text-sm font-medium text-gray-500"><%= t('admin.plans.status') %></dt>
+        <dd class="mt-1">
+          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+            <%= @plan.active? ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+            <%= @plan.active? ? t('admin.plans.active') : t('admin.plans.inactive') %>
+          </span>
+        </dd>
+      </div>
+    </dl>
+
+    <div class="mt-6 pt-6 border-t">
+      <%= link_to_edit edit_admin_plan_path(@plan),
+            class: "inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    </div>
+  </div>
+</div>
+

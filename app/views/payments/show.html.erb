@@ -1,0 +1,61 @@
+<div class="max-w-2xl mx-auto">
+  <%= link_to t(:back), account_payments_path(current_account),
+        class: "inline-flex items-center text-sm text-violet-600 hover:text-violet-900 mb-4" %>
+
+  <div class="bg-white rounded-lg shadow p-6">
+    <h1 class="text-2xl font-bold mb-6"><%= t('payments.payment_details') %></h1>
+
+    <dl class="grid grid-cols-2 gap-4">
+      <div>
+        <dt class="text-sm font-medium text-gray-500"><%= t('payments.amount') %></dt>
+        <dd class="mt-1 text-lg font-semibold text-gray-900"><%= @payment.amount %> ₽</dd>
+      </div>
+      <div>
+        <dt class="text-sm font-medium text-gray-500"><%= t('payments.status') %></dt>
+        <dd class="mt-1">
+          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+            <%= @payment.status == 'succeeded' ? 'bg-green-100 text-green-800' : 
+                @payment.status == 'failed' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' %>">
+            <%= @payment.status.humanize %>
+          </span>
+        </dd>
+      </div>
+      <div>
+        <dt class="text-sm font-medium text-gray-500"><%= t('payments.payment_method') %></dt>
+        <dd class="mt-1 text-sm text-gray-900"><%= @payment.processor.humanize %></dd>
+      </div>
+      <div>
+        <dt class="text-sm font-medium text-gray-500"><%= t('payments.date') %></dt>
+        <dd class="mt-1 text-sm text-gray-900">
+          <%= @payment.created_at.strftime("%d.%m.%Y %H:%M") %>
+        </dd>
+      </div>
+      <% if @payment.paid_at %>
+        <div>
+          <dt class="text-sm font-medium text-gray-500"><%= t('payments.paid_at') %></dt>
+          <dd class="mt-1 text-sm text-gray-900">
+            <%= @payment.paid_at.strftime("%d.%m.%Y %H:%M") %>
+          </dd>
+        </div>
+      <% end %>
+      <% if @payment.invoice? %>
+        <div>
+          <dt class="text-sm font-medium text-gray-500"><%= t('payments.invoice_number') %></dt>
+          <dd class="mt-1 text-sm text-gray-900">#<%= @payment.id %></dd>
+        </div>
+      <% end %>
+      <div>
+        <dt class="text-sm font-medium text-gray-500"><%= t('payments.plan') %></dt>
+        <dd class="mt-1 text-sm text-gray-900"><%= @payment.subscription.plan.name %></dd>
+      </div>
+    </dl>
+
+    <% if @payment.invoice? %>
+      <div class="mt-6 pt-6 border-t">
+        <%= link_to t('payments.download_invoice_pdf'), account_invoice_path(current_account, @payment, format: :pdf),
+              class: "inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700",
+              target: "_blank" %>
+      </div>
+    <% end %>
+  </div>
+</div>

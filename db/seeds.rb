@@ -26,3 +26,27 @@ account2_user = account2.account_users.find_or_initialize_by(user: user2)
 account2_user.role = "admin"
 account2_user.save!
 puts "Seeded account=#{account2.name} (id=#{account2.id}), admin user=#{user2.email_address} / password=password"
+
+# Billing plans
+Plan.find_or_create_by(name: "Basic") do |plan|
+  plan.price = 1000
+  plan.interval = "monthly"
+  plan.active = true
+  plan.trial_days = 0
+end
+
+Plan.find_or_create_by(name: "Pro") do |plan|
+  plan.price = 3000
+  plan.interval = "monthly"
+  plan.active = true
+  plan.trial_days = 7
+end
+
+Plan.find_or_create_by(name: "Enterprise") do |plan|
+  plan.price = 10000
+  plan.interval = "monthly"
+  plan.active = true
+  plan.trial_days = 14
+end
+
+puts "Seeded billing plans: Basic (1000₽), Pro (3000₽), Enterprise (10000₽)"
