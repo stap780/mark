@@ -15,7 +15,14 @@ class InsalesController < ApplicationController
       respond_to do |format|
         notice = 'у вас уже есть интеграция'
         flash.now[:notice] = notice
-        format.turbo_stream { render turbo_stream: turbo_close_offcanvas_flash }
+        format.turbo_stream { 
+          render turbo_stream: turbo_close_offcanvas_flash + [ 
+            turbo_stream.append(
+              "insales",
+              partial: "insales/insale", 
+              locals: { insale: @insale, current_account: current_account }) 
+          ]
+        }
         format.html { redirect_to account_insales_path(current_account), notice: notice }
       end
     else

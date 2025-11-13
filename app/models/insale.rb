@@ -15,7 +15,14 @@ class Insale < ApplicationRecord
  
   include ActionView::RecordIdentifier
   # Turbo Streams callbacks, scoped per account
-  after_create_commit { broadcast_append_to [account, "insales"], target: "insales" }
+  # after_create_commit do
+  #   # Устанавливаем контекст аккаунта для route helpers в partial
+  #   Account.current = account
+  #   broadcast_append_to [account, "insales"], 
+  #                      target: "insales",
+  #                      partial: "insales/insale",
+  #                      locals: { insale: self, current_account: account }
+  # end
   # not use update commit with broadcast becuse it fire error in solid_queue with update nil account_id record
   # after_update_commit { broadcast_replace_to [account, "insales"], target:  dom_id(self) }
   after_destroy_commit { broadcast_remove_to [account, "insales"], target: dom_id(self) }

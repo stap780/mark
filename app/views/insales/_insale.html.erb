@@ -3,7 +3,8 @@
   <div class="truncate"><%= insale.api_password %></div>
   <div class="truncate"><%= insale.api_link %></div>
   <div class="flex justify-end items-center space-x-2">
-    <%= link_to_edit edit_account_insale_path(current_account, insale), data: { turbo_frame: "offcanvas", turbo_prefetch: false } %>
-    <%= link_to_delete account_insale_path(current_account, insale), data: { turbo_confirm: "Are you sure?" } %>
+    <% account_for_routes = local_assigns[:current_account] || insale.account %>
+    <%= link_to_edit edit_account_insale_path(account_for_routes, insale), data: { turbo_frame: "offcanvas", turbo_prefetch: false } %>
+    <%= link_to_delete account_insale_path(account_for_routes, insale), data: { turbo_confirm: "Are you sure?" } %>
   </div>
 <% end %>
