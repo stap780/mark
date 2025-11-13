@@ -1,5 +1,5 @@
 <div id="<%= dom_id(variant) %>" class="grid grid-cols-6 gap-4 p-2 items-center border-t">
-  <div class="text-sm">#<%= variant.id %></div>
+  <div class="text-sm"><%= variant.id %></div>
   <div>
     <% if variant.image_link.present? %>
       <img src="<%= variant.image_link %>" alt="" class="h-10 w-10 object-cover rounded" onerror="this.style.display='none'">
@@ -13,13 +13,6 @@
   <div class="text-right space-x-2 text-sm flex items-center justify-center">
     <%= link_to_edit edit_account_product_variant_path(current_account, product, variant), data: { turbo_frame: 'offcanvas', turbo_prefetch: false } %>
     <%= link_to 'Varbinds', account_product_variant_varbinds_path(current_account, product, variant), data: { turbo_frame: 'offcanvas', turbo_prefetch: false }, class: 'text-violet-700 hover:underline' %>
-    <%= link_to account_product_variant_path(current_account, product, variant), 
-    data: { turbo_method: :delete, turbo_confirm: 'Delete variant?', turbo_stream: true }, 
-    class: 'float-right p-2 rounded-md bg-red-300 hover:bg-red-400 flex items-center justify-center' do %>
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    <% end %>
+    <%= link_to_delete account_product_variant_path(current_account, product, variant), data: { turbo_confirm: 'Delete variant?' } %>
   </div>
 </div>
-

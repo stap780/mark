@@ -19,11 +19,11 @@
 <%= turbo_stream_from [dom_id(current_account), :products] %>
 <div class="bg-white rounded-lg shadow divide-y">
   <div class="grid grid-cols-[50px_40px_80px_1fr_80px_120px] gap-4 p-4 font-medium text-gray-700">
-    <div>#</div>
+    <div class="text-center">#</div>
     <div></div>
     <div>Image</div>
     <div>Title</div>
-    <div>Variants</div>
+    <div class="text-center">Variants</div>
     <div></div>
   </div>
   <%= turbo_frame_tag [dom_id(current_account), :products] do %>

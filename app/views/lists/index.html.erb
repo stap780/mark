@@ -10,11 +10,10 @@
   </div>
 
   <div class="bg-white rounded-lg shadow divide-y">
-    <div class="grid grid-cols-5 gap-4 p-4 font-medium text-gray-700">
+    <div class="grid grid-cols-[150px_1fr_150px_120px] gap-4 p-4 font-medium text-gray-700">
       <div>Name</div>
       <div>Items</div>
       <div>Color</div>
-      <div></div>
       <div></div>
     </div>
     <%= turbo_frame_tag dom_id(current_account, :lists) do %>

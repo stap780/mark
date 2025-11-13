@@ -1,9 +1,5 @@
 <%= render 'shared/offcanvas_inner', title: "Client: #{@client.name}" do %>
   <div class="space-y-4">
-    <div>
-      <strong>Client:</strong>
-      <span><%= @client.name %></span>
-    </div>
 
     <%# Load list items grouped by list %>
     <% list_items = (defined?(@client.list_items) ? @client.list_items : ListItem.where(client: @client)).includes(:list, :item) %>
@@ -54,7 +50,7 @@
                   </td>
                   <td style="padding:12px; border-bottom:1px solid #f3f4f6; text-align:right;">
                     <% if price.present? %>
-                      <%= number_to_currency(price) %>
+                      <%= number_to_currency(price, unit: "₽", separator: ",", delimiter: " ", format: "%n %u") %>
                     <% else %>
                       <span style="color:#9ca3af;">—</span>
                     <% end %>

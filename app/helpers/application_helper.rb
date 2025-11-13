@@ -80,4 +80,29 @@ module ApplicationHelper
       show_icon
     end
   end
+
+  def delete_icon
+    '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    </svg>'.html_safe
+  end
+
+  def link_to_delete(path, **options)
+    # Если класс содержит текстовый стиль или bg-gray-100, заменяем на стиль иконки
+    # Иначе используем переданный класс (например, для кнопок с bg-red-600)
+    if options[:class]&.include?('text-red-600 hover:underline') || options[:class]&.include?('bg-gray-100')
+      options[:class] = "p-2 rounded-md bg-red-300 hover:bg-red-400 flex items-center justify-center"
+    elsif !options[:class]
+      # Класс не указан - используем стиль иконки по умолчанию
+      options[:class] = "p-2 rounded-md bg-red-300 hover:bg-red-400 flex items-center justify-center"
+    end
+    options[:title] ||= t('delete')
+    options[:data] ||= {}
+    options[:data][:turbo_method] ||= :delete
+    options[:data][:turbo_confirm] ||= t('delete_confirm', default: 'Are you sure?')
+    
+    link_to path, options do
+      delete_icon
+    end
+  end
 end

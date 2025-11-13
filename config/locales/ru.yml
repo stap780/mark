@@ -29,7 +29,7 @@ ru:
   not_selected: "Не выбрано"
   swatch_file: "Файл"
   new: "Создать"
-  search_by_name: "Поиск по имени"
+  search_by_name: "Поиск по названию"
   search: "Поиск"
   clear: "Очистить"
   add_items_from_xml: "Добавить товары из XML"

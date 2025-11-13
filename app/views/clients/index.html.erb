@@ -2,8 +2,7 @@
   <h1 class="text-xl font-semibold">Clients</h1>
   <div class="flex space-x-2">
     <%= search_form_for @search, url: account_clients_path(current_account), method: :get, html: { class: "flex items-center space-x-2" } do |f| %>
-      <%= f.label :name_or_surname_or_email_or_phone_cont, "Search by name", class: "sr-only" %>
-      <%= f.search_field :name_or_surname_or_email_or_phone_cont, placeholder: "Search by name...", class: "px-2 py-1 border rounded", style: "width: 350px;" %>
+      <%= f.search_field :name_or_surname_or_email_or_phone_cont, placeholder: "Search by name, surname, email, phone...", class: "px-2 py-1 border rounded", style: "width: 350px;" %>
       <%= f.submit "Search", class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
       <%= link_to account_clients_path(current_account), class: "px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 flex items-center", title: "Clear" do %>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -21,7 +20,7 @@
 <%= turbo_stream_from [dom_id(current_account), :clients] %>
 <div class="bg-white rounded-lg shadow divide-y">
   <div class="grid grid-cols-[50px_40px_1fr_200px_150px_200px] gap-4 p-4 font-medium text-gray-700">
-    <div>#</div>
+    <div class="text-center">#</div>
     <div></div>
     <div>Name</div>
     <div>Email</div>

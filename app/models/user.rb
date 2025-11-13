@@ -5,6 +5,7 @@ class User < ApplicationRecord
   has_many :sessions, dependent: :destroy
   has_many :account_users, dependent: :destroy
   has_many :accounts, through: :account_users
+  has_one :inswatch, dependent: :destroy
   
   accepts_nested_attributes_for :account_users, allow_destroy: true
 

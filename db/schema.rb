@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_07_173705) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_13_155554) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -32,7 +32,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_07_173705) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "admin", default: false, null: false
+    t.boolean "partner", default: false, null: false
+    t.jsonb "settings", default: {}
     t.index ["admin"], name: "index_accounts_on_admin"
+    t.index ["partner"], name: "index_accounts_on_partner"
   end
 
   create_table "active_storage_attachments", force: :cascade do |t|
@@ -124,6 +127,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_07_173705) do
     t.datetime "updated_at", null: false
     t.string "product_xml"
     t.index ["account_id"], name: "index_insales_on_account_id", unique: true
+  end
+
+  create_table "inswatches", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "uid", null: false
+    t.string "shop"
+    t.boolean "installed", default: false, null: false
+    t.datetime "last_login_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["shop"], name: "index_inswatches_on_shop"
+    t.index ["uid"], name: "index_inswatches_on_uid", unique: true
+    t.index ["user_id"], name: "index_inswatches_on_user_id"
   end
 
   create_table "list_items", force: :cascade do |t|
@@ -314,6 +330,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_07_173705) do
   add_foreign_key "incases", "clients"
   add_foreign_key "incases", "webforms"
   add_foreign_key "insales", "accounts"
+  add_foreign_key "inswatches", "users"
   add_foreign_key "list_items", "clients"
   add_foreign_key "list_items", "lists"
   add_foreign_key "lists", "accounts"

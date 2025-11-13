@@ -17,10 +17,10 @@
         <%= t('subscriptions.not_available') %>
       <% end %>
     </div>
-    <div class="flex justify-end space-x-2">
+    <div class="flex justify-end items-center space-x-2">
       <% payment = subscription.payments.order(created_at: :desc).first || nil %>
       <%= link_to t('subscriptions.payment'), account_payment_path(current_account, payment), 
-      class: "text-violet-600 hover:underline text-sm", data: {turbo: false} if payment.present? %>
+        class: "text-violet-600 hover:underline text-sm", data: {turbo: false} if payment.present? %>
       <%= link_to_show account_subscription_path(current_account, subscription), class: "text-violet-600 hover:underline text-sm", data: {turbo_frame: :offcanvas} %>
       <% current_subscription_id = (current_account.current_subscription || current_account.subscriptions.order(created_at: :desc).first)&.id %>
       <% if subscription.id == current_subscription_id && subscription.status != 'active' && subscription.status != 'canceled' %>
