@@ -11,7 +11,7 @@ class Plan < ApplicationRecord
   before_destroy :check_for_subscriptions
 
   validates :name, presence: true, uniqueness: true
-  validates :price, presence: true, numericality: { greater_than: 0 }
+  validates :price, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :trial_days, presence: true, numericality: { greater_than_or_equal_to: 0 }
 
   scope :active, -> { where(active: true) }
