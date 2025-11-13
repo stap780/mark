@@ -5,7 +5,6 @@ class InswatchController < ApplicationController
   skip_before_action :ensure_active_subscription, only: [:install, :autologin]
   allow_unauthenticated_access only: [:install, :autologin]
 
-  # GET /inswatch/install
   # Установка приложения: создание/связывание пользователя в Mark
   def install
     uid = params[:uid]
@@ -13,6 +12,9 @@ class InswatchController < ApplicationController
     timestamp = params[:timestamp].to_i
     signature = params[:signature]
     shop = params[:shop]
+    insales_secret_key = params[:insales_secret_key]
+    insales_api_password = params[:insales_api_password]
+    insales_app_identifier = params[:insales_app_identifier]
 
     # Проверяем подпись
     unless valid_signature?(uid, email, timestamp, signature)
@@ -44,7 +46,12 @@ class InswatchController < ApplicationController
       )
       
       # Создаём аккаунт, если его нет
-      ensure_account_exists(user)
+      account = ensure_account_exists(user)
+      
+      # Создаём или обновляем запись InSales, если переданы данные
+      if insales_app_identifier.present? && insales_api_password.present? && shop.present?
+        create_or_update_insales(account, insales_app_identifier, insales_api_password, shop)
+      end
       
       head :ok
     else
@@ -155,7 +162,7 @@ class InswatchController < ApplicationController
 
   # Убеждаемся, что у пользователя есть аккаунт
   def ensure_account_exists(user)
-    return if user.accounts.any?
+    return user.accounts.first if user.accounts.any?
     
     # Получаем uid из связи с Inswatch
     uid = user.inswatch&.uid || user.id.to_s
@@ -166,6 +173,21 @@ class InswatchController < ApplicationController
       settings: { apps: ['inswatch'] }
     )
     user.account_users.create!(account: account, role: 'admin')
+    account
+  end
+
+  # Создаёт или обновляет запись InSales для аккаунта
+  def create_or_update_insales(account, api_key, api_password, api_link)
+    insale = account.insales.first_or_initialize
+    insale.update!(
+      api_key: api_key,
+      api_password: api_password,
+      api_link: api_link
+    )
+    Rails.logger.info "InSales record created/updated for account #{account.id}"
+  rescue => e
+    Rails.logger.error "Error creating/updating InSales: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
   end
 
   # Определяет аккаунт для пользователя

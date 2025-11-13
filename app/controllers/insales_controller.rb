@@ -30,11 +30,11 @@ class InsalesController < ApplicationController
 
     respond_to do |format|
       if @insale.save
-        flash.now[:success] = t('.success', default: 'Insale was successfully created')
+        flash.now[:success] = t('.success')
         format.turbo_stream { 
           render turbo_stream: turbo_close_offcanvas_flash + [ turbo_stream.update(:insales_actions, partial: "insales/actions", locals: { insale: @insale }) ]
         }
-        format.html { redirect_to account_insale_url(current_account, @insale), notice: t('.success', default: 'Insale was successfully created') }
+        format.html { redirect_to account_insale_url(current_account, @insale), notice: t('.success') }
         format.json { render :show, status: :created, location: @insale }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -46,7 +46,7 @@ class InsalesController < ApplicationController
   def update
     respond_to do |format|
       if @insale.update(insale_params)
-        message = t('.success', default: 'Insale was successfully updated')
+        message = t('.success')
         flash.now[:success] = message
         format.turbo_stream { 
           # render turbo_stream: turbo_close_offcanvas_flash + [ turbo_stream.replace([current_account, "insales"], target:  dom_id(@insale), partial: "insales/insale") ]
@@ -73,7 +73,7 @@ class InsalesController < ApplicationController
     @insale.destroy!
 
     respond_to do |format|
-      message = t('.success', default: 'Insale was successfully destroyed')
+      message = t('.success')
       flash.now[:success] = message
       format.turbo_stream { render turbo_stream: turbo_close_offcanvas_flash + [ turbo_stream.update(:insales_actions, partial: "insales/actions") ] }
       format.html { redirect_to account_insales_path(current_account), notice: message }
