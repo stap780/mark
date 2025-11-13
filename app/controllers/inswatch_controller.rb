@@ -28,35 +28,17 @@ class InswatchController < ApplicationController
       return
     end
 
-    # Ищем пользователя по email
-    user = User.find_by(email_address: email)
+    # Создаём или обновляем установку через модель (порядок как в seeds.rb)
+    # Включая создание InSales записи, если переданы данные
+    Inswatch.install_or_update(
+      uid: uid,
+      email: email,
+      shop: shop,
+      insales_app_identifier: insales_app_identifier,
+      insales_api_password: insales_api_password
+    )
     
-    # Если пользователя нет, создаём его
-    if user.nil?
-      user = create_user_from_inswatch(email, uid, shop)
-    end
-
-    if user
-      # Создаём или обновляем связь с Inswatch
-      inswatch = user.inswatch || user.build_inswatch
-      inswatch.update!(
-        uid: uid,
-        shop: shop,
-        installed: true
-      )
-      
-      # Создаём аккаунт, если его нет
-      account = ensure_account_exists(user)
-      
-      # Создаём или обновляем запись InSales, если переданы данные
-      if insales_app_identifier.present? && insales_api_password.present? && shop.present?
-        create_or_update_insales(account, insales_app_identifier, insales_api_password, shop)
-      end
-      
-      head :ok
-    else
-      head :unprocessable_entity
-    end
+    head :ok
   rescue => e
     Rails.logger.error "Install error: #{e.message}"
     Rails.logger.error e.backtrace.join("\n")
@@ -85,34 +67,23 @@ class InswatchController < ApplicationController
       return
     end
 
-    # Ищем пользователя по email
-    user = User.find_by(email_address: email)
+    # Находим или создаём пользователя через модель
+    result = Inswatch.autologin_user(uid: uid, email: email, shop: shop)
     
-    # Если пользователя нет, создаём его
-    if user.nil?
-      user = create_user_from_inswatch(email, uid, shop)
-    end
-
-    unless user
+    unless result
       redirect_to new_session_path, alert: "Пользователь не найден"
       return
     end
-
-    # Обновляем связь с Inswatch (обновляем last_login_at)
-    inswatch = user.inswatch || user.create_inswatch(
-      uid: uid,
-      shop: shop
-    )
-    inswatch.update!(last_login_at: Time.current)
-
-    # Убеждаемся, что у пользователя есть аккаунт
-    ensure_account_exists(user)
+    
+    user, account = result
+    
+    unless account
+      redirect_to new_session_path, alert: "Аккаунт не найден. Пожалуйста, выполните установку приложения."
+      return
+    end
 
     # Создаём сессию
     start_new_session_for(user)
-
-    # Определяем аккаунт для пользователя
-    account = determine_account_for_user(user)
     
     # Редиректим на нужную страницу
     redirect_to after_authentication_url(account, return_to)
@@ -131,88 +102,6 @@ class InswatchController < ApplicationController
     message = "#{uid}:#{email}:#{timestamp}"
     expected_signature = Digest::MD5.hexdigest(message + SECRET)
     ActiveSupport::SecurityUtils.secure_compare(signature.to_s, expected_signature)
-  end
-
-  # Создаёт пользователя в Mark на основе данных из Inswatch
-  def create_user_from_inswatch(email, uid, shop)
-    password = SecureRandom.base58(24)
-    user = User.create!(
-      email_address: email,
-      password: password,
-      password_confirmation: password
-    )
-    
-    # Создаём связь с Inswatch
-    user.create_inswatch!(
-      uid: uid,
-      shop: shop
-    )
-    
-    # Создаём первый аккаунт для пользователя с названием на основе uid
-    # Устанавливаем флаг partner = true и settings.apps для аккаунтов из Inswatch
-    account = user.accounts.create!(
-      name: "Inswatch #{uid} Account",
-      partner: true,
-      settings: { apps: ['inswatch'] }
-    )
-    user.account_users.create!(account: account, role: 'admin')
-    
-    user
-  end
-
-  # Убеждаемся, что у пользователя есть аккаунт
-  def ensure_account_exists(user)
-    return user.accounts.first if user.accounts.any?
-    
-    # Получаем uid из связи с Inswatch
-    uid = user.inswatch&.uid || user.id.to_s
-    # Устанавливаем флаг partner = true и settings.apps для аккаунтов из Inswatch
-    account = user.accounts.create!(
-      name: "Inswatch #{uid} Account",
-      partner: true,
-      settings: { apps: ['inswatch'] }
-    )
-    user.account_users.create!(account: account, role: 'admin')
-    account
-  end
-
-  # Создаёт или обновляет запись InSales для аккаунта
-  def create_or_update_insales(account, api_key, api_password, api_link)
-    insale = account.insales.first_or_initialize
-    insale.update!(
-      api_key: api_key,
-      api_password: api_password,
-      api_link: api_link
-    )
-    Rails.logger.info "InSales record created/updated for account #{account.id}"
-  rescue => e
-    Rails.logger.error "Error creating/updating InSales: #{e.message}"
-    Rails.logger.error e.backtrace.join("\n")
-  end
-
-  # Определяет аккаунт для пользователя
-  def determine_account_for_user(user)
-    # Вариант 1: Использовать первый аккаунт
-    account = user.accounts.first
-    
-    # Вариант 2: Если передан account_id в токене (если добавим в payload)
-    # account_id = data['account_id']
-    # account = user.accounts.find_by(id: account_id) if account_id
-    
-    # Вариант 3: Создать аккаунт, если его нет
-    if account.nil?
-      # Получаем uid из связи с Inswatch
-      uid = user.inswatch&.uid || user.id.to_s
-      # Устанавливаем флаг partner = true и settings.apps для аккаунтов из Inswatch
-      account = user.accounts.create!(
-        name: "Inswatch #{uid} Account",
-        partner: true,
-        settings: { apps: ['inswatch'] }
-      )
-      user.account_users.create!(account: account, role: 'admin')
-    end
-    
-    account
   end
 
   # URL для редиректа после автологина
