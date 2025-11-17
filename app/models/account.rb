@@ -13,7 +13,7 @@ class Account < ApplicationRecord
   has_many :incases, dependent: :destroy
   validates :name, presence: true
 
-  after_create :create_trial_subscription
+  after_create :create_subscription
 
   # Set current account context
   def self.current
@@ -63,7 +63,7 @@ class Account < ApplicationRecord
   private
 
   # Создает пробную подписку на 30 дней при создании аккаунта
-  def create_trial_subscription
+  def create_subscription
     # Пропускаем для админ-аккаунтов
     return if admin?
 
@@ -79,18 +79,13 @@ class Account < ApplicationRecord
         plan.trial_days = 30
       end
 
-      # Обновляем trial_days, если план уже существует, но имеет другое значение
-      if trial_plan.trial_days != 30
-        trial_plan.update!(trial_days: 30)
-      end
-
-      # Вычисляем даты пробного периода (точно 30 дней)
+      # Вычисляем даты пробного периода из trial_days плана
       period_start = Time.current
-      period_end = period_start + 30.days
+      period_end = period_start + trial_plan.trial_days.days
 
       # Создаем подписку со статусом trialing
       # set_period_dates установит даты на основе интервала плана (1 месяц),
-      # но мы переопределим их на 30 дней
+      # но мы переопределим их на trial_days из плана
       subscription = subscriptions.create!(
         plan: trial_plan,
         status: :trialing,
@@ -100,7 +95,7 @@ class Account < ApplicationRecord
     end
 
     if partner? && settings["apps"].include?("inswatch")
-      # Находим или создаем план "Basic" с пробным периодом 30 дней
+      # Находим или создаем план "Basic" с пробным периодом 10 дней
       trial_plan = Plan.find_or_create_by!(name: "inswatch 799") do |plan|
         plan.price = 1000
         plan.interval = "monthly"
@@ -109,13 +104,13 @@ class Account < ApplicationRecord
       end
     
 
-      # Вычисляем даты пробного периода (точно 10 дней)
+      # Вычисляем даты пробного периода из trial_days плана
       period_start = Time.current
-      period_end = period_start + 10.days
+      period_end = period_start + trial_plan.trial_days.days
 
       # Создаем подписку со статусом trialing
       # set_period_dates установит даты на основе интервала плана (1 месяц),
-      # но мы переопределим их на 10 дней
+      # но мы переопределим их на trial_days из плана
       subscription = subscriptions.create!(
         plan: trial_plan,
         status: :trialing,
