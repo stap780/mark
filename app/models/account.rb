@@ -70,7 +70,7 @@ class Account < ApplicationRecord
     # Пропускаем, если уже есть активная или пробная подписка
     return if subscriptions.where(status: [:active, :trialing]).exists?
 
-    unless parner?
+    unless partner?
       # Находим или создаем план "Trial" с пробным периодом 30 дней
       trial_plan = Plan.find_or_create_by!(name: "Basic (4000 акция - 40%)") do |plan|
         plan.price = 2400
