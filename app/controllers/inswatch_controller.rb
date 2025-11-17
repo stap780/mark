@@ -122,4 +122,3 @@ class InswatchController < ApplicationController
     account_dashboard_path(account)
   end
 end
-

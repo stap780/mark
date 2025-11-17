@@ -50,13 +50,13 @@
             <% else %>
 
               <%= link_to_sidebar t(:dashboard), account_dashboard_path(current_account), active_if: '/dashboard' %>
-              <%= link_to_sidebar "Incases", account_incases_path(current_account), active_if: '/incases' %>
-              <%= link_to_sidebar t(:clients), account_clients_path(current_account), active_if: '/clients' %>
+              <%= link_to_sidebar "Incases", account_incases_path(current_account), active_if: '/incases' if show_link?('incases') %>
+              <%= link_to_sidebar t(:clients), account_clients_path(current_account), active_if: '/clients' if show_link?('clients') %>
               <%= link_to_sidebar t(:products), account_products_path(current_account), active_if: '/products' %>
-              <%= link_to_sidebar t(:discounts), account_discounts_path(current_account), active_if: '/discounts' %>
-              <%= link_to_sidebar t(:lists), account_lists_path(current_account), active_if: '/lists' %>
-              <%= link_to_sidebar t(:swatches), account_swatch_groups_path(current_account), active_if: '/swatch_groups' %>
-              <%= link_to_sidebar "Webforms", account_webforms_path(current_account), active_if: '/webforms' %>
+              <%= link_to_sidebar t(:discounts), account_discounts_path(current_account), active_if: '/discounts' if show_link?('discounts') %>
+              <%= link_to_sidebar t(:lists), account_lists_path(current_account), active_if: '/lists' if show_link?('lists') %>
+              <%= link_to_sidebar t(:swatches), account_swatch_groups_path(current_account), active_if: '/swatch_groups' if show_link?('swatches') %>
+              <%= link_to_sidebar "Webforms", account_webforms_path(current_account), active_if: '/webforms' if show_link?('webforms') %>
               
               <div data-controller="accordion" 
                   data-accordion-open-value="<%= request.path.include?('/insales') || request.path.include?('/users') || request.path.include?('/subscription') || request.path.include?('/payments') %>">
@@ -71,8 +71,8 @@
                 <div data-accordion-target="content" class="hidden ml-4 space-y-1">
                   <%= link_to_sidebar t(:insales), account_insales_path(current_account), active_if: '/insales' %>
                   <%= link_to_sidebar t(:users), account_users_path(current_account), active_if: '/users' %>
-                  <%= link_to_sidebar t('subscriptions.subscriptions'), account_subscriptions_path(current_account), active_if: '/subscriptions' %>
-                  <%= link_to_sidebar t('payments.payments'), account_payments_path(current_account), active_if: '/payments' %>
+                  <%= link_to_sidebar t('subscriptions.subscriptions'), account_subscriptions_path(current_account), active_if: '/subscriptions' unless current_account.partner? %>
+                  <%= link_to_sidebar t('payments.payments'), account_payments_path(current_account), active_if: '/payments' unless current_account.partner? %>
                 </div>
               </div>
 

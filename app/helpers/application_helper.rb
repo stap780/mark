@@ -1,6 +1,35 @@
 module ApplicationHelper
+
+  def format_account_setting(value)
+    case value
+    when TrueClass, FalseClass
+      value ? t('yes', default: 'Yes') : t('no', default: 'No')
+    when Array
+      value.map { |v| format_account_setting(v) }.join(', ')
+    when Hash
+      value.map { |k, v| "#{k}: #{format_account_setting(v)}" }.join(', ')
+    else
+      value.to_s
+    end
+  end
+
+  def show_link?(item)
+    return true unless current_account
+    
+    # Non-partner accounts see all links
+    return true unless current_account.partner?
+    
+    # Partner accounts need to have the specific app enabled
+    current_account.partner_and_app_enabled?(item.to_s)
+  end
+
   def turbo_id_for(obj)
     obj.persisted? ? obj.id : obj.hash
+  end
+
+  def account_subscription(account)
+    @account_subscription_cache ||= {}
+    @account_subscription_cache[account.object_id] ||= account.try(:current_subscription)
   end
 
   def sortable_with_badge(position)

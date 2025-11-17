@@ -40,5 +40,6 @@ class Plan < ApplicationRecord
       throw :abort
     end
   end
+  
 end
 

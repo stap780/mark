@@ -146,3 +146,29 @@ en:
     "dropdown with label": "Dropdown with label"
     "square button": "Square button"
     "do not show": "Do not show"
+
+# Admin translations
+  admin:
+    accounts:
+      partner_settings: "Partner settings"
+      no_partner_settings: "No settings provided for this partner."
+      current_plan: "Current plan"
+      no_plan: "No plan"
+      subscription_until: "Valid until"
+      no_subscription_end: "No end date"
+      partner_yes: "Partner"
+      partner_no: "Regular"
+    payments:
+      payments: "Payments"
+      status: "Status"
+      processor: "Processor"
+      account_id: "Account ID"
+      filter: "Filter"
+      clear: "Clear"
+      number: "#"
+      date: "Date"
+      account: "Account"
+      plan: "Plan"
+      amount: "Amount"
+      status_column: "Status"
+      any: "Any"

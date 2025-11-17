@@ -127,7 +127,7 @@ ru:
     "dropdown with label": "Выпадающий список"
     "square button": "Квадратная кнопка"
     "do not show": "Не показывать"
-  
+
   # Subscriptions
   subscriptions:
     subscriptions: "Подписки"
@@ -181,6 +181,28 @@ ru:
       delete_account_confirm: "Удалить аккаунт?"
       delete_user_confirm: "Удалить пользователя из аккаунта?"
       subscriptions_status: "Статус подписки"
+      partner_settings: "Настройки партнёра"
+      no_partner_settings: "Для этого партнёра ещё нет настроек."
+      current_plan: "Текущий тариф"
+      no_plan: "Нет тарифа"
+      subscription_until: "Действует до"
+      no_subscription_end: "Нет даты окончания"
+      partner_yes: "Партнёр"
+      partner_no: "Обычный"
+    payments:
+      payments: "Платежи"
+      status: "Статус"
+      processor: "Способ оплаты"
+      account_id: "ID аккаунта"
+      filter: "Фильтр"
+      clear: "Очистить"
+      number: "#"
+      date: "Дата"
+      account: "Аккаунт"
+      plan: "Тариф"
+      amount: "Сумма"
+      status_column: "Статус"
+      any: "Любой"
     plans:
       plans: "Тарифы"
       plan: "Тариф"

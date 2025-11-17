@@ -4,7 +4,30 @@
   <%= tag.div @account.name, class: "text-lg font-semibold" %>
 </div>
 
+<% if @account.partner? %>
+  <div class="bg-white rounded-lg shadow divide-y">
+    <div class="px-4 py-3 border-b">
+      <h3 class="text-base font-semibold text-gray-700"><%= t('admin.accounts.partner_settings') %></h3>
+    </div>
+    <% if @account.settings.present? %>
+      <dl class="divide-y">
+        <% @account.settings.each do |key, value| %>
+          <div class="grid grid-cols-[200px_1fr] gap-4 px-4 py-3 items-start">
+            <dt class="text-sm font-medium text-gray-600"><%= key.to_s.humanize %></dt>
+            <dd class="text-sm text-gray-900 break-words"><%= format_account_setting(value) %></dd>
+          </div>
+        <% end %>
+      </dl>
+    <% else %>
+      <div class="px-4 py-3 text-sm text-gray-500">
+        <%= t('admin.accounts.no_partner_settings') %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
 <%= turbo_stream_from dom_id(@account, :users) %>
+
 <div class="p-0">
   <div class="flex items-center justify-between mb-4">
     <h3 class="text-lg font-medium"><%= t('admin.accounts.user_list') %></h3>

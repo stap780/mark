@@ -43,6 +43,23 @@ class Account < ApplicationRecord
     ["subscriptions", "users", "account_users"]
   end
 
+  # Returns true if the given app is present in settings["apps"]
+  # but remaps 'swatch' (menu) to 'inswatch' (settings).
+  def partner_and_app_enabled?(app_key)
+    return false unless partner?
+    return false unless settings.is_a?(Hash) && settings["apps"].is_a?(Array)
+
+    key =
+      case app_key
+      when "swatches"
+        "inswatch"
+      else
+        app_key
+      end
+
+    settings["apps"].include?(key)
+  end
+
   private
 
   # Создает пробную подписку на 30 дней при создании аккаунта
@@ -53,33 +70,61 @@ class Account < ApplicationRecord
     # Пропускаем, если уже есть активная или пробная подписка
     return if subscriptions.where(status: [:active, :trialing]).exists?
 
-    # Находим или создаем план "Basic" с пробным периодом 30 дней
-    trial_plan = Plan.find_or_create_by!(name: "Trial") do |plan|
-      plan.price = 0
-      plan.interval = "monthly"
-      plan.active = true
-      plan.trial_days = 30
+    unless parner?
+      # Находим или создаем план "Trial" с пробным периодом 30 дней
+      trial_plan = Plan.find_or_create_by!(name: "Basic (4000 акция - 40%)") do |plan|
+        plan.price = 2400
+        plan.interval = "monthly"
+        plan.active = true
+        plan.trial_days = 30
+      end
+
+      # Обновляем trial_days, если план уже существует, но имеет другое значение
+      if trial_plan.trial_days != 30
+        trial_plan.update!(trial_days: 30)
+      end
+
+      # Вычисляем даты пробного периода (точно 30 дней)
+      period_start = Time.current
+      period_end = period_start + 30.days
+
+      # Создаем подписку со статусом trialing
+      # set_period_dates установит даты на основе интервала плана (1 месяц),
+      # но мы переопределим их на 30 дней
+      subscription = subscriptions.create!(
+        plan: trial_plan,
+        status: :trialing,
+        current_period_start: period_start,
+        current_period_end: period_end
+      )
     end
 
-    # Обновляем trial_days, если план уже существует, но имеет другое значение
-    if trial_plan.trial_days != 30
-      trial_plan.update!(trial_days: 30)
+    if partner? && settings["apps"].include?("inswatch")
+      # Находим или создаем план "Basic" с пробным периодом 30 дней
+      trial_plan = Plan.find_or_create_by!(name: "inswatch 799") do |plan|
+        plan.price = 1000
+        plan.interval = "monthly"
+        plan.active = true
+        plan.trial_days = 10
+      end
+    
+
+      # Вычисляем даты пробного периода (точно 10 дней)
+      period_start = Time.current
+      period_end = period_start + 10.days
+
+      # Создаем подписку со статусом trialing
+      # set_period_dates установит даты на основе интервала плана (1 месяц),
+      # но мы переопределим их на 10 дней
+      subscription = subscriptions.create!(
+        plan: trial_plan,
+        status: :trialing,
+        current_period_start: period_start,
+        current_period_end: period_end
+      )
     end
-
-    # Вычисляем даты пробного периода (точно 30 дней)
-    period_start = Time.current
-    period_end = period_start + 30.days
-
-    # Создаем подписку со статусом trialing
-    # set_period_dates установит даты на основе интервала плана (1 месяц),
-    # но мы переопределим их на 30 дней
-    subscription = subscriptions.create!(
-      plan: trial_plan,
-      status: :trialing,
-      current_period_start: period_start,
-      current_period_end: period_end
-    )
   end
+
 end
 
 
