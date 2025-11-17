@@ -1,15 +1,23 @@
-<%= turbo_frame_tag dom_id(account), class: "grid grid-cols-[1fr_120px_160px_240px_120px_120px] gap-4 p-4 items-center hover:bg-gray-50" do %>
+<%= turbo_frame_tag dom_id(account), class: "grid grid-cols-[1fr_160px_240px_140px_120px] gap-4 p-4 items-center hover:bg-gray-50" do %>
   <% subscription = account_subscription(account) %>
-  <div class="text-sm font-medium text-violet-700"><%= account.name %></div>
-  <div class="text-sm text-gray-600">
-    <%= account.users.count %>
-  </div>
-  <div class="text-sm">
-    <% if account.admin? %>
-      <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800"><%= t('admin.accounts.admin') %></span>
-    <% else %>
-      <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800"><%= t('admin.accounts.regular') %></span>
-    <% end %>
+  <div class="flex flex-col gap-1 text-sm font-medium text-violet-700">
+    <div class="flex items-center gap-2">
+      <span><%= account.name %></span>
+      <span class="text-xs text-gray-500">
+        <%= t('admin.accounts.user_count') %>: <%= account.users.count %>
+      </span>
+    </div>
+    <div>
+      <% if account.admin? %>
+        <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">
+          <%= t('admin.accounts.admin') %>
+        </span>
+      <% else %>
+        <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
+          <%= t('admin.accounts.regular') %>
+        </span>
+      <% end %>
+    </div>
   </div>
   <div class="text-sm flex flex-col gap-1">
     <div>

@@ -121,4 +121,5 @@ class InswatchController < ApplicationController
     # По умолчанию редиректим на dashboard аккаунта
     account_dashboard_path(account)
   end
+  
 end

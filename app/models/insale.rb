@@ -117,8 +117,10 @@ class Insale < ApplicationRecord
   end
 
   # Ask Insales API to create a marketplace feed and save its URL to product_xml
-  def self.create_xml
-    rec = Current.account&.insales&.first
+  # @param account [Account, nil] Optional account to use. If not provided, uses Current.account
+  def self.create_xml(account: nil)
+    target_account = account || Current.account
+    rec = target_account&.insales&.first
     return [false, ["No Insale configuration for this account"]] unless rec
 
     rec.api_init

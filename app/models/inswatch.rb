@@ -67,6 +67,20 @@ class Inswatch < ApplicationRecord
         
         insale.save!
         Rails.logger.info "InSales record created/updated for account #{account.id}, id: #{insale.id}"
+        
+        # Создаём XML feed для InSales после успешного сохранения
+        begin
+          result, message = Insale.create_xml(account: account)
+          if result
+            Rails.logger.info "InSales XML feed created for account #{account.id}: #{message}"
+          else
+            Rails.logger.warn "Failed to create InSales XML feed for account #{account.id}: #{Array(message).join(', ')}"
+          end
+        rescue => e
+          # Логируем ошибку, но не прерываем установку
+          Rails.logger.error "Error creating InSales XML feed: #{e.class}: #{e.message}"
+          Rails.logger.error e.backtrace.join("\n")
+        end
       rescue => e
         # Логируем ошибку, но не прерываем установку
         Rails.logger.error "Failed to create InSales record: #{e.class}: #{e.message}"
@@ -101,5 +115,6 @@ class Inswatch < ApplicationRecord
     
     [user, account]
   end
+  
 end
 
