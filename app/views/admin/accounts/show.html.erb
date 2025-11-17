@@ -14,7 +14,13 @@
         <% @account.settings.each do |key, value| %>
           <div class="grid grid-cols-[200px_1fr] gap-4 px-4 py-3 items-start">
             <dt class="text-sm font-medium text-gray-600"><%= key.to_s.humanize %></dt>
-            <dd class="text-sm text-gray-900 break-words"><%= format_account_setting(value) %></dd>
+            <dd class="text-sm text-gray-900 break-words">
+              <% if key.to_s == 'logo' && value.is_a?(String) && value.present? %>
+                <%= image_tag value, alt: "Logo", class: "h-16 w-16 rounded-lg object-cover border border-gray-200" %>
+              <% else %>
+                <%= format_account_setting(value) %>
+              <% end %>
+            </dd>
           </div>
         <% end %>
       </dl>

@@ -26,11 +26,19 @@
       <% if authenticated? %>
         <%= render "shared/flash" %>
         <!-- Sidebar -->
-        <div class="w-64 bg-gradient-to-b from-violet-600 to-purple-700 text-white flex flex-col">
+        <% sidebar_background = current_account&.partner? ? "bg-gradient-to-b from-blue-600 to-indigo-700" : "bg-gradient-to-b from-violet-600 to-purple-700" %>
+        <div class="w-64 <%= sidebar_background %> text-white flex flex-col">
           <!-- Brand -->
           <div class="px-6 py-4 flex items-center">
-            <div class="h-8 w-8 bg-white rounded-lg flex items-center justify-center"></div>
-            <span class="ml-3 text-lg font-semibold">Mark</span>
+            <% logo_url = current_account.settings.dig("logo") if current_account&.partner? %>
+            <% if logo_url.present? %>
+              <%= image_tag logo_url,
+                    alt: current_account.name,
+                    class: "h-8 w-8 rounded-lg object-cover bg-white" %>
+            <% else %>
+              <div class="h-8 w-8 bg-white rounded-lg flex items-center justify-center"></div>
+              <span class="ml-3 text-lg font-semibold">Mark</span>
+            <% end %>
           </div>
           
           <!-- Nav -->
