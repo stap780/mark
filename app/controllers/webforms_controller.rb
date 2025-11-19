@@ -21,6 +21,7 @@ class WebformsController < ApplicationController
     
     respond_to do |format|
       if @webform.save
+        WebformJsonGeneratorJob.perform_later(current_account.id)
         flash.now[:success] = t('.success')
         format.turbo_stream do
           render turbo_stream: turbo_close_offcanvas_flash + [
@@ -43,6 +44,7 @@ class WebformsController < ApplicationController
   def update
     respond_to do |format|
       if @webform.update(webform_params)
+        WebformJsonGeneratorJob.perform_later(current_account.id)
         flash.now[:success] = t('.success')
         format.turbo_stream do
           render turbo_stream: turbo_close_offcanvas_flash + [
@@ -81,6 +83,7 @@ class WebformsController < ApplicationController
   def destroy
     check_destroy = @webform.destroy ? true : false
     if check_destroy == true
+      WebformJsonGeneratorJob.perform_later(current_account.id)
       flash.now[:success] = t('.success')
     else
       flash.now[:notice] = @webform.errors.full_messages.join(" ")
@@ -105,6 +108,8 @@ class WebformsController < ApplicationController
     @schema = Webforms::BuildSchema.new(@webform).call
     render :preview
   end
+
+  def info; end
 
   private
 

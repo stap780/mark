@@ -1,7 +1,4 @@
-<%= form_with model: [current_account, webform],
-    # data: { controller: "auto-submit", "auto-submit-delay-value": 350, turbo_stream: true },
-    data: {turbo_stream: true },
-    class: "space-y-4" do |f| %>
+<%= form_with model: [current_account, webform], data: {turbo_stream: true }, class: "space-y-4" do |f| %>
   <%= render "shared/errors", object: webform %>
   <div>
     <%= f.label :title, class: "block text-sm font-medium text-gray-700" %>
@@ -9,7 +6,7 @@
   </div>
   <div>
     <%= f.label :kind, class: "block text-sm font-medium text-gray-700" %>
-    <%= f.select :kind, [['order','order'],['notify','notify'],['preorder','preorder'],['abandoned_cart','abandoned_cart'],['custom','custom']], {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
+    <%= f.select :kind, Webform::KINDS.map { |key, value| [key, value] }, {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
   </div>
   <div>
     <%= f.label :status, class: "block text-sm font-medium text-gray-700" %>
@@ -22,4 +19,3 @@
     <%= link_to 'Back', account_webforms_path(current_account), class: "inline-flex items-center px-3 py-1 bg-white text-violet-700 border border-violet-600 rounded-md hover:bg-violet-50", data: {turbo: false} %>
   </div>
 <% end %>
-

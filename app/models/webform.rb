@@ -7,6 +7,8 @@ class Webform < ApplicationRecord
   accepts_nested_attributes_for :webform_fields, allow_destroy: true
   has_many :incases
 
+  before_destroy :check_incases_presence
+
   validates :title, :kind, presence: true
   validate :validate_singleton_kind_uniqueness
 
@@ -15,21 +17,14 @@ class Webform < ApplicationRecord
     inactive: "inactive"
   }, prefix: true
 
+  KINDS = {
+    notify: "notify",
+    preorder: "preorder",
+    abandoned_cart: "abandoned_cart",
+    custom: "custom"
+  }.freeze
+
   after_create_commit :set_default_fields_and_settings
-
-  # after_create_commit do
-  #   broadcast_append_to dom_id(account, :webforms),
-  #                       target: dom_id(account, :webforms),
-  #                       partial: "webforms/webform",
-  #                       locals: { webform: self, current_account: account }
-  # end
-
-  # after_update_commit do
-  #   broadcast_replace_to dom_id(account, :webforms),
-  #                       target: dom_id(account, dom_id(self)),
-  #                       partial: "webforms/webform",
-  #                       locals: { webform: self, current_account: account }
-  # end
 
   after_destroy_commit do
     broadcast_remove_to dom_id(account, :webforms), target: dom_id(account, dom_id(self))
@@ -170,7 +165,6 @@ class Webform < ApplicationRecord
     return unless scope.exists?
 
     message = case kind
-              when 'order' then 'Форма «Заказ» уже существует'
               when 'notify' then 'Форма «Сообщить о поступлении» уже существует'
               when 'preorder' then 'Форма «Предзаказ» уже существует'
               when 'abandoned_cart' then 'Форма «Брошенная корзина» уже существует'
@@ -178,6 +172,13 @@ class Webform < ApplicationRecord
               end
     errors.add(:base, message)
   end
+
+  def check_incases_presence
+    return unless incases.exists?
+    errors.add(:base, "Cannot delete webform with existing incases")
+    throw :abort
+  end
+
 end
 
 

@@ -14,6 +14,7 @@ class WebformFieldsController < ApplicationController
     
     respond_to do |format|
       if @webform_field.save
+        WebformJsonGeneratorJob.perform_later(current_account.id)
         @schema = Webforms::BuildSchema.new(@webform).call
         flash.now[:success] = t('.success')
         puts "dom_id(current_account, dom_id(@webform, :webform_fields)): #{dom_id(current_account, dom_id(@webform, :webform_fields))}"
@@ -70,6 +71,7 @@ class WebformFieldsController < ApplicationController
   def update
     respond_to do |format|
       if @webform_field.update(webform_field_params)
+        WebformJsonGeneratorJob.perform_later(current_account.id)
         @schema = Webforms::BuildSchema.new(@webform).call
         flash.now[:success] = t('.success')
         format.turbo_stream do
@@ -101,6 +103,7 @@ class WebformFieldsController < ApplicationController
 
   def destroy
     @webform_field.destroy
+    WebformJsonGeneratorJob.perform_later(current_account.id)
     respond_to do |format|
       format.turbo_stream do
         @schema = Webforms::BuildSchema.new(@webform).call
@@ -124,6 +127,7 @@ class WebformFieldsController < ApplicationController
   def sort
     @webform_field.insert_at(params[:position].to_i)
     @webform.reload # Перезагружаем webform чтобы получить обновлённый порядок полей
+    WebformJsonGeneratorJob.perform_later(current_account.id)
     @schema = Webforms::BuildSchema.new(@webform).call
     
     respond_to do |format|

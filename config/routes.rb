@@ -124,6 +124,9 @@ Rails.application.routes.draw do
         get :schema
         patch :build
       end
+      collection do
+        get :info
+      end
       resources :webform_fields, except: [:show] do
         member do
           get :design

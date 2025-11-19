@@ -24,13 +24,7 @@
       <% if account.subscription_active? %>
         <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800"><%= t('admin.accounts.active') %></span>
       <% else %>
-        <% if !account.admin? %>
-          <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800" title="<%= subscription.status.humanize %>">
-            <%= subscription.status.humanize %>
-          </span>
-        <% else %>
-          <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800"><%= t('admin.accounts.no_subscription') %></span>
-        <% end %>
+        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800" title="<%= subscription.status.humanize %>"><%= subscription.status.humanize %></span>
       <% end %>
     </div>
     <div class="text-xs text-gray-700">
@@ -41,7 +35,7 @@
       <% end %>
     </div>
   </div>
-  
+
   <div class="text-sm">
     <% plan_name = subscription&.plan&.name %>
     <% if plan_name.present? %>
@@ -61,12 +55,7 @@
     <%= link_to_show admin_account_path(account), data: { turbo: false } %>
     <%= link_to_edit edit_admin_account_path(account), data: { turbo_frame: :offcanvas } %>
     <% unless account.admin? && Current.session&.user&.accounts&.include?(account) %>
-      <%= link_to admin_account_path(account), data: { turbo_method: :delete, turbo_confirm: t('admin.accounts.delete_account_confirm') },
-        class: "float-right p-2 rounded-md bg-red-300 hover:bg-red-400 flex items-center justify-center" do %>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      <% end %>
+      <%= link_to_delete admin_account_path(account), data: { turbo_confirm: t('admin.accounts.delete_account_confirm') } %>
     <% end %>
   </div>
 <% end %>

@@ -1,0 +1,28 @@
+<%= render 'shared/offcanvas_inner', title: 'Webform Info', width: '60rem' do %>
+    <div class="p-2 flex flex-col gap-2">
+        <span class="text-gray-600 font-medium">Краткое описание:</span>
+        <p class="text-gray-600">
+            Это простой конструктор веб-форм.
+            Здесь вы можете создавать веб-формы для вашего сайта и использовать их для различных типов заявок. На данный момент доступны следующие типы форм:
+            <ul class="list-disc list-inside">
+                <li>Сообщить о поступлении</li>
+                <li>Предзаказ</li>
+                <li>Брошенная корзина</li>
+                <li>Произвольная форма</li>
+            </ul>
+        </p>
+    </div>
+    <div class="p-2 flex flex-col gap-2">
+        <span class="text-gray-600 font-medium">JS код для вставки в ваш сайт:</span>
+        <pre class="bg-gray-100 rounded p-3 overflow-x-auto text-xs">
+        <code>&lt;script type="text/javascript"&gt;
+            (function() {
+            var scr = document.createElement('script');
+            scr.setAttribute("type","text/javascript");
+            scr.setAttribute("src", 'https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23/webforms/webform.js?id=<%= current_account.id %>');
+            document.getElementsByTagName("head")[0].appendChild(scr);
+            })();
+        &lt;/script&gt;</code>
+        </pre>
+    </div>
+<% end %>
