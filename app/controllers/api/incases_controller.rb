@@ -28,7 +28,9 @@ class Api::IncasesController < ApplicationController
     email = client_params&.dig(:email)
     phone = client_params&.dig(:phone)
     client = account.clients.where('email = ? OR phone = ?', email, phone).first
-    client ||= account.clients.create!(name: client_params[:name], surname: client_params[:surname], email: email, phone: phone)
+    # Используем email или phone как fallback для name, если name пустой
+    name = client_params[:name].presence || email.presence || phone.presence || "Client"
+    client ||= account.clients.create!(name: name, surname: client_params[:surname], email: email, phone: phone)
     client
   end
 
