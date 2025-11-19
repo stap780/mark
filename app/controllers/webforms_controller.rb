@@ -111,6 +111,11 @@ class WebformsController < ApplicationController
 
   def info; end
 
+  def regenerate_json
+    WebformJsonGeneratorJob.perform_later(current_account.id)
+    redirect_to account_webforms_path(current_account), notice: t('.regenerated')
+  end
+
   private
 
   def set_webform

@@ -126,6 +126,7 @@ Rails.application.routes.draw do
       end
       collection do
         get :info
+        post :regenerate_json
       end
       resources :webform_fields, except: [:show] do
         member do

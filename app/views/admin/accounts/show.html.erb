@@ -37,9 +37,7 @@
 <div class="p-0">
   <div class="flex items-center justify-between mb-4">
     <h3 class="text-lg font-medium"><%= t('admin.accounts.user_list') %></h3>
-    <%= link_to t('admin.accounts.new_user'), new_admin_account_user_path(@account),
-          data: { turbo_frame: :offcanvas },
-          class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    <%= link_to_new new_admin_account_user_path(@account), text: t('admin.accounts.new_user'), data: { turbo_frame: :offcanvas } %>
   </div>
   <div class="bg-white rounded-lg shadow divide-y">
     <div class="grid grid-cols-[1fr_150px_100px] gap-4 p-4 font-medium text-gray-700">

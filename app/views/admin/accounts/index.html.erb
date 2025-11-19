@@ -13,9 +13,7 @@
         <%= t('clear') %>
       <% end %>
     <% end %>
-    <%= link_to t('admin.accounts.new_account'), new_admin_account_path,
-          data: { turbo_frame: :offcanvas },
-          class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    <%= link_to_new new_admin_account_path, text: t('admin.accounts.new_account'), data: { turbo_frame: :offcanvas } %>
   </div>
 </div>
 

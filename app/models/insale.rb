@@ -37,6 +37,10 @@ class Insale < ApplicationRecord
     "https://s3.timeweb.cloud/#{self.swatch_file.service.bucket.name}/#{self.swatch_file.blob.key}"
   end
 
+  def webform_s3_url
+    "https://s3.timeweb.cloud/#{self.webform_file.service.bucket.name}/#{self.webform_file.blob.key}"
+  end
+
   # Initialize InSales API client for this account
   # If no record given, default to current account's config
   def api_init

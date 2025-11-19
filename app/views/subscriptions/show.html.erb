@@ -30,7 +30,8 @@
   
   <% if @subscription.status == 'incomplete' && @subscription.payments.pending.empty? %>
     <div class="pt-4 border-t">
-      <%= link_to t('subscriptions.pay_subscription'), new_account_subscription_payment_path(current_account, @subscription),
+      <%= link_to_new new_account_subscription_payment_path(current_account, @subscription), 
+            text: t('subscriptions.pay_subscription'), 
             data: { turbo_frame: :offcanvas },
             class: "inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
     </div>

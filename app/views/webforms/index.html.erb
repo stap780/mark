@@ -1,6 +1,6 @@
 <div class="flex items-center justify-between mb-4">
   <div class="flex space-x-2">
-    <h1 class="text-xl font-semibold">Webforms</h1>
+    <h1 class="text-xl font-semibold"><%= t(:webforms) %></h1>
     <%= link_to info_account_webforms_path,
           data: { turbo_frame: :offcanvas },
           class: "inline-flex items-center justify-center px-2 py-1 text-violet-600 hover:text-violet-800" do %>
@@ -12,9 +12,16 @@
     <% end %>
   </div>
   <div class="flex space-x-2">
-    <%= link_to "New", new_account_webform_path(current_account),
-        data: { turbo_frame: :offcanvas },
-        class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    <% if current_account.webforms.exists? %>
+      <%= link_to t(:regenerate_json), regenerate_json_account_webforms_path(current_account), 
+        data: { turbo_method: :post }, 
+        class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"%>
+    <% end %>
+    <% if current_account.webforms.exists? && current_account&.insales&.first&.webform_file&.attached? %>
+      <%= link_to t(:webform_file), current_account.insales.first.webform_s3_url, target: "_blank", 
+        class: "inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700" %>
+    <% end %>
+    <%= link_to_new new_account_webform_path(current_account), data: { turbo_frame: :offcanvas } %>
   </div>
 </div>
 
@@ -22,9 +29,9 @@
 <div class="bg-white rounded-lg shadow divide-y">
   <div class="grid grid-cols-[80px_1fr_150px_100px_150px] gap-4 p-4 font-medium text-gray-700">
     <div>#</div>
-    <div>Title</div>
-    <div>Kind</div>
-    <div>Status</div>
+    <div><%= t('activerecord.attributes.webform.title') %></div>
+    <div><%= t('activerecord.attributes.webform.kind') %></div>
+    <div><%= t('activerecord.attributes.webform.status') %></div>
     <div></div>
   </div>
   <%= turbo_frame_tag dom_id(current_account, :webforms) do %>

@@ -4,9 +4,7 @@
 <div class="w-full">
   <div class="flex items-center justify-between mb-4">
     <h1 class="text-xl font-semibold">Lists</h1>
-    <%= link_to "New", new_account_list_path(current_account),
-          data: { turbo_frame: :offcanvas },
-          class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    <%= link_to_new new_account_list_path(current_account), data: { turbo_frame: :offcanvas } %>
   </div>
 
   <div class="bg-white rounded-lg shadow divide-y">

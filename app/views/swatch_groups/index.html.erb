@@ -19,13 +19,10 @@
         class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"%>
     <% end %>
     <% if current_account.swatch_groups.exists? && current_account&.insales&.first&.swatch_file&.attached? %>
-      <%= link_to t(:swatch_file), current_account.insales.first.swatch_s3_url, 
-        target: "_blank", 
-        rel: "noopener", 
-        class: "inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700" 
-        %>
+      <%= link_to t(:swatch_file), current_account.insales.first.swatch_s3_url, target: "_blank", 
+        class: "inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700" %>
     <% end %>
-    <%= link_to t(:new), new_account_swatch_group_path(current_account), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    <%= link_to_new new_account_swatch_group_path(current_account) %>
   </div>
 </div>
 

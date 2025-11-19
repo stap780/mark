@@ -1,8 +1,6 @@
 <div class="flex items-center justify-between mb-6">
   <h1 class="text-2xl font-bold"><%= t('subscriptions.subscriptions') %></h1>
-  <%= link_to t('subscriptions.new_subscription'), new_account_subscription_path(current_account),
-        data: { turbo_frame: :offcanvas },
-        class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+  <%= link_to_new new_account_subscription_path(current_account), text: t('subscriptions.new_subscription'), data: { turbo_frame: :offcanvas } %>
   </div>
 <%= turbo_stream_from dom_id(current_account, :subscriptions) %>
 <div class="bg-white rounded-lg shadow divide-y">

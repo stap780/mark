@@ -135,6 +135,15 @@ module ApplicationHelper
     end
   end
 
+  def link_to_new(path, text: nil, **options)
+    text ||= t(:new)
+    # Стандартный класс для кнопки "New"
+    default_class = "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700"
+    options[:class] ||= default_class
+    
+    link_to text, path, options
+  end
+
   # Change the default link renderer for will_paginate
   def will_paginate(collection_or_options = nil, options = {})
     if collection_or_options.is_a? Hash

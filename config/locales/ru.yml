@@ -48,7 +48,11 @@ ru:
   selected: "Выбрано"
   not_selected: "Не выбрано"
   swatch_file: "Файл"
-  new: "Создать"
+  
+  # Webforms
+  webforms: "Веб-формы"
+  webform_file: "Файл"
+  regenerate_json: "Регенерировать JSON"
   search_by_name: "Поиск по названию"
   search: "Поиск"
   clear: "Очистить"
@@ -93,6 +97,10 @@ ru:
         css_class_preview: "CSS класс превью"
         product_page_image_source: "Страница товара. Источник изображения"
         collection_page_image_source: "Страница коллекции. Источник изображения"
+      webform:
+        title: "Название"
+        kind: "Тип"
+        status: "Статус"
       webform_field:
         name: "Имя"
         label: "Метка"
@@ -275,3 +283,8 @@ ru:
         one: "Показан %{model}"
         other: "Показано %{count} %{model}"
       multi_page_html: "Показано %{from}–%{to} из %{count} %{model}"
+  
+  controllers:
+    webforms:
+      regenerate_json:
+        regenerated: "Регенерация JSON запущена."

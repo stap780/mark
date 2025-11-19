@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.0.0
+ * Версия: 1.1.3
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.0.0";
+      this.version = "1.1.3";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -369,21 +369,35 @@
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const phonePattern = /^\+?[1-9]\d{1,11}$/;
 
-      const emailError = overlay.querySelector('.mail-error');
-      const phoneError = overlay.querySelector('.phone-error');
+      // Находим общее поле для ошибок
+      const errorMessage = overlay.querySelector('.webform-error-message');
 
-      if (clientData.email && !emailPattern.test(clientData.email)) {
-        if (emailError) emailError.textContent = "Некорректный формат адреса электронной почты";
-        return false;
-      } else if (emailError) {
-        emailError.textContent = "";
+      // Находим поля email и phone по их name атрибутам
+      const emailInput = form.querySelector('input[name="email"]');
+      const phoneInput = form.querySelector('input[name="phone"]');
+
+      // Очищаем предыдущие ошибки
+      if (errorMessage) {
+        errorMessage.textContent = "";
+        errorMessage.style.display = 'none';
       }
 
-      if (clientData.phone && !phonePattern.test(clientData.phone)) {
-        if (phoneError) phoneError.textContent = "Некорректный формат телефона";
+      // Валидация email
+      if (emailInput && clientData.email && !emailPattern.test(clientData.email)) {
+        if (errorMessage) {
+          errorMessage.textContent = "Некорректный формат адреса электронной почты";
+          errorMessage.style.display = 'block';
+        }
         return false;
-      } else if (phoneError) {
-        phoneError.textContent = "";
+      }
+
+      // Валидация phone
+      if (phoneInput && clientData.phone && !phonePattern.test(clientData.phone)) {
+        if (errorMessage) {
+          errorMessage.textContent = "Некорректный формат телефона";
+          errorMessage.style.display = 'block';
+        }
+        return false;
       }
 
       // Формирование items
@@ -453,21 +467,38 @@
           return `${cssKey}: ${value}`;
         }).join('; ');
 
+        // Обработка разных типов полей (как в _preview.html.erb)
         if (field.type === 'button') {
+          const buttonStyle = `${styleString}; background: ${fieldSettings.background_color || '#ffffff'}`;
           fieldsHTML += `
-            <button type="submit" name="${field.name}" style="${styleString}">
+            <button type="submit" name="${field.name}" style="${buttonStyle}">
               ${field.label}
             </button>
           `;
-        } else {
-          const inputType = field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text';
+        } else if (field.type === 'text') {
+          // Для типа 'text' используем div, а не input
+          fieldsHTML += `
+            <div class="text-field" style="${styleString}">${field.label}</div>
+          `;
+        } else if (field.type === 'textarea') {
+          const placeholder = fieldSettings.placeholder || field.label;
           const requiredAttr = field.required ? 'required' : '';
           fieldsHTML += `
-            <div class="webform-field">
-              <label>${field.label}</label>
-              <input type="${inputType}" name="${field.name}" ${requiredAttr} style="${styleString}" />
-              <div class="${field.name}-error" style="color: red; font-size: 12px;"></div>
-            </div>
+            <textarea name="${field.name}" placeholder="${placeholder}" ${requiredAttr} rows="4" style="${styleString}"></textarea>
+          `;
+        } else if (field.type === 'email') {
+          const placeholder = fieldSettings.placeholder || field.label;
+          const requiredAttr = field.required ? 'required' : '';
+          fieldsHTML += `
+            <input type="email" name="${field.name}" placeholder="${placeholder}" ${requiredAttr} style="${styleString}" />
+          `;
+        } else {
+          // Для остальных типов (phone, number, и т.д.)
+          const inputType = field.type === 'phone' ? 'tel' : field.type === 'number' ? 'number' : 'text';
+          const placeholder = fieldSettings.placeholder || field.label;
+          const requiredAttr = field.required ? 'required' : '';
+          fieldsHTML += `
+            <input type="${inputType}" name="${field.name}" placeholder="${placeholder}" ${requiredAttr} style="${styleString}" />
           `;
         }
       });
@@ -503,6 +534,7 @@
             ">&times;</button>
             <form class="webform-form">
               ${fieldsHTML}
+              <div class="webform-error-message" style="display: none; color: red; font-size: 14px; margin-top: 10px;"></div>
               <div class="webform-success-message" style="display: none; color: green; margin-top: 10px;">
                 Форма успешно отправлена!
               </div>

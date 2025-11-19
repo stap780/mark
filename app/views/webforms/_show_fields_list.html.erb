@@ -1,8 +1,6 @@
 <div class="flex items-center justify-between mb-4">
   <h2 class="text-lg font-semibold">Fields</h2>
-  <%= link_to "Add Field", new_account_webform_webform_field_path(current_account, webform),
-      data: { turbo_frame: :offcanvas },
-      class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+  <%= link_to_new new_account_webform_webform_field_path(current_account, webform), text: "Add Field", data: { turbo_frame: :offcanvas } %>
 </div>
 <div class="bg-white rounded-lg shadow divide-y">
   <div class="grid grid-cols-[50px_1fr_70px_70px_150px] gap-4 p-4 font-medium text-gray-700">

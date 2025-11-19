@@ -17,7 +17,7 @@ class WebformFieldsController < ApplicationController
         WebformJsonGeneratorJob.perform_later(current_account.id)
         @schema = Webforms::BuildSchema.new(@webform).call
         flash.now[:success] = t('.success')
-        puts "dom_id(current_account, dom_id(@webform, :webform_fields)): #{dom_id(current_account, dom_id(@webform, :webform_fields))}"
+        # puts "dom_id(current_account, dom_id(@webform, :webform_fields)): #{dom_id(current_account, dom_id(@webform, :webform_fields))}"
         format.turbo_stream do
           render turbo_stream: turbo_close_offcanvas_flash + [
             turbo_stream.append(
