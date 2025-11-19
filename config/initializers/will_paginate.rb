@@ -1,3 +1,4 @@
 WillPaginate.per_page = 100
 
-require Rails.root.join('app/renderers/custom_renderer')
+# Load custom renderer
+require Rails.root.join('lib/will_paginate/action_view/custom_renderer')
