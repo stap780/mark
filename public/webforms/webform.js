@@ -414,10 +414,10 @@
       const settings = webform.settings || {};
       const fields = webform.fields || [];
 
-      // Стили формы
+      // Стили формы (значения уже содержат 'px' из schema)
       const formStyles = {
         width: settings.width || '530px',
-        fontSize: settings.font_size || '16px',
+        fontSize: settings.font_size || '14px',
         padding: `${settings.padding_y || '12px'} ${settings.padding_x || '12px'}`,
         color: settings.font_color || '#000000',
         borderColor: settings.border_color || '#000000',
@@ -425,17 +425,18 @@
         borderRadius: settings.border_radius || '8px',
         backgroundColor: settings.background_color || '#ffffff',
         boxShadow: settings.box_shadow_offset_x || settings.box_shadow_offset_y || settings.box_shadow_blur
-          ? `${settings.box_shadow_offset_x || '0px'} ${settings.box_shadow_offset_y || '2px'} ${settings.box_shadow_blur || '8px'} ${settings.box_shadow_spread || '0px'} ${settings.box_shadow_color || '#000000'}`
+          ? `${settings.box_shadow_offset_x || '0px'} ${settings.box_shadow_offset_y || '2px'} ${settings.box_shadow_blur || '4px'} ${settings.box_shadow_spread || '0px'} ${settings.box_shadow_color || 'rgba(0, 0, 0, 0.12)'}`
           : 'none'
       };
 
       let fieldsHTML = '';
       fields.forEach(field => {
         const fieldSettings = field.settings || {};
+        // Стили полей (значения уже содержат 'px' из schema)
         const fieldStyles = {
           width: fieldSettings.width || '100%',
           margin: `${fieldSettings.margin_y || '0px'} ${fieldSettings.margin_x || '0px'}`,
-          fontSize: fieldSettings.font_size || '16px',
+          fontSize: fieldSettings.font_size || '14px',
           padding: `${fieldSettings.padding_y || '12px'} ${fieldSettings.padding_x || '12px'}`,
           color: fieldSettings.font_color || '#000000',
           borderColor: fieldSettings.border_color || '#000000',
@@ -443,7 +444,7 @@
           borderRadius: fieldSettings.border_radius || '8px',
           backgroundColor: fieldSettings.background_color || '#ffffff',
           boxShadow: fieldSettings.box_shadow_offset_x || fieldSettings.box_shadow_offset_y || fieldSettings.box_shadow_blur
-            ? `${fieldSettings.box_shadow_offset_x || '0px'} ${fieldSettings.box_shadow_offset_y || '0px'} ${fieldSettings.box_shadow_blur || '0px'} ${fieldSettings.box_shadow_spread || '0px'} ${fieldSettings.box_shadow_color || '#000000'}`
+            ? `${fieldSettings.box_shadow_offset_x || '0px'} ${fieldSettings.box_shadow_offset_y || '0px'} ${fieldSettings.box_shadow_blur || '0px'} ${fieldSettings.box_shadow_spread || '0px'} ${fieldSettings.box_shadow_color || 'rgba(0, 0, 0, 0.12)'}`
             : 'none'
         };
 
