@@ -286,5 +286,13 @@ ru:
   
   controllers:
     webforms:
+      create:
+        success: "Веб-форма успешно создана."
+      update:
+        success: "Веб-форма успешно обновлена."
+      destroy:
+        success: "Веб-форма успешно удалена."
+      build:
+        success: "Предпросмотр обновлен."
       regenerate_json:
         regenerated: "Регенерация JSON запущена."

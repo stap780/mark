@@ -41,6 +41,7 @@ en:
   discounts: "Discounts"
   lists: "Lists"
   swatches: "Swatches"
+  webforms: "Webforms"
   jobs: "Jobs"
   settings: "Settings"
   insales: "Insales"
@@ -146,6 +147,19 @@ en:
     "dropdown with label": "Dropdown with label"
     "square button": "Square button"
     "do not show": "Do not show"
+
+  controllers:
+    webforms:
+      create:
+        success: "Webform created successfully."
+      update:
+        success: "Webform updated successfully."
+      destroy:
+        success: "Webform deleted successfully."
+      build:
+        success: "Preview updated."
+      regenerate_json:
+        regenerated: "JSON regeneration started."
 
 # Admin translations
   admin:

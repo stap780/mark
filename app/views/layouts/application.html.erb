@@ -62,7 +62,7 @@
               <%= link_to_sidebar t(:discounts), account_discounts_path(current_account), active_if: '/discounts' if show_link?('discounts') %>
               <%= link_to_sidebar t(:lists), account_lists_path(current_account), active_if: '/lists' if show_link?('lists') %>
               <%= link_to_sidebar t(:swatches), account_swatch_groups_path(current_account), active_if: '/swatch_groups' if show_link?('swatches') %>
-              <%= link_to_sidebar "Webforms", account_webforms_path(current_account), active_if: '/webforms' if show_link?('webforms') %>
+              <%= link_to_sidebar t(:webforms), account_webforms_path(current_account), active_if: '/webforms' if show_link?('webforms') %>
               
               <div data-controller="accordion" 
                   data-accordion-open-value="<%= request.path.include?('/insales') || request.path.include?('/users') || request.path.include?('/subscription') || request.path.include?('/payments') %>">

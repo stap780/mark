@@ -36,7 +36,7 @@ class Api::IncasesController < ApplicationController
     # item_params содержит: type: "Variant", id: external_variant_id, quantity, price
     external_variant_id = item_params[:id].to_s
     quantity = item_params[:quantity] || 1
-    price = item_params[:price]
+    price = item_params[:price] || 0
 
     # Находим variant в нашей БД по external_id через Varbind
     insale = account.insales.first
