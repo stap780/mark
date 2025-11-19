@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_13_155554) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_19_132012) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -92,18 +92,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_13_155554) do
     t.index ["account_id"], name: "index_discounts_on_account_id"
   end
 
-  create_table "incase_items", force: :cascade do |t|
-    t.integer "incase_id", null: false
-    t.string "item_type", null: false
-    t.bigint "item_id", null: false
-    t.integer "quantity"
-    t.decimal "price", precision: 12, scale: 2
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["incase_id", "item_type", "item_id"], name: "index_incase_items_on_incase_id_and_item_type_and_item_id"
-    t.index ["incase_id"], name: "index_incase_items_on_incase_id"
-  end
-
   create_table "incases", force: :cascade do |t|
     t.integer "account_id", null: false
     t.string "status", default: "new", null: false
@@ -140,6 +128,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_13_155554) do
     t.index ["shop"], name: "index_inswatches_on_shop"
     t.index ["uid"], name: "index_inswatches_on_uid", unique: true
     t.index ["user_id"], name: "index_inswatches_on_user_id"
+  end
+
+  create_table "items", force: :cascade do |t|
+    t.integer "incase_id", null: false
+    t.integer "quantity"
+    t.decimal "price", precision: 12, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "product_id", null: false
+    t.bigint "variant_id", null: false
+    t.index ["incase_id"], name: "index_items_on_incase_id"
+    t.index ["product_id"], name: "index_items_on_product_id"
+    t.index ["variant_id"], name: "index_items_on_variant_id"
   end
 
   create_table "list_items", force: :cascade do |t|
@@ -325,12 +326,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_13_155554) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "clients", "accounts"
   add_foreign_key "discounts", "accounts"
-  add_foreign_key "incase_items", "incases"
   add_foreign_key "incases", "accounts"
   add_foreign_key "incases", "clients"
   add_foreign_key "incases", "webforms"
   add_foreign_key "insales", "accounts"
   add_foreign_key "inswatches", "users"
+  add_foreign_key "items", "incases"
+  add_foreign_key "items", "products"
+  add_foreign_key "items", "variants"
   add_foreign_key "list_items", "clients"
   add_foreign_key "list_items", "lists"
   add_foreign_key "lists", "accounts"

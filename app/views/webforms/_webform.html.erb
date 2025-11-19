@@ -3,17 +3,9 @@
   <div class="truncate"><%= link_to webform.title, account_webform_path(current_account, webform), class: "text-violet-600 hover:text-violet-800" %></div>
   <div><%= webform.kind %></div>
   <div><%= webform.status %></div>
-  <div class="space-x-2">
-    <%= link_to_edit edit_account_webform_path(current_account, webform),
-        data: { turbo_frame: :offcanvas, turbo_prefetch: false } %>
-    <%= link_to_show account_webform_path(current_account, webform),
-        data: { turbo: false } %>
-    <%= link_to account_webform_path(current_account, webform),
-        data: { turbo_method: :delete, turbo_confirm: "Delete webform?" },
-        class: "float-right p-2 rounded-md bg-red-300 hover:bg-red-400 flex items-center justify-center" do %>
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    <% end %>
+  <div class="flex justify-end items-center space-x-2">
+    <%= link_to_edit edit_account_webform_path(current_account, webform), data: { turbo_frame: :offcanvas, turbo_prefetch: false } %>
+    <%= link_to_show account_webform_path(current_account, webform), data: { turbo: false } %>
+    <%= link_to_delete account_webform_path(current_account, webform), data: { turbo_method: :delete, turbo_confirm: "Delete webform?" } %>
   </div>
 <% end %>

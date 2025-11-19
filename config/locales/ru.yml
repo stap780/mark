@@ -5,6 +5,26 @@ ru:
   cancel: "Отмена"
   update: "Обновить"
   
+  date:
+    abbr_month_names:
+      - 
+      - янв
+      - фев
+      - мар
+      - апр
+      - май
+      - июн
+      - июл
+      - авг
+      - сен
+      - окт
+      - ноя
+      - дек
+  
+  time:
+    formats:
+      short: "%d %b %Y, %H:%M"
+  
   # Navigation
   dashboard: "Дашборд"
   clients: "Клиенты"
@@ -56,6 +76,9 @@ ru:
     models:
       swatch_group: "Группа"
       webform_field: "Поле формы"
+      product: "товар"
+      incase: "заявка"
+      client: "клиент"
     attributes:
       swatch_group:
         name: "Название"
@@ -243,3 +266,12 @@ ru:
     invoice_number: "Номер счёта"
     download_invoice_pdf: "Скачать счёт PDF"
     pdf: "PDF"
+  
+  # Will Paginate
+  will_paginate:
+    page_entries_info:
+      single_page_html:
+        zero: "Нет %{model}"
+        one: "Показан %{model}"
+        other: "Показано %{count} %{model}"
+      multi_page_html: "Показано %{from}–%{to} из %{count} %{model}"

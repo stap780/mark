@@ -1,0 +1,8 @@
+<div class="grid grid-cols-[80px_160px_120px_2fr_2fr] gap-4 p-4 hover:bg-gray-50">
+  <div><%= link_to incase.id, account_incase_path(current_account, incase), class: "text-violet-600 hover:text-violet-800" %></div>
+  <div><%= l incase.created_at, format: :short %></div>
+  <div><%= incase.status %></div>
+  <div><%= incase.webform.title %> (<%= incase.webform.kind %>)</div>
+  <div><%= incase.client.name %> <%= incase.client.email %></div>
+</div>
+

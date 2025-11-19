@@ -4,7 +4,7 @@ class Incase < ApplicationRecord
   belongs_to :webform
   belongs_to :client
 
-  has_many :incase_items, dependent: :destroy
+  has_many :items, dependent: :destroy
 
   enum :status, {
     new: "new",

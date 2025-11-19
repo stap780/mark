@@ -10,6 +10,7 @@
   class WebformManager {
     constructor() {
       this.version = "1.0.0";
+      this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
       this.accountId = null;
@@ -22,6 +23,15 @@
         sent: false
       };
       this.init();
+    }
+
+    debugLog() {
+      if (!this.status) return;
+      try { console.log('[webform v' + this.version + ']', ...arguments); } catch(e) { /* noop */ }
+    }
+
+    getVersion() {
+      return this.version;
     }
 
     init() {
@@ -41,6 +51,12 @@
           try {
             const url = new URL(src, window.location.origin);
             const id = url.searchParams.get("id");
+            const dbg = url.searchParams.get("debug");
+
+            if (dbg === "1" || dbg === "true") {
+              this.status = true;
+            }
+
             if (id) {
               this.accountId = id;
               return;
@@ -64,13 +80,16 @@
 
       for (const url of urls) {
         try {
+          this.debugLog(`[loadWebforms] Fetching from: ${url}`);
           const response = await fetch(url, { credentials: 'omit', cache: 'no-cache' });
           if (response.ok) {
             const data = await response.json();
             this.webforms = data.webforms || [];
+            this.debugLog(`[loadWebforms] Successfully loaded ${this.webforms.length} webforms`);
             return;
           }
         } catch (error) {
+          this.debugLog(`[loadWebforms] Error loading from ${url}:`, error);
           // Пробуем следующий URL
           continue;
         }
@@ -80,7 +99,9 @@
     }
 
     setupEventListeners() {
+      this.debugLog(`[setupEventListeners] Setting up listeners for ${this.webforms.length} webforms`);
       this.webforms.forEach(webform => {
+        this.debugLog(`[setupEventListeners] Setting up listener for webform: ${webform.kind} (id: ${webform.id})`);
         switch (webform.kind) {
           case 'notify':
             this.handleNotify(webform);
@@ -100,34 +121,47 @@
 
     handleNotify(webform) {
       if (typeof EventBus !== 'undefined' && EventBus.subscribe) {
+        this.debugLog(`[handleNotify] Subscribing to empty-product:insales:site for webform ${webform.id}`);
         EventBus.subscribe("empty-product:insales:site", (data) => {
+          this.debugLog(`[handleNotify] Event received:`, data);
           // Получаем productId и variantId из события или data-атрибутов
           const productId = data?.productId || document.querySelector("[data-feedback-product-id]")?.dataset?.feedbackProductId;
           const variantId = data?.variantId || document.querySelector("[data-variant-id]")?.dataset?.variantId;
+          this.debugLog(`[handleNotify] ProductId: ${productId}, VariantId: ${variantId}`);
           this.showForm(webform, { productId, variantId });
         });
+      } else {
+        this.debugLog(`[handleNotify] EventBus not available`);
       }
     }
 
     handlePreorder(webform) {
-      if (typeof EventBus !== 'undefined' && EventBus.subscribe) {
-        EventBus.subscribe("show-preorder:insales:ui_product", (data) => {
-          // Получаем productId и variantId из события или data-атрибутов
-          const productId = data?.productId || document.querySelector("[data-feedback-product-id]")?.dataset?.feedbackProductId;
-          const variantId = data?.variantId || document.querySelector("[data-variant-id]")?.dataset?.variantId;
+      // Ищем элементы с стандартным data-атрибутом InSales для предзаказа
+      const preorderTriggers = document.querySelectorAll('[data-product-card-preorder]');
+      this.debugLog(`[handlePreorder] Found ${preorderTriggers.length} preorder triggers for webform ${webform.id}`);
+      
+      preorderTriggers.forEach(trigger => {
+        trigger.addEventListener('click', (e) => {
+          e.preventDefault();
+          // Получаем productId и variantId из data-атрибутов элемента
+          const productId = trigger.getAttribute('data-product-id') || trigger.closest('[data-product-id]')?.getAttribute('data-product-id');
+          const variantId = trigger.getAttribute('data-variant-id') || trigger.closest('[data-variant-id]')?.getAttribute('data-variant-id');
+          this.debugLog(`[handlePreorder] Trigger clicked - ProductId: ${productId}, VariantId: ${variantId}`);
           this.showForm(webform, { productId, variantId });
         });
-      }
+      });
     }
 
     handleCustom(webform) {
       // Ищем элементы с data-атрибутом для кастомных форм
       const customTriggers = document.querySelectorAll(`[data-webform-id="${webform.id}"]`);
+      this.debugLog(`[handleCustom] Found ${customTriggers.length} custom triggers for webform ${webform.id}`);
       customTriggers.forEach(trigger => {
         trigger.addEventListener('click', (e) => {
           e.preventDefault();
           const productId = trigger.getAttribute('data-product-id');
           const variantId = trigger.getAttribute('data-variant-id');
+          this.debugLog(`[handleCustom] Trigger clicked - ProductId: ${productId}, VariantId: ${variantId}`);
           this.showForm(webform, { productId, variantId });
         });
       });
@@ -294,6 +328,7 @@
     }
 
     showForm(webform, eventData = {}) {
+      this.debugLog(`[showForm] Showing form for webform ${webform.id} (${webform.kind})`, eventData);
       const html = this.generateFormHTML(webform, eventData);
       const overlay = document.createElement('div');
       overlay.className = 'webform-overlay';
@@ -484,6 +519,8 @@
         items: items
       };
 
+      this.debugLog(`[sendToAPI] Sending request to: ${url}`, payload);
+
       try {
         const response = await fetch(url, {
           method: 'POST',
@@ -498,8 +535,10 @@
         }
 
         const data = await response.json();
+        this.debugLog(`[sendToAPI] Success:`, data);
         return data;
       } catch (error) {
+        this.debugLog(`[sendToAPI] Error:`, error);
         console.error("WebformManager: API request failed", error);
         throw error;
       }
