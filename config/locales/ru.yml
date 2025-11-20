@@ -306,6 +306,11 @@ ru:
       status: "Статус"
       webform: "Веб-форма"
       client: "Клиент"
+      items: "Товары"
+      quantity: "Кол-во"
+      price: "Цена"
+      sum: "Сумма"
+      total: "Всего"
     status:
       new: "Новая"
       in_progress: "В работе"

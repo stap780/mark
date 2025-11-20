@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.1.5
+ * Версия: 1.1.6
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.1.5";
+      this.version = "1.1.6";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -311,6 +311,7 @@
             lines.push({
               type: "Variant",
               id: orderLine.variant_id || orderLine.variantId,
+              product_id: orderLine.product_id || orderLine.productId || null,
               quantity: orderLine.quantity || 1,
               price: orderLine.full_total_price || orderLine.fullTotalPrice || null
             });

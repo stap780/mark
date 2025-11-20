@@ -1,7 +1,7 @@
 <div class="bg-white rounded-lg shadow p-4">
   <div class="flex items-center justify-between mb-4">
     <%= link_to t('back'), account_incases_path(current_account), class: "text-gray-600 hover:text-violet-700 text-sm" %>
-    <h1 class="text-xl font-semibold">Incase #<%= @incase.id %></h1>
+    <h1 class="text-xl font-semibold"><%= t('incases.index.incase') %> #<%= @incase.id %></h1>
     <div class="flex space-x-2">
       <%= form_with url: update_status_account_incase_path(current_account, @incase), method: :patch, local: false, data: { turbo: true }, class: "inline-flex items-center" do |f| %>
         <%= f.select :status, 
@@ -20,33 +20,33 @@
   <div class="grid grid-cols-2 gap-4 mb-4">
     <%= turbo_frame_tag dom_id(current_account, dom_id(@incase, :status)) do %>
       <div class="p-3 bg-gray-50 rounded">
-        <p class="text-sm text-gray-600">Status</p>
-        <p class="font-medium"><%= @incase.status.humanize %></p>
+        <p class="text-sm text-gray-600"><%= t('incases.index.status') %></p>
+        <p class="font-medium"><%= t("incases.status.#{@incase.status}") %></p>
       </div>
     <% end %>
     <div class="p-3 bg-gray-50 rounded">
-      <p class="text-sm text-gray-600">Created</p>
+      <p class="text-sm text-gray-600"><%= t('incases.index.created_at') %></p>
       <p class="font-medium"><%= l @incase.created_at, format: :short %></p>
     </div>
     <div class="p-3 bg-gray-50 rounded">
-      <p class="text-sm text-gray-600">Webform</p>
+      <p class="text-sm text-gray-600"><%= t('incases.index.webform') %></p>
       <p class="font-medium"><%= @incase.webform.title %> (<%= @incase.webform.kind %>)</p>
     </div>
     <div class="p-3 bg-gray-50 rounded">
-      <p class="text-sm text-gray-600">Client</p>
+      <p class="text-sm text-gray-600"><%= t('incases.index.client') %></p>
       <p class="font-medium"><%= @incase.client.name %></p>
       <p class="text-sm text-gray-500"><%= @incase.client.email %></p>
       <p class="text-sm text-gray-500"><%= @incase.client.phone %></p>
     </div>
   </div>
 
-  <h3 class="text-lg font-semibold mb-2">Items</h3>
+  <h3 class="text-lg font-semibold mb-2"><%= t('incases.index.items') %></h3>
   <div class="bg-white rounded-lg shadow divide-y">
     <div class="grid grid-cols-[2fr_100px_100px_100px] gap-4 p-4 font-medium text-gray-700">
-      <div>Product</div>
-      <div>Quantity</div>
-      <div>Price</div>
-      <div>Sum</div>
+      <div><%= t('incases.index.product') %></div>
+      <div><%= t('incases.index.quantity') %></div>
+      <div><%= t('incases.index.price') %></div>
+      <div><%= t('incases.index.sum') %></div>
     </div>
     <% @incase.items.each do |item| %>
       <div class="grid grid-cols-[2fr_100px_100px_100px] gap-4 p-4 hover:bg-gray-50">
@@ -57,7 +57,7 @@
       </div>
     <% end %>
       <div class="grid grid-cols-[2fr_100px_100px_100px] gap-4 p-4 hover:bg-gray-50">
-      <div>Total</div>
+      <div><%= t('incases.index.total') %></div>
       <div><%= @incase.items.pluck(:quantity).sum %></div>
       <div><%= @incase.items.pluck(:price).sum %></div>
       <div><%= @incase.items.map(&:sum).sum %></div>
