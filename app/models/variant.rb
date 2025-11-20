@@ -4,8 +4,11 @@ class Variant < ApplicationRecord
 
   belongs_to :product
   has_many :list_items, as: :item
+  has_many :varbinds, as: :record
+  has_many :items
 
   before_destroy :check_list_items_dependency
+  before_destroy :check_items_dependency
 
   # Use Varbindable defaults
 
@@ -31,6 +34,13 @@ class Variant < ApplicationRecord
     return unless list_items.exists?
 
     errors.add(:base, "Cannot delete variant while it has items in Lists")
+    throw(:abort)
+  end
+
+  def check_items_dependency
+    return unless items.exists?
+
+    errors.add(:base, "Cannot delete variant while it has items in Incases")
     throw(:abort)
   end
 

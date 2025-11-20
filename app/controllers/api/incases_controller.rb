@@ -74,6 +74,7 @@ class Api::IncasesController < ApplicationController
         Varbind.find_or_create_by!(
           record: product,
           varbindable: insale,
+          record_type: "Product",
           value: item_params[:product_id].to_s
         )
       end
@@ -86,6 +87,32 @@ class Api::IncasesController < ApplicationController
         Varbind.find_or_create_by!(
           record: variant,
           varbindable: insale,
+          record_type: "Variant",
+          value: external_variant_id
+        )
+      end
+    end
+
+    # Если variant найден, убеждаемся что varbind'ы созданы для product и variant
+    if variant && insale
+      product = variant.product
+      
+      # Создаем varbind для product, если передан product_id и varbind еще не существует
+      if item_params[:product_id].present?
+        Varbind.find_or_create_by!(
+          record: product,
+          varbindable: insale,
+          record_type: "Product",
+          value: item_params[:product_id].to_s
+        )
+      end
+      
+      # Создаем varbind для variant, если передан external_variant_id и varbind еще не существует
+      if external_variant_id.present?
+        Varbind.find_or_create_by!(
+          record: variant,
+          varbindable: insale,
+          record_type: "Variant",
           value: external_variant_id
         )
       end

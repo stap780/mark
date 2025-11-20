@@ -9,6 +9,8 @@ class Product < ApplicationRecord
   has_many :swatch_group_products
   has_many :swatch_groups, through: :swatch_group_products
   has_many :list_items, as: :item
+  has_many :varbinds, as: :record
+  has_many :items
 
   before_destroy :ensure_not_used_in_swatch_groups
   before_destroy :check_list_items_dependency

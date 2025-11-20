@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.1.3
+ * Версия: 1.1.5
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.1.3";
+      this.version = "1.1.5";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -383,21 +383,51 @@
       }
 
       // Валидация email
-      if (emailInput && clientData.email && !emailPattern.test(clientData.email)) {
-        if (errorMessage) {
-          errorMessage.textContent = "Некорректный формат адреса электронной почты";
-          errorMessage.style.display = 'block';
+      if (emailInput) {
+        const isRequired = emailInput.hasAttribute('required');
+        const emailValue = clientData.email.trim();
+        
+        // Проверка обязательности
+        if (isRequired && !emailValue) {
+          if (errorMessage) {
+            errorMessage.textContent = "Поле email обязательно для заполнения";
+            errorMessage.style.display = 'block';
+          }
+          return false;
         }
-        return false;
+        
+        // Проверка формата (только если поле заполнено)
+        if (emailValue && !emailPattern.test(emailValue)) {
+          if (errorMessage) {
+            errorMessage.textContent = "Некорректный формат адреса электронной почты";
+            errorMessage.style.display = 'block';
+          }
+          return false;
+        }
       }
 
       // Валидация phone
-      if (phoneInput && clientData.phone && !phonePattern.test(clientData.phone)) {
-        if (errorMessage) {
-          errorMessage.textContent = "Некорректный формат телефона";
-          errorMessage.style.display = 'block';
+      if (phoneInput) {
+        const isRequired = phoneInput.hasAttribute('required');
+        const phoneValue = clientData.phone.trim();
+        
+        // Проверка обязательности
+        if (isRequired && !phoneValue) {
+          if (errorMessage) {
+            errorMessage.textContent = "Поле телефона обязательно для заполнения";
+            errorMessage.style.display = 'block';
+          }
+          return false;
         }
-        return false;
+        
+        // Проверка формата (только если поле заполнено)
+        if (phoneValue && !phonePattern.test(phoneValue)) {
+          if (errorMessage) {
+            errorMessage.textContent = "Некорректный формат телефона";
+            errorMessage.style.display = 'block';
+          }
+          return false;
+        }
       }
 
       // Формирование items
@@ -406,6 +436,7 @@
         items.push({
           type: "Variant",
           id: eventData.variantId,
+          product_id: eventData.productId || null,
           quantity: eventData.quantity || 1,
           price: eventData.price || null
         });
