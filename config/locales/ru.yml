@@ -26,19 +26,19 @@ ru:
       short: "%d %b %Y, %H:%M"
   
   # Navigation
-  dashboard: "Дашборд"
-  incases: "Заявки"
-  clients: "Клиенты"
-  products: "Товары"
-  discounts: "Скидки"
-  lists: "Списки"
-  swatches: "Группы"
-  webforms: "Веб-формы"
   jobs: "Задачи"
   settings: "Настройки"
   insales: "InSales"
   users: "Пользователи"
-  
+  menu:
+    dashboard: "Дашборд"
+    incases: "Заявки"
+    clients: "Клиенты"
+    products: "Товары"
+    discounts: "Скидки"
+    lists: "Списки"
+    swatches: "Группы"
+    webforms: "Веб-формы"
   # Actions
   sign_in: "Войти"
   sign_out: "Выйти"
@@ -296,10 +296,16 @@ ru:
   
   incases:
     index:
-      search_placeholder: "Поиск по форме, клиенту"
+      search_placeholder: "Поиск по клиенту"
       search: "Поиск"
       clear: "Очистить"
       all_statuses: "Все статусы"
+      all_webforms: "Все веб-формы"
+      title: "Заявки"
+      created_at: "Дата создания"
+      status: "Статус"
+      webform: "Веб-форма"
+      client: "Клиент"
     status:
       new: "Новая"
       in_progress: "В работе"

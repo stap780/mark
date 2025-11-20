@@ -163,6 +163,12 @@ en:
       search: "Search"
       clear: "Clear"
       all_statuses: "All statuses"
+      all_webforms: "All webforms"
+      title: "Incases"
+      created_at: "Created"
+      status: "Status"
+      webform: "Webform"
+      client: "Client"
     status:
       new: "New"
       in_progress: "In progress"

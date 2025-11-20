@@ -1,13 +1,11 @@
 <div class="flex items-center justify-between mb-4">
-  <h1 class="text-xl font-semibold"><%= t(:incases) %></h1>
+  <h1 class="text-xl font-semibold"><%= t('incases.index.title') %></h1>
   <div class="flex space-x-2">
     <%= search_form_for @search, url: account_incases_path(current_account), method: :get, html: { class: "flex items-center space-x-2" } do |f| %>
-      <%= f.label :webform_title_or_client_name_or_client_email_cont, t('incases.index.search_placeholder', default: 'Search by webform, client'), class: "sr-only" %>
-      <%= f.search_field :webform_title_or_client_name_or_client_email_cont, value: params.dig(:q, :webform_title_or_client_name_or_client_email_cont), placeholder: t('incases.index.search_placeholder', default: 'Search by webform, client'), class: "px-2 py-1 border rounded", style: "width: 350px;" %>
-      <%= f.select :status_eq, options_for_select(
-        Incase.statuses.keys.map { |k| [k.humanize, k] },
-        params.dig(:q, :status_eq)
-      ), {}, { class: "px-2 py-1 border rounded" } %>
+      <%= f.search_field :client_name_or_client_email_cont, value: params.dig(:q, :client_name_or_client_email_cont), placeholder: t('incases.index.search_placeholder'), class: "px-2 py-1 border rounded", style: "width: 350px;" %>
+      <%= f.select :webform_id_eq, @webforms.pluck(:title, :id), { prompt: ''}, class: "px-2 py-1 border rounded" %>
+      <%= f.select :status_eq, Incase.statuses.keys.map { |k| [t("incases.status.#{k}"), k] }, { prompt: ''}, class: "px-2 py-1 border rounded" %>
+
       <%= f.submit t('incases.index.search', default: 'Search'), class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
       <%= link_to_clear account_incases_path(current_account) %>
     <% end %>
@@ -17,10 +15,10 @@
 <div class="bg-white rounded-lg shadow divide-y">
   <div class="grid grid-cols-[80px_160px_120px_2fr_2fr_120px] gap-4 p-4 font-medium text-gray-700">
     <div>#</div>
-    <div>Created</div>
-    <div>Status</div>
-    <div>Webform</div>
-    <div>Client</div>
+    <div><%= t('incases.index.created_at') %></div>
+    <div><%= t('incases.index.status') %></div>
+    <div><%= t('incases.index.webform') %></div>
+    <div><%= t('incases.index.client') %></div>
     <div></div>
   </div>
   <%= turbo_frame_tag :incases do %>

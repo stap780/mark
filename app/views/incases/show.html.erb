@@ -6,16 +6,14 @@
       <%= form_with url: update_status_account_incase_path(current_account, @incase), method: :patch, local: false, data: { turbo: true }, class: "inline-flex items-center" do |f| %>
         <%= f.select :status, 
             options_for_select(
-              Incase.statuses.keys.map { |k| [k.humanize, k] },
+              Incase.statuses.keys.map { |k| [t("incases.status.#{k}"), k] },
               @incase.status
-            ),
-            {},
+            ),{},
             { 
               onchange: "this.form.requestSubmit()",
               class: "px-3 py-1 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
             } %>
       <% end %>
-      <%= link_to_delete account_incase_path(current_account, @incase), data: { turbo_confirm: t('incases.destroy.confirm', default: 'Вы уверены?') } %>
     </div>
   </div>
 

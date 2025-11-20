@@ -2,7 +2,6 @@
   <h1 class="text-xl font-semibold">Products</h1>
   <div class="flex space-x-2">
     <%= search_form_for @search, url: account_products_path(current_account), method: :get, html: { class: "flex items-center space-x-2" } do |f| %>
-      <%= f.label :title_or_variants_sku_cont, "Search by title, sku", class: "sr-only" %>
       <%= f.search_field :title_or_variants_sku_cont, value: params.dig(:q, :title_cont), placeholder: "Search by title, sku", class: "px-2 py-1 border rounded", style: "width: 350px;" %>
       <%= f.submit "Search", class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
       <%= link_to_clear account_products_path(current_account) %>

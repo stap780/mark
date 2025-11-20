@@ -7,6 +7,7 @@ class IncasesController < ApplicationController
     @search = current_account.incases.includes(:client, :webform).ransack(params[:q])
     @search.sorts = "created_at desc" if @search.sorts.empty?
     @incases = @search.result(distinct: true).paginate(page: params[:page], per_page: 50)
+    @webforms = current_account.webforms.order(:title)
   end
 
   def show; end
