@@ -3,23 +3,16 @@
 </div>
 
 <div class="bg-white rounded-lg shadow divide-y">
-  <div class="grid grid-cols-[80px_160px_120px_2fr_2fr] gap-4 p-4 font-medium text-gray-700">
+  <div class="grid grid-cols-[80px_160px_120px_2fr_2fr_120px] gap-4 p-4 font-medium text-gray-700">
     <div>#</div>
     <div>Created</div>
     <div>Status</div>
     <div>Webform</div>
     <div>Client</div>
+    <div></div>
   </div>
   <%= turbo_frame_tag :incases do %>
-    <% @incases.each do |i| %>
-      <%= turbo_frame_tag "incase_#{i.id}", class: "grid grid-cols-[80px_160px_120px_2fr_2fr] gap-4 p-4 hover:bg-gray-50" do %>
-        <div><%= link_to i.id, account_incase_path(current_account, i), class: "text-violet-600 hover:text-violet-800", data: { turbo: false } %></div>
-        <div><%= l i.created_at, format: :short %></div>
-        <div><%= i.status %></div>
-        <div><%= i.webform.title %> (<%= i.webform.kind %>)</div>
-        <div><%= i.client.name %> <%= i.client.email %></div>
-      <% end %>
-    <% end %>
+    <%= render @incases %>
     <%= render "shared/paginate", f: @incases %>
   <% end %>
 </div>

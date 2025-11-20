@@ -149,6 +149,12 @@ en:
     "do not show": "Do not show"
 
   controllers:
+    incases:
+      destroy:
+        success: "Incase deleted successfully."
+        confirm: "Are you sure you want to delete this incase?"
+      update_status:
+        success: "Incase status updated."
     webforms:
       create:
         success: "Webform created successfully."

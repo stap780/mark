@@ -1,7 +1,7 @@
 class IncasesController < ApplicationController
   include ActionView::RecordIdentifier
   
-  before_action :set_incase, only: [:show, :update_status]
+  before_action :set_incase, only: [:show, :update_status, :destroy]
 
   def index
     @incases = current_account.incases.includes(:client, :webform).order(created_at: :desc).paginate(page: params[:page], per_page: 50)
@@ -15,11 +15,11 @@ class IncasesController < ApplicationController
         format.turbo_stream do
           flash.now[:success] = t(:success)
           render turbo_stream: [
-            turbo_stream.update("incase_status_#{@incase.id}", partial: "incases/status", locals: { incase: @incase }),
+            turbo_stream.update(dom_id(current_account, dom_id(@incase, :status)), partial: "incases/status", locals: { incase: @incase }),
             render_turbo_flash
           ]
-          format.html { redirect_to account_incase_path(current_account, @incase), notice: 'Status updated' }
         end
+        format.html { redirect_to account_incase_path(current_account, @incase), notice: 'Status updated' }
       else
         format.turbo_stream do
           flash.now[:alert] = @incase.errors.full_messages.join(', ')
@@ -27,6 +27,21 @@ class IncasesController < ApplicationController
         end
         format.html { redirect_to account_incase_path(current_account, @incase), alert: @incase.errors.full_messages.join(', ') }
       end
+    end
+  end
+
+  def destroy
+    @incase.destroy!
+    respond_to do |format|
+      format.turbo_stream do
+        flash.now[:success] = t('.success')
+        render turbo_stream: [
+          turbo_stream.remove(dom_id(current_account, dom_id(@incase))),
+          render_turbo_flash
+        ]
+      end
+      format.html { redirect_to account_incases_path(current_account), notice: t('.success') }
+      format.json { head :no_content }
     end
   end
 

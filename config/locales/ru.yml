@@ -285,6 +285,12 @@ ru:
       multi_page_html: "Показано %{from}–%{to} из %{count} %{model}"
   
   controllers:
+    incases:
+      destroy:
+        success: "Заявка успешно удалена."
+        confirm: "Вы уверены, что хотите удалить эту заявку?"
+      update_status:
+        success: "Статус заявки обновлен."
     webforms:
       create:
         success: "Веб-форма успешно создана."

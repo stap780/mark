@@ -15,11 +15,12 @@
               class: "px-3 py-1 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
             } %>
       <% end %>
+      <%= link_to_delete account_incase_path(current_account, @incase), data: { turbo_confirm: t('incases.destroy.confirm', default: 'Вы уверены?') } %>
     </div>
   </div>
 
   <div class="grid grid-cols-2 gap-4 mb-4">
-    <%= turbo_frame_tag "incase_status_#{@incase.id}" do %>
+    <%= turbo_frame_tag dom_id(current_account, dom_id(@incase, :status)) do %>
       <div class="p-3 bg-gray-50 rounded">
         <p class="text-sm text-gray-600">Status</p>
         <p class="font-medium"><%= @incase.status.humanize %></p>
