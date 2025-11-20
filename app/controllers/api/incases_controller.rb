@@ -9,7 +9,23 @@ class Api::IncasesController < ApplicationController
 
     client = resolve_client!(account, params[:client])
 
-    incase = account.incases.create!(webform: webform, client: client, status: 'new')
+    # Проверяем существующую заявку по number для всех типов форм
+    if params[:number].present?
+      incase = account.incases.find_by(number: params[:number], webform: webform)
+      
+      if incase
+        # Обновляем существующую заявку: удаляем старые items и создаем новые
+        incase.items.destroy_all
+        incase.update!(client: client) if client != incase.client
+      else
+        # Создаем новую заявку с number
+        incase = account.incases.create!(webform: webform, client: client, status: 'new', number: params[:number])
+      end
+    else
+      # Если number не передан, создаем новую заявку без number
+      incase = account.incases.create!(webform: webform, client: client, status: 'new')
+    end
+
     items = Array(params[:items]).map do |it|
       resolve_item!(incase, account, it)
     end
@@ -30,7 +46,13 @@ class Api::IncasesController < ApplicationController
     client = account.clients.where('email = ? OR phone = ?', email, phone).first
     # Используем email или phone как fallback для name, если name пустой
     name = client_params[:name].presence || email.presence || phone.presence || "Client"
-    client ||= account.clients.create!(name: name, surname: client_params[:surname], email: email, phone: phone)
+    client_attrs = { name: name, surname: client_params[:surname], email: email, phone: phone }
+    client_attrs[:ya_client] = client_params[:ya_client_id] if client_params[:ya_client_id].present?
+    client ||= account.clients.create!(client_attrs)
+    # Обновляем ya_client если он изменился
+    if client_params[:ya_client_id].present? && client.ya_client != client_params[:ya_client_id]
+      client.update!(ya_client: client_params[:ya_client_id])
+    end
     client
   end
 
@@ -127,5 +149,3 @@ class Api::IncasesController < ApplicationController
     )
   end
 end
-
-

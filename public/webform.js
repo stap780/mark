@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.1.6
+ * Версия: 1.1.7
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.1.6";
+      this.version = "1.1.7";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -32,6 +32,17 @@
 
     getVersion() {
       return this.version;
+    }
+
+    getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return null;
+    }
+
+    getYandexClientId() {
+      return this.getCookie('_ym_uid') || null;
     }
 
     init() {
@@ -324,7 +335,12 @@
     async sendAbandonedCartToAPI(webform, data) {
       const items = this.getOrderLines();
       if (items.length > 0 && data.contacts.email && data.contacts.email.length > 0) {
-        await this.sendToAPI(webform.id, data.contacts, items);
+        const clientData = { ...data.contacts };
+        const yaClientId = this.getYandexClientId();
+        if (yaClientId) {
+          clientData.ya_client_id = yaClientId;
+        }
+        await this.sendToAPI(webform.id, clientData, items, data.id);
       }
     }
 
@@ -360,11 +376,15 @@
     handleFormSubmit(e, webform, eventData, overlay) {
       const form = e.target;
       const formData = new FormData(form);
+      const yaClientId = this.getYandexClientId();
       const clientData = {
         name: formData.get('name') || '',
         email: formData.get('email') || '',
         phone: formData.get('phone') || ''
       };
+      if (yaClientId) {
+        clientData.ya_client_id = yaClientId;
+      }
 
       // Валидация
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -443,8 +463,11 @@
         });
       }
 
+      // Генерируем number для всех типов форм
+      const number = this.createUniqueId();
+
       // Отправка на API
-      this.sendToAPI(webform.id, clientData, items).then(() => {
+      this.sendToAPI(webform.id, clientData, items, number).then(() => {
         const successMessage = overlay.querySelector('.webform-success-message');
         if (successMessage) {
           successMessage.style.display = 'block';
@@ -576,13 +599,16 @@
       `;
     }
 
-    async sendToAPI(webformId, clientData, items) {
+    async sendToAPI(webformId, clientData, items, number = null) {
       const url = `${this.API_BASE}/accounts/${this.accountId}/incases`;
       const payload = {
         webform_id: webformId,
         client: clientData,
         items: items
       };
+      if (number) {
+        payload.number = number;
+      }
 
       this.debugLog(`[sendToAPI] Sending request to: ${url}`, payload);
 
