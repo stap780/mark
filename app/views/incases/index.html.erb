@@ -1,5 +1,17 @@
 <div class="flex items-center justify-between mb-4">
-  <h1 class="text-xl font-semibold">Incases</h1>
+  <h1 class="text-xl font-semibold"><%= t(:incases) %></h1>
+  <div class="flex space-x-2">
+    <%= search_form_for @search, url: account_incases_path(current_account), method: :get, html: { class: "flex items-center space-x-2" } do |f| %>
+      <%= f.label :webform_title_or_client_name_or_client_email_cont, t('incases.index.search_placeholder', default: 'Search by webform, client'), class: "sr-only" %>
+      <%= f.search_field :webform_title_or_client_name_or_client_email_cont, value: params.dig(:q, :webform_title_or_client_name_or_client_email_cont), placeholder: t('incases.index.search_placeholder', default: 'Search by webform, client'), class: "px-2 py-1 border rounded", style: "width: 350px;" %>
+      <%= f.select :status_eq, options_for_select(
+        Incase.statuses.keys.map { |k| [k.humanize, k] },
+        params.dig(:q, :status_eq)
+      ), {}, { class: "px-2 py-1 border rounded" } %>
+      <%= f.submit t('incases.index.search', default: 'Search'), class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
+      <%= link_to_clear account_incases_path(current_account) %>
+    <% end %>
+  </div>
 </div>
 
 <div class="bg-white rounded-lg shadow divide-y">
@@ -16,4 +28,3 @@
     <%= render "shared/paginate", f: @incases %>
   <% end %>
 </div>
-

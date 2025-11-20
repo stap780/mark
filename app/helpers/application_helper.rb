@@ -144,6 +144,22 @@ module ApplicationHelper
     link_to text, path, options
   end
 
+  def clear_icon
+    '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    </svg>'.html_safe
+  end
+
+  def link_to_clear(path, **options)
+    default_class = "px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 flex items-center"
+    options[:class] ||= default_class
+    options[:title] ||= t(:clear)
+    
+    link_to path, options do
+      clear_icon
+    end
+  end
+
   # Change the default link renderer for will_paginate
   def will_paginate(collection_or_options = nil, options = {})
     if collection_or_options.is_a? Hash

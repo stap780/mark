@@ -15,6 +15,14 @@ class Incase < ApplicationRecord
   }, prefix: true
 
   validates :status, presence: true
+
+  def self.ransackable_attributes(auth_object = nil)
+    Incase.attribute_names
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    %w[webform client]
+  end
 end
 
 

@@ -30,6 +30,14 @@ class Webform < ApplicationRecord
     broadcast_remove_to dom_id(account, :webforms), target: dom_id(account, dom_id(self))
   end
 
+  def self.ransackable_attributes(auth_object = nil)
+    Webform.attribute_names
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    []
+  end
+
   private
 
   def set_default_fields_and_settings

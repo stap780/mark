@@ -4,7 +4,9 @@ class IncasesController < ApplicationController
   before_action :set_incase, only: [:show, :update_status, :destroy]
 
   def index
-    @incases = current_account.incases.includes(:client, :webform).order(created_at: :desc).paginate(page: params[:page], per_page: 50)
+    @search = current_account.incases.includes(:client, :webform).ransack(params[:q])
+    @search.sorts = "created_at desc" if @search.sorts.empty?
+    @incases = @search.result(distinct: true).paginate(page: params[:page], per_page: 50)
   end
 
   def show; end

@@ -36,6 +36,7 @@ en:
   
   # Navigation
   dashboard: "Dashboard"
+  incases: "Incases"
   clients: "Clients"
   products: "Products"
   discounts: "Discounts"
@@ -155,6 +156,19 @@ en:
         confirm: "Are you sure you want to delete this incase?"
       update_status:
         success: "Incase status updated."
+  
+  incases:
+    index:
+      search_placeholder: "Search by webform, client"
+      search: "Search"
+      clear: "Clear"
+      all_statuses: "All statuses"
+    status:
+      new: "New"
+      in_progress: "In progress"
+      done: "Done"
+      canceled: "Canceled"
+      closed: "Closed"
     webforms:
       create:
         success: "Webform created successfully."
