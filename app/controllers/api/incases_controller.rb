@@ -134,7 +134,7 @@ class Api::IncasesController < ApplicationController
 
   def resolve_item!(incase, account, item_params, from_insales: false)
     # item_params содержит: 
-    # - для обычного API: type: "Variant", id: external_variant_id или internal_id, quantity, price
+    # - для обычного API: type: "Variant", id: external_variant_id из InSales, quantity, price
     # - для webhook InSales: variant_id: external_variant_id, product_id, quantity, price
     variant_id_param = item_params[:id] || item_params[:variant_id]
     external_variant_id = variant_id_param.to_s if variant_id_param.present?
@@ -144,59 +144,28 @@ class Api::IncasesController < ApplicationController
     insale = account.insales.first
     variant = nil
     
-    if from_insales
-      # Для webhook InSales: всегда ищем через Varbind по external_id
-      if insale && external_variant_id.present?
-        varbind = Varbind.find_by(
-          varbindable: insale,
-          record_type: "Variant",
-          value: external_variant_id
-        )
-        variant = varbind&.record
-      end
-    else
-      # Для обычных форм: сначала проверяем, не является ли это ID нашей БД
-      if variant_id_param.present?
-        variant = account.variants.joins(:product).where(products: { account_id: account.id }).find_by(id: variant_id_param)
-      end
-      
-      # Если не найден по ID нашей БД, ищем через Varbind по external_id
-      if variant.nil? && insale && external_variant_id.present?
-        varbind = Varbind.find_by(
-          varbindable: insale,
-          record_type: "Variant",
-          value: external_variant_id
-        )
-        variant = varbind&.record
-      end
+    # Для обоих случаев ищем через Varbind по external_id (для обычных форм id - это external_id из InSales)
+    if insale && external_variant_id.present?
+      varbind = Varbind.find_by(
+        varbindable: insale,
+        record_type: "Variant",
+        value: external_variant_id
+      )
+      variant = varbind&.record
     end
 
     # Если variant не найден, создаем его
     unless variant
       # Пытаемся найти product по external_product_id, если он есть
+      # Для обоих случаев product_id - это external_id из InSales
       product = nil
-      if item_params[:product_id].present?
-        if from_insales
-          # Для InSales webhook: ищем через Varbind
-          product_varbind = Varbind.find_by(
-            varbindable: insale,
-            record_type: "Product",
-            value: item_params[:product_id].to_s
-          )
-          product = product_varbind&.record
-        else
-          # Для обычных форм: сначала проверяем ID нашей БД
-          product = account.products.find_by(id: item_params[:product_id])
-          # Если не найден, ищем через Varbind
-          if product.nil? && insale
-            product_varbind = Varbind.find_by(
-              varbindable: insale,
-              record_type: "Product",
-              value: item_params[:product_id].to_s
-            )
-            product = product_varbind&.record
-          end
-        end
+      if item_params[:product_id].present? && insale
+        product_varbind = Varbind.find_by(
+          varbindable: insale,
+          record_type: "Product",
+          value: item_params[:product_id].to_s
+        )
+        product = product_varbind&.record
       end
 
       # Если product не найден, создаем новый
