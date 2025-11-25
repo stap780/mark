@@ -18,6 +18,7 @@ class Webform < ApplicationRecord
   }, prefix: true
 
   KINDS = {
+    order: "order",
     notify: "notify",
     preorder: "preorder",
     abandoned_cart: "abandoned_cart",
