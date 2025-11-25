@@ -7,7 +7,7 @@ class Api::IncasesController < ApplicationController
     webform = account.webforms.find(params.require(:webform_id))
     render json: { error: 'webform inactive' }, status: :unprocessable_entity and return unless webform.status_active?
 
-    client = resolve_client!(account, params[:client])
+    client = resolve_client!(account, params[:client], from_insales: false)
 
     # Проверяем существующую заявку по number для всех типов форм
     if params[:number].present?
@@ -27,7 +27,7 @@ class Api::IncasesController < ApplicationController
     end
 
     items = Array(params[:items]).map do |it|
-      resolve_item!(incase, account, it)
+      resolve_item!(incase, account, it, from_insales: false)
     end
 
     render json: { incase: { id: incase.id, status: incase.status, webform_id: webform.id, client_id: client.id } }, status: :created
@@ -51,7 +51,7 @@ class Api::IncasesController < ApplicationController
     client_data = order_data[:client]
     return render json: { error: 'client data missing' }, status: :unprocessable_entity unless client_data
     
-    client = resolve_client!(account, client_data)
+    client = resolve_client!(account, client_data, from_insales: true)
 
     # Создаем заявку с номером заказа из InSales, если он есть
     incase_attrs = { webform: webform, client: client, status: 'new' }
@@ -66,7 +66,7 @@ class Api::IncasesController < ApplicationController
         product_id: order_line[:product_id],
         quantity: order_line[:quantity],
         price: order_line[:sale_price] || order_line[:total_price]
-      })
+      }, from_insales: true)
     end
 
     head :ok
@@ -76,42 +76,99 @@ class Api::IncasesController < ApplicationController
 
   private
 
-  def resolve_client!(account, client_params)
-    return Client.find(client_params[:id]) if client_params && client_params[:id].present?
+  def resolve_client!(account, client_params, from_insales: false)
+    external_client_id = client_params&.dig(:id)
     email = client_params&.dig(:email)
     phone = client_params&.dig(:phone)
-    client = account.clients.where('email = ? OR phone = ?', email, phone).first
-    # Используем email или phone как fallback для name, если name пустой
-    name = client_params[:name].presence || email.presence || phone.presence || "Client"
-    client_attrs = { name: name, surname: client_params[:surname], email: email, phone: phone }
-    client_attrs[:ya_client] = client_params[:ya_client_id] if client_params[:ya_client_id].present?
-    client ||= account.clients.create!(client_attrs)
+    insale = account.insales.first
+    client = nil
+    
+    if external_client_id.present?
+      if from_insales
+        # Для webhook InSales: ищем через Varbind по внешнему ID
+        if insale
+          varbind = Varbind.find_by(
+            varbindable: insale,
+            record_type: "Client",
+            value: external_client_id.to_s
+          )
+          client = varbind&.record
+        end
+      else
+        # Для обычных форм: ищем по ID нашей БД
+        client = account.clients.find_by(id: external_client_id)
+      end
+    end
+    
+    # Если не найден, ищем по email/phone
+    unless client
+      client = account.clients.where('email = ? OR phone = ?', email, phone).first
+    end
+    
+    # Если клиент не найден, создаем нового
+    unless client
+      # Используем email или phone как fallback для name, если name пустой
+      name = client_params[:name].presence || email.presence || phone.presence || "Client"
+      client_attrs = { name: name, surname: client_params[:surname], email: email, phone: phone }
+      client_attrs[:ya_client] = client_params[:ya_client_id] if client_params[:ya_client_id].present?
+      client = account.clients.create!(client_attrs)
+    end
+    
+    # Создаем varbind для связи с InSales, если его еще нет (для webhook InSales)
+    if from_insales && insale && external_client_id.present?
+      Varbind.find_or_create_by!(
+        record: client,
+        varbindable: insale,
+        record_type: "Client",
+        value: external_client_id.to_s
+      )
+    end
+    
     # Обновляем ya_client если он изменился
     if client_params[:ya_client_id].present? && client.ya_client != client_params[:ya_client_id]
       client.update!(ya_client: client_params[:ya_client_id])
     end
+    
     client
   end
 
-  def resolve_item!(incase, account, item_params)
+  def resolve_item!(incase, account, item_params, from_insales: false)
     # item_params содержит: 
-    # - для обычного API: type: "Variant", id: external_variant_id, quantity, price
+    # - для обычного API: type: "Variant", id: external_variant_id или internal_id, quantity, price
     # - для webhook InSales: variant_id: external_variant_id, product_id, quantity, price
-    external_variant_id = (item_params[:id] || item_params[:variant_id]).to_s
+    variant_id_param = item_params[:id] || item_params[:variant_id]
+    external_variant_id = variant_id_param.to_s if variant_id_param.present?
     quantity = item_params[:quantity] || 1
     price = item_params[:price] || 0
 
-    # Находим variant в нашей БД по external_id через Varbind
     insale = account.insales.first
     variant = nil
     
-    if insale && external_variant_id.present?
-      varbind = Varbind.find_by(
-        varbindable: insale,
-        record_type: "Variant",
-        value: external_variant_id
-      )
-      variant = varbind&.record
+    if from_insales
+      # Для webhook InSales: всегда ищем через Varbind по external_id
+      if insale && external_variant_id.present?
+        varbind = Varbind.find_by(
+          varbindable: insale,
+          record_type: "Variant",
+          value: external_variant_id
+        )
+        variant = varbind&.record
+      end
+    else
+      # Для обычных форм: сначала проверяем, не является ли это ID нашей БД
+      if variant_id_param.present?
+        variant = account.variants.joins(:product).where(products: { account_id: account.id }).find_by(id: variant_id_param)
+      end
+      
+      # Если не найден по ID нашей БД, ищем через Varbind по external_id
+      if variant.nil? && insale && external_variant_id.present?
+        varbind = Varbind.find_by(
+          varbindable: insale,
+          record_type: "Variant",
+          value: external_variant_id
+        )
+        variant = varbind&.record
+      end
     end
 
     # Если variant не найден, создаем его
@@ -119,19 +176,34 @@ class Api::IncasesController < ApplicationController
       # Пытаемся найти product по external_product_id, если он есть
       product = nil
       if item_params[:product_id].present?
-        product_varbind = Varbind.find_by(
-          varbindable: insale,
-          record_type: "Product",
-          value: item_params[:product_id].to_s
-        )
-        product = product_varbind&.record
+        if from_insales
+          # Для InSales webhook: ищем через Varbind
+          product_varbind = Varbind.find_by(
+            varbindable: insale,
+            record_type: "Product",
+            value: item_params[:product_id].to_s
+          )
+          product = product_varbind&.record
+        else
+          # Для обычных форм: сначала проверяем ID нашей БД
+          product = account.products.find_by(id: item_params[:product_id])
+          # Если не найден, ищем через Varbind
+          if product.nil? && insale
+            product_varbind = Varbind.find_by(
+              varbindable: insale,
+              record_type: "Product",
+              value: item_params[:product_id].to_s
+            )
+            product = product_varbind&.record
+          end
+        end
       end
 
       # Если product не найден, создаем новый
       product ||= account.products.create!(title: "API Product #{item_params[:product_id] || 'Unknown'}")
-      
-      # Создаем varbind для product, если его еще нет
-      if insale && item_params[:product_id].present?
+
+      # Создаем varbind для product только для InSales webhook
+      if from_insales && insale && item_params[:product_id].present?
         Varbind.find_or_create_by!(
           record: product,
           varbindable: insale,
@@ -143,8 +215,8 @@ class Api::IncasesController < ApplicationController
       # Создаем variant
       variant = product.variants.create!
       
-      # Создаем varbind для variant
-      if insale && external_variant_id.present?
+      # Создаем varbind для variant только для InSales webhook
+      if from_insales && insale && external_variant_id.present?
         Varbind.find_or_create_by!(
           record: variant,
           varbindable: insale,
