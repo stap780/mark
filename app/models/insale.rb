@@ -77,14 +77,11 @@ class Insale < ApplicationRecord
   end
 
   # Add webhook for orders/create for the current account
-  def self.add_order_webhook(address: nil)
-    rec = Current.account&.insales&.first
-    return [false, ["No Insale configuration for this account"]] unless rec
-
+  def add_order_webhook(address: nil)
     return [false, ["API not working"]] unless api_work?
 
     webh_list = InsalesApi::Webhook.all
-    target_address = address || "https://app.teletri.ru/api/accounts/#{Current.account.id}/incases/insales_order"
+    target_address = address || "https://app.teletri.ru/api/accounts/#{account.id}/incases/insales_order"
     check_present = webh_list.any? { |w| w.topic == "orders/create" && w.address == target_address }
 
     if check_present

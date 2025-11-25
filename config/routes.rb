@@ -59,10 +59,10 @@ Rails.application.routes.draw do
     resources :insales do
       member do
         get :check
+        get :add_order_webhook
       end
       collection do
         post :order
-        get :add_order_webhook
         post :create_xml
         get :xml_source
         patch :set_product_xml

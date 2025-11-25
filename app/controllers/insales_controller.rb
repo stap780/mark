@@ -1,5 +1,5 @@
 class InsalesController < ApplicationController
-  before_action :set_insale, only: %i[ show edit update check destroy ]
+  before_action :set_insale, only: %i[ show edit update check add_order_webhook destroy ]
   # Ensure these actions are rendered within a Turbo Frame withount url /new or etc
   before_action :ensure_turbo_frame_response, only: %i[new edit show]
   include ActionView::RecordIdentifier
@@ -106,7 +106,7 @@ class InsalesController < ApplicationController
   end
 
   def add_order_webhook
-    result, message = Insale.add_order_webhook
+    result, message = @insale.add_order_webhook
     respond_to do |format|
       if result
         flash.now[:success] = t('.success', default: 'Webhook added')
