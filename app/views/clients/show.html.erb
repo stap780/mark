@@ -1,4 +1,4 @@
-<%= render 'shared/offcanvas_inner', title: "Client: #{@client.name}" do %>
+<%= render 'shared/offcanvas_inner', title: t('.heading', name: @client.name) do %>
   <div class="space-y-4">
 
     <%# Load list items grouped by list %>
@@ -6,17 +6,17 @@
     <% grouped = list_items.group_by(&:list) %>
 
     <% if grouped.blank? %>
-      <div>No list items yet.</div>
+      <div><%= t('.no_list_items') %></div>
     <% else %>
       <% grouped.each do |list, items| %>
         <div>
-          <h3 style="margin:0 0 8px 0; font-weight:600;">List: <%= list&.name || 'Unnamed list' %> (<%= items.size %>)</h3>
+          <h3 style="margin:0 0 8px 0; font-weight:600;"><%= t('.list') %>: <%= list&.name || t('.unnamed_list') %> (<%= items.size %>)</h3>
           <table style="width:100%; border-collapse:collapse; border:1px solid #e5e7eb;">
             <thead>
               <tr style="background:#f9fafb;">
-                <th style="padding:12px; text-align:left; border-bottom:1px solid #e5e7eb; font-weight:600;">Image</th>
-                <th style="padding:12px; text-align:left; border-bottom:1px solid #e5e7eb; font-weight:600;">Product Title</th>
-                <th style="padding:12px; text-align:right; border-bottom:1px solid #e5e7eb; font-weight:600;">Price</th>
+                <th style="padding:12px; text-align:left; border-bottom:1px solid #e5e7eb; font-weight:600;"><%= t('.image') %></th>
+                <th style="padding:12px; text-align:left; border-bottom:1px solid #e5e7eb; font-weight:600;"><%= t('.product_title') %></th>
+                <th style="padding:12px; text-align:right; border-bottom:1px solid #e5e7eb; font-weight:600;"><%= t('.price') %></th>
               </tr>
             </thead>
             <tbody>
@@ -41,7 +41,7 @@
                       <% if image_link.present? %>
                         <img src="<%= image_link %>" alt="<%= title %>" style="width:100%; height:100%; object-fit:cover; display:block;" />
                       <% else %>
-                        <span style="font-size:10px; color:#9ca3af;">no image</span>
+                        <span style="font-size:10px; color:#9ca3af;"><%= t('.no_image') %></span>
                       <% end %>
                     </div>
                   </td>

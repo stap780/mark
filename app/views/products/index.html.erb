@@ -1,9 +1,9 @@
 <div class="flex items-center justify-between mb-4">
-  <h1 class="text-xl font-semibold">Products</h1>
+  <h1 class="text-xl font-semibold"><%= t('.heading') %></h1>
   <div class="flex space-x-2">
     <%= search_form_for @search, url: account_products_path(current_account), method: :get, html: { class: "flex items-center space-x-2" } do |f| %>
-      <%= f.search_field :title_or_variants_sku_cont, value: params.dig(:q, :title_cont), placeholder: "Search by title, sku", class: "px-2 py-1 border rounded", style: "width: 350px;" %>
-      <%= f.submit "Search", class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
+      <%= f.search_field :title_or_variants_sku_cont, value: params.dig(:q, :title_cont), placeholder: t('.search_placeholder'), class: "px-2 py-1 border rounded", style: "width: 350px;" %>
+      <%= f.submit t('.search'), class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
       <%= link_to_clear account_products_path(current_account) %>
     <% end %>
   </div>
@@ -16,9 +16,9 @@
   <div class="grid grid-cols-[50px_40px_80px_1fr_80px_120px] gap-4 p-4 font-medium text-gray-700">
     <div class="text-center">#</div>
     <div></div>
-    <div>Image</div>
-    <div>Title</div>
-    <div class="text-center">Variants</div>
+    <div><%= t('.image') %></div>
+    <div><%= t('.title') %></div>
+    <div class="text-center"><%= t('.variants') %></div>
     <div></div>
   </div>
   <%= turbo_frame_tag [dom_id(current_account), :products] do %>

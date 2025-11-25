@@ -23,7 +23,7 @@ class ProductsController < ApplicationController
   def create
     @product = current_account.products.new(product_params)
     if @product.save
-      redirect_to edit_account_product_path(current_account, @product), notice: 'Product created.'
+      redirect_to edit_account_product_path(current_account, @product), notice: t('.success')
     else
       render :new, status: :unprocessable_entity
     end
@@ -31,7 +31,7 @@ class ProductsController < ApplicationController
 
   def update
     if @product.update(product_params)
-      redirect_to account_products_path(current_account), notice: 'Product updated.'
+      redirect_to account_products_path(current_account), notice: t('.success')
     else
       render :edit, status: :unprocessable_entity
     end

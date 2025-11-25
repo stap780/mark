@@ -3,8 +3,8 @@
   <div class="flex space-x-2">
     <%= search_form_for @search, url: account_incases_path(current_account), method: :get, html: { class: "flex items-center space-x-2" } do |f| %>
       <%= f.search_field :client_name_or_client_email_cont, value: params.dig(:q, :client_name_or_client_email_cont), placeholder: t('incases.index.search_placeholder'), class: "px-2 py-1 border rounded", style: "width: 350px;" %>
-      <%= f.select :webform_id_eq, @webforms.pluck(:title, :id), { prompt: ''}, class: "px-2 py-1 border rounded" %>
-      <%= f.select :status_eq, Incase.statuses.keys.map { |k| [t("incases.status.#{k}"), k] }, { prompt: ''}, class: "px-2 py-1 border rounded" %>
+      <%= f.select :webform_id_eq, @webforms.pluck(:title, :id), { prompt: t('incases.index.webform')}, class: "px-2 py-1 border rounded" %>
+      <%= f.select :status_eq, Incase.statuses.keys.map { |k| [t("incases.status.#{k}"), k] }, { prompt: t('incases.index.status')}, class: "px-2 py-1 border rounded" %>
 
       <%= f.submit t('incases.index.search', default: 'Search'), class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
       <%= link_to_clear account_incases_path(current_account) %>

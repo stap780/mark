@@ -82,10 +82,18 @@ ru:
     models:
       swatch_group: "Группа"
       webform_field: "Поле формы"
-      product: "товар"
+      product: "Товар"
       incase: "заявка"
-      client: "клиент"
+      client: "Клиент"
     attributes:
+      product:
+        title: "Название"
+      client:
+        name: "Имя"
+        surname: "Фамилия"
+        email: "Email"
+        phone: "Телефон"
+        ya_client: "Я.Клиент"
       swatch_group:
         name: "Название"
         option_name: "Название опции"
@@ -287,6 +295,25 @@ ru:
       multi_page_html: "Показано %{from}–%{to} из %{count} %{model}"
   
   controllers:
+    products:
+      create:
+        success: "Товар успешно создан."
+      update:
+        success: "Товар успешно обновлен."
+      destroy:
+        success: "Товар успешно удален."
+        confirm: "Вы уверены, что хотите удалить этот товар?"
+      insales_info:
+        success: "Товар обновлен из InSales."
+    clients:
+      create:
+        success: "Клиент успешно создан."
+      update:
+        success: "Клиент успешно обновлен."
+      destroy:
+        success: "Клиент успешно удален."
+      insales_info:
+        success: "Клиент обновлен из InSales."
     incases:
       destroy:
         success: "Заявка успешно удалена."
@@ -294,6 +321,55 @@ ru:
       update_status:
         success: "Статус заявки обновлен."
   
+  products:
+    index:
+      heading: "Товары"
+      search_placeholder: "Поиск по названию, артикулу"
+      search: "Поиск"
+      clear: "Очистить"
+      image: "Изображение"
+      title: "Название"
+      variants: "Варианты"
+    new:
+      heading: "Новый товар"
+    edit:
+      heading: "Редактировать товар"
+    form:
+      save_to_manage_variants: "Сохраните товар для управления вариантами."
+      variants: "Варианты"
+      new_variant: "Новый вариант"
+      image: "Изображение"
+    product:
+      reload_from_insales: "Обновить из InSales"
+      edit: "Редактировать"
+      delete_confirm: "Удалить товар?"
+
+  clients:
+    index:
+      heading: "Клиенты"
+      search_placeholder: "Поиск по имени, фамилии, email, телефону..."
+      search: "Поиск"
+      clear: "Очистить"
+      name: "Имя"
+      email: "Email"
+      phone: "Телефон"
+    new:
+      heading: "Новый клиент"
+    edit:
+      heading: "Редактировать клиента"
+    show:
+      heading: "Клиент: %{name}"
+      no_list_items: "Пока нет товаров в списках."
+      list: "Список"
+      unnamed_list: "Без названия"
+      image: "Изображение"
+      product_title: "Название товара"
+      price: "Цена"
+      no_image: "нет изображения"
+    client:
+      reload_from_insales: "Обновить из InSales"
+      delete_confirm: "Удалить клиента?"
+
   incases:
     index:
       search_placeholder: "Поиск по клиенту"

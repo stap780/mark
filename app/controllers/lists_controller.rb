@@ -23,7 +23,7 @@ class ListsController < ApplicationController
 
     respond_to do |format|
       if @list.save
-        notice = t(".success", default: "List was successfully created")
+        notice = t(".success")
         flash.now[:success] = notice
         format.turbo_stream { 
           render turbo_stream: turbo_close_offcanvas_flash
@@ -41,7 +41,7 @@ class ListsController < ApplicationController
   def update
     respond_to do |format|
       if @list.update(list_params)
-        notice = t(".success", default: "List was successfully updated")
+        notice = t(".success")
         flash.now[:success] = notice
         format.turbo_stream { 
           render turbo_stream: turbo_close_offcanvas_flash

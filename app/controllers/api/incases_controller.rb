@@ -3,7 +3,7 @@ class Api::IncasesController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   def create
-    account = Account.find(params[:account_id])
+    account = current_account || Account.find(params[:account_id])
     webform = account.webforms.find(params.require(:webform_id))
     render json: { error: 'webform inactive' }, status: :unprocessable_entity and return unless webform.status_active?
 
@@ -37,6 +37,43 @@ class Api::IncasesController < ApplicationController
     render json: { error: 'not found' }, status: :not_found
   end
 
+  # Webhook endpoint для InSales orders/create
+  def insales_order
+    account = current_account || Account.find(params[:account_id])
+    
+    webform = account.webforms.find_by(kind: 'order', status: 'active')
+    return render json: { error: 'order webform not active' }, status: :unprocessable_entity unless webform
+
+    payload = request.request_parameters.deep_symbolize_keys
+    order_data = payload[:order] || payload
+    
+    # Извлекаем данные клиента из order.client
+    client_data = order_data[:client]
+    return render json: { error: 'client data missing' }, status: :unprocessable_entity unless client_data
+    
+    client = resolve_client!(account, client_data)
+
+    # Создаем заявку с номером заказа из InSales, если он есть
+    incase_attrs = { webform: webform, client: client, status: 'new' }
+    incase_attrs[:number] = order_data[:number].to_s if order_data[:number].present?
+    
+    incase = account.incases.create!(incase_attrs)
+    
+    # Обрабатываем товары из order.order_lines
+    Array(order_data[:order_lines]).each do |order_line|
+      resolve_item!(incase, account, {
+        variant_id: order_line[:variant_id],
+        product_id: order_line[:product_id],
+        quantity: order_line[:quantity],
+        price: order_line[:sale_price] || order_line[:total_price]
+      })
+    end
+
+    head :ok
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
+  end
+
   private
 
   def resolve_client!(account, client_params)
@@ -57,8 +94,10 @@ class Api::IncasesController < ApplicationController
   end
 
   def resolve_item!(incase, account, item_params)
-    # item_params содержит: type: "Variant", id: external_variant_id, quantity, price
-    external_variant_id = item_params[:id].to_s
+    # item_params содержит: 
+    # - для обычного API: type: "Variant", id: external_variant_id, quantity, price
+    # - для webhook InSales: variant_id: external_variant_id, product_id, quantity, price
+    external_variant_id = (item_params[:id] || item_params[:variant_id]).to_s
     quantity = item_params[:quantity] || 1
     price = item_params[:price] || 0
 
@@ -148,4 +187,6 @@ class Api::IncasesController < ApplicationController
       price: price
     )
   end
+
+  
 end

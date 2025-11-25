@@ -1,7 +1,7 @@
 /**
- * Swatch.js - Объединение товаров
- * Версия: 1.7.1
- * Описание: Скрипт для отображения объединенных товаров (swatches) на страницах интернет-магазинов
+ * Swatch.js - РћР±СЉРµРґРёРЅРµРЅРёРµ С‚РѕРІР°СЂРѕРІ
+ * Р’РµСЂСЃРёСЏ: 1.7.3
+ * РћРїРёСЃР°РЅРёРµ: РЎРєСЂРёРїС‚ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РѕР±СЉРµРґРёРЅРµРЅРЅС‹С… С‚РѕРІР°СЂРѕРІ (swatches) РЅР° СЃС‚СЂР°РЅРёС†Р°С… РёРЅС‚РµСЂРЅРµС‚-РјР°РіР°Р·РёРЅРѕРІ
  */
 
 // Execute immediately if DOM is ready, or wait for DOMContentLoaded
@@ -9,7 +9,7 @@
     function init() {
         class Swatches {
       constructor() {
-        this.version = "1.7.1";
+        this.version = "1.7.3";
         this.status = false;
         this.S3_BASE =
           "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
@@ -91,7 +91,7 @@
               let options = '';
 
               items.swatches.forEach( opt => {
-                  // РџСЂРѕРІРµСЂСЏРµРј, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ Р»Рё СЌС‚Рѕ С‚РµРєСѓС‰РµРјСѓ С‚РѕРІР°СЂСѓ
+                  // Р СџРЎР‚Р С•Р Р†Р ВµРЎР‚РЎРЏР ВµР С, РЎРѓР С•Р С•РЎвЂљР Р†Р ВµРЎвЂљРЎРѓРЎвЂљР Р†РЎС“Р ВµРЎвЂљ Р В»Р С‘ РЎРЊРЎвЂљР С• РЎвЂљР ВµР С”РЎС“РЎвЂ°Р ВµР СРЎС“ РЎвЂљР С•Р Р†Р В°РЎР‚РЎС“
                   const isSelected = opt.similar_id === currentProductId;
                   const selectedAttr = isSelected ? 'selected' : '';
                   this.debugLog(`Creating option: ${opt.label}, isSelected: ${isSelected}`);
@@ -171,14 +171,14 @@
           const imageSource = data.product_page_image_source;
           const rowClass = 'is-row'
   
-          // РџСЂРѕРІРµСЂСЏРµРј, РЅСѓР¶РЅРѕ Р»Рё СЃРєСЂС‹РІР°С‚СЊ Р±Р»РѕРє
-          // РЎРєСЂС‹РІР°РµРј С‚РѕР»СЊРєРѕ РµСЃР»Рё desktop_hide СѓСЃС‚Р°РЅРѕРІР»РµРЅ (mobile_hide РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ С‡РµСЂРµР· CSS)
+          // Р СџРЎР‚Р С•Р Р†Р ВµРЎР‚РЎРЏР ВµР С, Р Р…РЎС“Р В¶Р Р…Р С• Р В»Р С‘ РЎРѓР С”РЎР‚РЎвЂ№Р Р†Р В°РЎвЂљРЎРЉ Р В±Р В»Р С•Р С”
+          // Р РЋР С”РЎР‚РЎвЂ№Р Р†Р В°Р ВµР С РЎвЂљР С•Р В»РЎРЉР С”Р С• Р ВµРЎРѓР В»Р С‘ desktop_hide РЎС“РЎРѓРЎвЂљР В°Р Р…Р С•Р Р†Р В»Р ВµР Р… (mobile_hide Р С•Р В±РЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р ВµРЎвЂљРЎРѓРЎРЏ РЎвЂЎР ВµРЎР‚Р ВµР В· CSS)
           const isDesktopHide = itemMdClass && itemMdClass.includes('desktop_hide');
           
           this.debugLog(`[createItemsList] Desktop hide: ${isDesktopHide}`);
   
           if (isDesktopHide) {
-              // Р•СЃР»Рё desktop_hide, РїРѕР»РЅРѕСЃС‚СЊСЋ СЃРєСЂС‹РІР°РµРј Р±Р»РѕРє
+              // Р вЂўРЎРѓР В»Р С‘ desktop_hide, Р С—Р С•Р В»Р Р…Р С•РЎРѓРЎвЂљРЎРЉРЎР‹ РЎРѓР С”РЎР‚РЎвЂ№Р Р†Р В°Р ВµР С Р В±Р В»Р С•Р С”
               this.debugLog('[createItemsList] Block hidden (desktop_hide), returning empty string');
               return '';
           }
@@ -206,14 +206,14 @@
   
           this.debugLog(`[createItemsListForCollection] Desktop style: ${itemMdClass}, Mobile style: ${itemMbClass}, Image source: ${imageSource}, Current product: ${currentProductId}`);
   
-          // РџСЂРѕРІРµСЂСЏРµРј, РЅСѓР¶РЅРѕ Р»Рё СЃРєСЂС‹РІР°С‚СЊ Р±Р»РѕРє
-          // РЎРєСЂС‹РІР°РµРј С‚РѕР»СЊРєРѕ РµСЃР»Рё desktop_hide СѓСЃС‚Р°РЅРѕРІР»РµРЅ (mobile_hide РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ С‡РµСЂРµР· CSS)
+          // Р СџРЎР‚Р С•Р Р†Р ВµРЎР‚РЎРЏР ВµР С, Р Р…РЎС“Р В¶Р Р…Р С• Р В»Р С‘ РЎРѓР С”РЎР‚РЎвЂ№Р Р†Р В°РЎвЂљРЎРЉ Р В±Р В»Р С•Р С”
+          // Р РЋР С”РЎР‚РЎвЂ№Р Р†Р В°Р ВµР С РЎвЂљР С•Р В»РЎРЉР С”Р С• Р ВµРЎРѓР В»Р С‘ desktop_hide РЎС“РЎРѓРЎвЂљР В°Р Р…Р С•Р Р†Р В»Р ВµР Р… (mobile_hide Р С•Р В±РЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р ВµРЎвЂљРЎРѓРЎРЏ РЎвЂЎР ВµРЎР‚Р ВµР В· CSS)
           const isDesktopHide = itemMdClass && itemMdClass.includes('desktop_hide');
           
           this.debugLog(`[createItemsListForCollection] Desktop hide: ${isDesktopHide}`);
   
           if (isDesktopHide) {
-              // Р•СЃР»Рё desktop_hide, РїРѕР»РЅРѕСЃС‚СЊСЋ СЃРєСЂС‹РІР°РµРј Р±Р»РѕРє
+              // Р вЂўРЎРѓР В»Р С‘ desktop_hide, Р С—Р С•Р В»Р Р…Р С•РЎРѓРЎвЂљРЎРЉРЎР‹ РЎРѓР С”РЎР‚РЎвЂ№Р Р†Р В°Р ВµР С Р В±Р В»Р С•Р С”
               this.debugLog('[createItemsListForCollection] Block hidden (desktop_hide), returning empty string');
               return '';
           }
@@ -234,10 +234,15 @@
           return propsList;
       }
   
-      addBlockToProductItem(blockData, productItem) {
+      addBlockToProductItem(blockData, productItem, addClassItem) {
           this.debugLog('[addBlockToProductItem] Attempting to add swatch block to product page');
-          
-          if (productItem.querySelector('.product__variants')) {
+
+          if(addClassItem && productItem.querySelector(`.${addClassItem}`)) {
+              const parentBlock = productItem.querySelector(`.${addClassItem}`)
+  
+              this.debugLog('[addBlockToProductItem] Found .product__variants, inserting before it');
+              parentBlock.append(blockData);
+          } else if (productItem.querySelector('.product__variants')) {
               const beforeBlock =  productItem.querySelector('.product__variants');
               const parentBlock = beforeBlock.parentNode;
   
@@ -252,7 +257,7 @@
               this.debugLog('[addBlockToProductItem] Found .product__title, appending to parent');
               parentBlock.append(blockData)
           } else {
-              // Fallback: РїСЂРѕСЃС‚Рѕ РґРѕР±Р°РІРёС‚СЊ Рє РїРµСЂРІРѕРјСѓ .product СЌР»РµРјРµРЅС‚Сѓ
+              // Fallback: Р С—РЎР‚Р С•РЎРѓРЎвЂљР С• Р Т‘Р С•Р В±Р В°Р Р†Р С‘РЎвЂљРЎРЉ Р С” Р С—Р ВµРЎР‚Р Р†Р С•Р СРЎС“ .product РЎРЊР В»Р ВµР СР ВµР Р…РЎвЂљРЎС“
               const productElement = productItem;
               if (productElement) {
                   this.debugLog('[addBlockToProductItem] Fallback: adding to .product element');
@@ -265,18 +270,20 @@
   
       }
 
-      addBlockToPreview(previewElement, blockData) {
+      addBlockToPreview(previewElement, blockData, dataPreviewClass) {
           this.debugLog('[addBlockToPreview] Attempting to add swatch block to preview');
           
-          // РС‰РµРј СЌР»РµРјРµРЅС‚ product-preview__area-title
-          const titleElement = previewElement.querySelector('.product-preview__area-title');
-          
-          if (titleElement) {
-              // РќР°Р№РґРµРЅ Р·Р°РіРѕР»РѕРІРѕРє - РІСЃС‚Р°РІР»СЏРµРј РїРѕСЃР»Рµ РЅРµРіРѕ
+          // Р ВРЎвЂ°Р ВµР С РЎРЊР В»Р ВµР СР ВµР Р…РЎвЂљ product-preview__area-title
+          let titleElement = previewElement.querySelector('.product-preview__area-title');
+
+          if(dataPreviewClass && previewElement.querySelector(`.${dataPreviewClass}`)) {
+                previewElement.querySelector(`.${dataPreviewClass}`).appendChild(blockData);
+          } else if (titleElement) {
+              // Р СњР В°Р в„–Р Т‘Р ВµР Р… Р В·Р В°Р С–Р С•Р В»Р С•Р Р†Р С•Р С” - Р Р†РЎРѓРЎвЂљР В°Р Р†Р В»РЎРЏР ВµР С Р С—Р С•РЎРѓР В»Р Вµ Р Р…Р ВµР С–Р С•
               this.debugLog('[addBlockToPreview] Found .product-preview__area-title, inserting after it');
               titleElement.insertAdjacentElement('afterend', blockData);
           } else {
-              // Fallback: РґРѕР±Р°РІРёС‚СЊ РІ РєРѕРЅРµС† preview СЌР»РµРјРµРЅС‚Р°
+              // Fallback: Р Т‘Р С•Р В±Р В°Р Р†Р С‘РЎвЂљРЎРЉ Р Р† Р С”Р С•Р Р…Р ВµРЎвЂ  preview РЎРЊР В»Р ВµР СР ВµР Р…РЎвЂљР В°
               this.debugLog('[addBlockToPreview] Title not found, appending to preview element');
               previewElement.appendChild(blockData);
           }
@@ -299,8 +306,9 @@
       fillProduct(data) {
           const productItem = document.querySelector(`.product[data-product-id="${data.product_id}"]`);
           const propsItemsList = this.createItemsList(data);
-          
-          // Р•СЃР»Рё СЃРїРёСЃРѕРє РїСѓСЃС‚РѕР№ (desktop_hide/mobile_hide), РЅРµ СЃРѕР·РґР°С‘Рј Р±Р»РѕРє
+          const addClassItem = data.css_class_product;
+
+          // Р вЂўРЎРѓР В»Р С‘ РЎРѓР С—Р С‘РЎРѓР С•Р С” Р С—РЎС“РЎРѓРЎвЂљР С•Р в„– (desktop_hide/mobile_hide), Р Р…Р Вµ РЎРѓР С•Р В·Р Т‘Р В°РЎвЂР С Р В±Р В»Р С•Р С”
           if (!propsItemsList || propsItemsList.trim() === '') {
               this.debugLog('[fillProduct] Block is hidden, skipping creation');
               return;
@@ -314,13 +322,14 @@
               ${propsItemsList}
           `;
   
-          this.addBlockToProductItem(propsWrapper, productItem);
+          this.addBlockToProductItem(propsWrapper, productItem, addClassItem);
   
           this.selectListener(propsWrapper);
       }
   
       fillPreviews(data) {
           const previewItems = document.querySelectorAll(`.product-preview[data-product-id="${data.product_id}"]`);
+          const dataPreviewClass = data.css_class_preview;
           
           this.debugLog(`[fillPreviews] Found ${previewItems.length} preview items for product_id: ${data.product_id}`);
           
@@ -329,13 +338,13 @@
           this.debugLog(`[fillPreviews] Creating swatch blocks with style: ${data.collection_page_style}`);
           
           previewItems.forEach((preview, index) => {
-              // РџРѕР»СѓС‡Р°РµРј product_id РёР· СЃР°РјРѕРіРѕ preview СЌР»РµРјРµРЅС‚Р°
+              // Р СџР С•Р В»РЎС“РЎвЂЎР В°Р ВµР С product_id Р С‘Р В· РЎРѓР В°Р СР С•Р С–Р С• preview РЎРЊР В»Р ВµР СР ВµР Р…РЎвЂљР В°
               const currentProductId = preview.getAttribute('data-product-id');
               this.debugLog(`[fillPreviews] Processing preview ${index + 1}, product_id: ${currentProductId}`);
               
               const propsItemsList = this.createItemsListForCollection(data, currentProductId);
               
-              // Р•СЃР»Рё СЃРїРёСЃРѕРє РїСѓСЃС‚РѕР№ (desktop_hide/mobile_hide), РЅРµ СЃРѕР·РґР°С‘Рј Р±Р»РѕРє
+              // Р вЂўРЎРѓР В»Р С‘ РЎРѓР С—Р С‘РЎРѓР С•Р С” Р С—РЎС“РЎРѓРЎвЂљР С•Р в„– (desktop_hide/mobile_hide), Р Р…Р Вµ РЎРѓР С•Р В·Р Т‘Р В°РЎвЂР С Р В±Р В»Р С•Р С”
               if (!propsItemsList || propsItemsList.trim() === '') {
                   this.debugLog(`[fillPreviews] Block is hidden for preview ${index + 1}, skipping`);
                   return;
@@ -350,7 +359,7 @@
               `;
               
               this.debugLog(`[fillPreviews] Adding swatch block to preview item ${index + 1}`);
-              this.addBlockToPreview(preview, propsWrapper);
+              this.addBlockToPreview(preview, propsWrapper, dataPreviewClass);
               this.selectListener(propsWrapper);
           });
       }
@@ -574,7 +583,7 @@
                       line-height: 20px;
                   }
 
-                  /* РЎРєСЂС‹С‚РёРµ РЅР° РјРѕР±РёР»СЊРЅС‹С… РµСЃР»Рё СѓРєР°Р·Р°РЅ mobile_hide */
+                  /* Р РЋР С”РЎР‚РЎвЂ№РЎвЂљР С‘Р Вµ Р Р…Р В° Р СР С•Р В±Р С‘Р В»РЎРЉР Р…РЎвЂ№РЎвЂ¦ Р ВµРЎРѓР В»Р С‘ РЎС“Р С”Р В°Р В·Р В°Р Р… mobile_hide */
                   .twc-swatch__item.mobile_hide,
                   .twc-swatch__select.mobile_hide {
                       display: none !important;
@@ -630,7 +639,7 @@
   
       start() {
           this.getClientId();
-          this.debugLog('Swatch.js РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅ, РІРµСЂСЃРёСЏ:', this.version);
+          this.debugLog('Swatch.js Р С‘Р Р…Р С‘РЎвЂ Р С‘Р В°Р В»Р С‘Р В·Р С‘РЎР‚Р С•Р Р†Р В°Р Р…, Р Р†Р ВµРЎР‚РЎРѓР С‘РЎРЏ:', this.version);
           this.createData();
           this.createStyles();
       }

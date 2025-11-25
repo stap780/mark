@@ -1,7 +1,7 @@
 /**
  * Modern ES6 Class-based Lists Manager
  * Refactored from list.js with pagination support
- * Version: v_1.3.0
+ * Version: v_1.4.0
  */
 
 // Configuration constants
@@ -10,7 +10,7 @@ const CONFIG = {
   apiBase: 'https://app.teletri.ru/api',
   itemsPerPage: 20,
   maxVisiblePages: 100,
-  version: 'v_1.3.0'
+  version: 'v_1.4.0'
 };
 
 // Debug logging utility
@@ -75,6 +75,7 @@ class DataManager {
 
   /**
    * Fetch client-specific list items from S3 (без кэширования)
+   * Returns empty structure if file not found (404) - normal for new clients
    */
   async fetchClientListsData(accountId, clientId) {
     const url = this.buildS3ClientListItemsUrl(accountId, clientId) + `?t=${Date.now()}`;
@@ -82,14 +83,64 @@ class DataManager {
 
     try {
       const response = await fetch(url, { credentials: 'omit', cache: 'no-cache' });
-      if (!response.ok) throw new Error('Failed to load client lists data');
+      
+      // 404 is normal for new clients - return empty structure
+      if (response.status === 404) {
+        this.logger.log('Client lists file not found (404) - returning empty structure for new client');
+        // First, get account lists to know which lists exist
+        try {
+          const accountLists = await this.fetchListsData(accountId);
+          const lists = (accountLists && accountLists.lists) || [];
+          // Return structure with empty items for each list
+          return {
+            account_id: accountId,
+            client_id: clientId,
+            lists: lists.map(list => ({
+              ...list,
+              items: []
+            }))
+          };
+        } catch (e) {
+          this.logger.error('Failed to fetch account lists for empty structure:', e);
+          // Return minimal empty structure
+          return {
+            account_id: accountId,
+            client_id: clientId,
+            lists: []
+          };
+        }
+      }
+      
+      if (!response.ok) {
+        throw new Error(`Failed to load client lists data: ${response.status}`);
+      }
       
       const data = await response.json();
       this.logger.log('Client lists data fetched successfully:', data);
       return data;
     } catch (error) {
-      this.logger.error('Failed to fetch client lists data:', error);
-      throw error;
+      // Only throw if it's not a network/404 error
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        this.logger.error('Network error fetching client lists data:', error);
+        throw error;
+      }
+      // For other errors, try to return empty structure
+      this.logger.log('Error fetching client lists data, trying to return empty structure:', error);
+      try {
+        const accountLists = await this.fetchListsData(accountId);
+        const lists = (accountLists && accountLists.lists) || [];
+        return {
+          account_id: accountId,
+          client_id: clientId,
+          lists: lists.map(list => ({
+            ...list,
+            items: []
+          }))
+        };
+      } catch (e) {
+        this.logger.error('Failed to create empty structure:', e);
+        throw error;
+      }
     }
   }
 
@@ -1133,8 +1184,32 @@ class ListsManager {
       
       this.logger.log('Client loaded:', client);
       
-      // Load lists data
-      const listsData = await this.dataManager.fetchClientListsData(this.accountId, client.id);
+      // Load lists data (handles 404 gracefully for new clients)
+      let listsData;
+      try {
+        listsData = await this.dataManager.fetchClientListsData(this.accountId, client.id);
+      } catch (error) {
+        this.logger.error('Failed to fetch client lists data:', error);
+        // If client exists but lists data failed, try to get account lists and create empty structure
+        try {
+          const accountLists = await this.dataManager.fetchListsData(this.accountId);
+          const lists = (accountLists && accountLists.lists) || [];
+          listsData = {
+            account_id: this.accountId,
+            client_id: client.id,
+            lists: lists.map(list => ({
+              ...list,
+              items: []
+            }))
+          };
+          this.logger.log('Created empty lists structure for registered client');
+        } catch (e) {
+          this.logger.error('Failed to create empty structure, switching to guest mode:', e);
+          // Only switch to guest mode if we can't get account lists either
+          await this.setupGuestMode();
+          return;
+        }
+      }
       
       // Store globally for other functions
       window.currentListsData = listsData;
@@ -1165,10 +1240,40 @@ class ListsManager {
             
     } catch (error) {
       this.logger.error('Initialization failed:', error);
-      // As a safety net, try guest mode too
+      // Only switch to guest mode if we're sure client is not available
+      // Don't switch if it's just a data loading error for registered client
       try {
+        const client = await this.getClient().catch(() => null);
+        if (!client || !client.id) {
+          // No client available, use guest mode
+          await this.setupGuestMode();
+        } else {
+          // Client exists but initialization failed - try to continue with empty data
+          this.logger.log('Client exists but initialization failed, trying to continue with empty data');
+          try {
+            const accountLists = await this.dataManager.fetchListsData(this.accountId);
+            const lists = (accountLists && accountLists.lists) || [];
+            window.currentListsData = {
+              account_id: this.accountId,
+              client_id: client.id,
+              lists: lists.map(list => ({
+                ...list,
+                items: []
+              }))
+            };
+            // Render what we can
+            await this.updateFavoritesTriggers(lists);
+            this.renderHeaderFromLists(lists);
+            this.eventHandler.bindEvents();
+          } catch (e) {
+            this.logger.error('Failed to recover, switching to guest mode:', e);
+            await this.setupGuestMode();
+          }
+        }
+      } catch (_) {
+        // Last resort - guest mode
         await this.setupGuestMode();
-      } catch (_) {}
+      }
     }
   }
 
@@ -1178,6 +1283,37 @@ class ListsManager {
   async setupGuestMode() {
     const logger = this.logger;
     logger.log('[GuestMode] Enabled');
+    
+    // Double-check that client is really not available before showing guest mode
+    try {
+      const client = await this.getClient().catch(() => null);
+      if (client && client.id) {
+        logger.log('[GuestMode] Client actually exists, aborting guest mode setup');
+        // Client exists but something went wrong - try to recover
+        try {
+          const accountLists = await this.dataManager.fetchListsData(this.accountId);
+          const lists = (accountLists && accountLists.lists) || [];
+          window.currentListsData = {
+            account_id: this.accountId,
+            client_id: client.id,
+            lists: lists.map(list => ({
+              ...list,
+              items: []
+            }))
+          };
+          await this.updateFavoritesTriggers(lists);
+          this.renderHeaderFromLists(lists);
+          this.eventHandler.bindEvents();
+          logger.log('[GuestMode] Recovered with empty data for registered client');
+          return;
+        } catch (e) {
+          logger.error('[GuestMode] Failed to recover:', e);
+          // Continue with guest mode only if recovery failed
+        }
+      }
+    } catch (e) {
+      logger.log('[GuestMode] Confirmed no client available');
+    }
     
     // 1. Show placeholder icons immediately
     this.renderPlaceholderIcons();
@@ -1211,14 +1347,29 @@ class ListsManager {
     this.renderTriggersFromLists(guestLists);
     this.renderHeaderFromLists(guestLists);
     
-    // 5. Bind alert on clicks (idempotent: harmless if added twice)
-    document.addEventListener('click', (event) => {
-      if (!event.target || !event.target.classList) return;
-      if (event.target.classList.contains('twc-list-item') || event.target.classList.contains('twc-header-list-item')) {
-        event.preventDefault();
-        try { alert('зарегистрируйтесь чтобы сохранить свой список'); } catch (e) {}
-      }
-    });
+    // 5. Bind alert on clicks only for truly unregistered users (idempotent: harmless if added twice)
+    // Use a flag to prevent multiple bindings
+    if (!window._twcGuestModeBound) {
+      window._twcGuestModeBound = true;
+      document.addEventListener('click', async (event) => {
+        if (!event.target || !event.target.classList) return;
+        if (event.target.classList.contains('twc-list-item') || event.target.classList.contains('twc-header-list-item')) {
+          // Double-check client before showing alert
+          try {
+            const client = await this.getClient().catch(() => null);
+            if (client && client.id) {
+              // Client exists, don't show alert - try to add item instead
+              logger.log('[GuestMode] Client found on click, attempting to add item');
+              return;
+            }
+          } catch (e) {
+            // Ignore errors
+          }
+          event.preventDefault();
+          try { alert('зарегистрируйтесь чтобы сохранить свой список'); } catch (e) {}
+        }
+      });
+    }
   }
 
   /**

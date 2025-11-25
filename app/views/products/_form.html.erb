@@ -5,17 +5,17 @@
   </div>
   <div class="mt-3">
     <div class="flex items-center justify-between mb-2">
-      <h3 class="text-sm font-medium text-gray-700">Variants</h3>
+      <h3 class="text-sm font-medium text-gray-700"><%= t('.variants') %></h3>
       <%# Open offcanvas to add a variant, mirroring dizauto %>
       <% if product.persisted? %>
         <% disabled_button = true %>
         <% if disabled_button %>
-          <%= link_to "New variant", new_account_product_variant_path(current_account, product),
+          <%= link_to t('.new_variant'), new_account_product_variant_path(current_account, product),
                 class: "inline-flex items-center px-3 py-1 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed pointer-events-none",
                 tabindex: -1, aria: { disabled: true }, 
                 data: { turbo_frame: :offcanvas }  %>
         <% else %>
-          <%= link_to_new new_account_product_variant_path(current_account, product), text: "New variant", data: { turbo_frame: :offcanvas } %>
+          <%= link_to_new new_account_product_variant_path(current_account, product), text: t('.new_variant'), data: { turbo_frame: :offcanvas } %>
         <% end %>
       <% end %>
     </div>
@@ -24,10 +24,10 @@
       <%= turbo_frame_tag dom_id(product, :variants), class: "w-full" do %>
         <div class="grid grid-cols-6 gap-4 p-2 font-medium text-gray-700 border-b">
           <div>#</div>
-          <div>Image</div>
+          <div><%= t('.image') %></div>
           <div>SKU</div>
           <div>Barcode</div>
-          <div>Price</div>
+          <div><%= t(:price) %></div>
           <div></div>
         </div>
         <% product.variants.each do |variant| %>
@@ -35,7 +35,7 @@
         <% end %>
       <% end %>
     <% else %>
-      <div class="text-sm text-gray-500">Save product to manage variants.</div>
+      <div class="text-sm text-gray-500"><%= t('.save_to_manage_variants') %></div>
     <% end %>
   </div>
   <div>

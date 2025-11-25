@@ -83,4 +83,24 @@ class Client < ApplicationRecord
     save! if changed?
   end
 
+  # Idempotent find-or-create list_item for this client
+  # Usage: client.add_list_item(list_id: 6, item_type: "Product", item_id: 1982)
+  def add_list_item(list_id:, item_type:, item_id:)
+    list = account.lists.find(list_id)
+    item = item_type.constantize.find(item_id)
+    
+    list_item = list.list_items.find_by(
+      client_id: id,
+      item_type: item.class.name,
+      item_id: item.id
+    )
+    
+    list_item ||= list.list_items.create!(
+      client_id: id,
+      item: item
+    )
+    
+    list_item
+  end
+
 end

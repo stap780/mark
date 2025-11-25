@@ -84,7 +84,7 @@ class Insale < ApplicationRecord
     return [false, ["API not working"]] unless api_work?
 
     webh_list = InsalesApi::Webhook.all
-    target_address = address || "#{Rails.application.config.public_host}/api/accounts/#{Current.account.id}/webhooks/insales/order"
+    target_address = address || "https://app.teletri.ru/api/accounts/#{Current.account.id}/incases/insales_order"
     check_present = webh_list.any? { |w| w.topic == "orders/create" && w.address == target_address }
 
     if check_present
@@ -180,7 +180,5 @@ class Insale < ApplicationRecord
       [false, ["StandardError #{e}"]]
     end
   end
-
-
   
 end

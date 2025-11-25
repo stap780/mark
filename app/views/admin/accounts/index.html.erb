@@ -2,16 +2,12 @@
   <h1 class="text-xl font-semibold"><%= t('admin.accounts.accounts') %></h1>
   <div class="flex space-x-2">
     <%= search_form_for @search, url: admin_accounts_path, method: :get, html: { class: "flex items-center space-x-2" } do |f| %>
-      <div>
-        <%= f.select :subscriptions_status_eq, 
-            options_for_select(Subscription.statuses.map { |key, value| [key.humanize, value] }, params.dig(:q, :subscriptions_status_eq)), 
-            { include_blank: t('admin.accounts.subscriptions_status') }, 
-            { class: "px-2 py-1 border rounded" } %>
-      </div>
-      <%= f.submit t('filter'), class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
-      <%= link_to admin_accounts_path, class: "px-3 py-1 bg-gray-100 rounded hover:bg-gray-200", title: t('clear') do %>
-        <%= t('clear') %>
-      <% end %>
+      <%= f.select :subscriptions_status_eq, 
+          options_for_select(Subscription.statuses.map { |key, value| [key.humanize, value] }, params.dig(:q, :subscriptions_status_eq)), 
+          { include_blank: t('admin.accounts.subscriptions_status') }, 
+          { class: "px-2 py-1 border rounded" } %>
+      <%= f.submit "Search", class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
+      <%= link_to_clear admin_accounts_path %>
     <% end %>
     <%= link_to_new new_admin_account_path, text: t('admin.accounts.new_account'), data: { turbo_frame: :offcanvas } %>
   </div>

@@ -152,7 +152,11 @@ Rails.application.routes.draw do
   # API routes for storefront (outside account scope)
   namespace :api do
     scope "/accounts/:account_id" do
-      resources :incases, only: [:create]
+      resources :incases, only: [:create] do
+        collection do
+          post :insales_order
+        end
+      end
       resources :lists, only: [] do
         resources :list_items, only: [:index, :create, :destroy]
       end

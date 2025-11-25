@@ -24,12 +24,11 @@ class ClientsController < ApplicationController
 
     respond_to do |format|
       if @client.save
-        message = "Client was successfully created"
-        flash.now[:success] = t('.success', default: message)
+        flash.now[:success] = t('.success')
         format.turbo_stream {
           render turbo_stream: turbo_close_offcanvas_flash
         }
-        format.html { redirect_to account_client_path(current_account, @client), notice: message }
+        format.html { redirect_to account_client_path(current_account, @client), notice: t('.success') }
         format.json { render :show, status: :created, location: account_client_path(current_account, @client) }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -41,11 +40,11 @@ class ClientsController < ApplicationController
   def update
     respond_to do |format|
       if @client.update(client_params)
-        flash.now[:success] = t('.success', default: 'Client was successfully updated')
+        flash.now[:success] = t('.success')
         format.turbo_stream {
           render turbo_stream: turbo_close_offcanvas_flash
         }
-        format.html { redirect_to account_client_path(current_account, @client), notice: "Client was successfully updated.", status: :see_other }
+        format.html { redirect_to account_client_path(current_account, @client), notice: t('.success'), status: :see_other }
         format.json { render :show, status: :ok, location: account_client_path(current_account, @client) }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -58,7 +57,7 @@ class ClientsController < ApplicationController
     @client.destroy!
 
     respond_to do |format|
-      format.html { redirect_to account_clients_path(current_account), notice: "Client was successfully destroyed.", status: :see_other }
+      format.html { redirect_to account_clients_path(current_account), notice: t('.success'), status: :see_other }
       format.json { head :no_content }
     end
   end
