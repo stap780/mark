@@ -9,6 +9,11 @@ class Api::IncasesController < ApplicationController
 
     client = resolve_client!(account, params[:client], from_insales: false)
 
+    # Проверяем, что items переданы
+    if params[:items].blank?
+      return render json: { error: 'items are required' }, status: :unprocessable_entity
+    end
+
     # Проверяем существующую заявку по number для всех типов форм
     if params[:number].present?
       incase = account.incases.find_by(number: params[:number], webform: webform)

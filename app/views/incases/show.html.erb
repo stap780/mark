@@ -30,7 +30,7 @@
     </div>
     <div class="p-3 bg-gray-50 rounded">
       <p class="text-sm text-gray-600"><%= t('incases.index.webform') %></p>
-      <p class="font-medium"><%= @incase.webform.title %> (<%= @incase.webform.kind %>)</p>
+      <p class="font-medium"><%= @incase.webform&.title %> (<%= @incase.webform.kind %>)</p>
     </div>
     <div class="p-3 bg-gray-50 rounded">
       <p class="text-sm text-gray-600"><%= t('incases.index.client') %></p>

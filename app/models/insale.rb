@@ -132,7 +132,7 @@ class Insale < ApplicationRecord
       property_id = InsalesApi::Property.first.id
       data = {
         marketplace: {
-          "name": "YM myappda #{Time.now}",
+          "name": "YM mark #{Time.now}",
           "type": "Marketplace::ModelYandexMarket",
           "shop_name": "YM myappda",
           "shop_company": "YM myappda",

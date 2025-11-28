@@ -104,14 +104,19 @@ class SwatchGroupsController < ApplicationController
       doc.xpath('//offer').each do |node|
         offer_id = node['id'] || node.at('id')&.text
         title = node.at('model')&.text.to_s
+        vendor_code = node.at('vendorCode')&.text.to_s
         image = node.at('picture')&.text
         group_id = node.at('group_id')&.text || node['group_id']
         price_text = node.at('price')&.text
         price_value = price_text.to_s.strip
         price = price_value.present? ? price_value.to_d : nil
         next if title.blank?
-        next if query.present? && !title.downcase.include?(query)
-        @items << { offer_id: offer_id, group_id: group_id, title: title, image_link: image, price: price }
+        if query.present?
+          title_match = title.downcase.include?(query)
+          vendor_code_match = vendor_code.downcase.include?(query)
+          next unless title_match || vendor_code_match
+        end
+        @items << { offer_id: offer_id, group_id: group_id, title: title, image_link: image, price: price, vendor_code: vendor_code }
         @items.uniq! { |item| item[:group_id] }
         break if @items.size >= 30
       end
