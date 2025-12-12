@@ -1,6 +1,6 @@
 <%= turbo_frame_tag dom_id(current_account, dom_id(webform)), class: "grid grid-cols-[80px_1fr_150px_100px_150px] gap-4 p-4 items-center" do %>
   <div><%= webform.id %></div>
-  <div class="truncate"><%= link_to webform.title, account_webform_path(current_account, webform), class: "text-violet-600 hover:text-violet-800" %></div>
+  <div><%= webform.title %></div>
   <div><%= webform.kind %></div>
   <div><%= webform.status %></div>
   <div class="flex justify-end items-center space-x-2">

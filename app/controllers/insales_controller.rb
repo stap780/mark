@@ -109,7 +109,7 @@ class InsalesController < ApplicationController
     result, message = @insale.add_order_webhook
     respond_to do |format|
       if result
-        flash.now[:success] = t('.success', default: 'Webhook added')
+        flash.now[:success] = t('.success')
       else
         flash.now[:error] = Array(message).join(', ')
       end

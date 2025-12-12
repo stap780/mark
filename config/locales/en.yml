@@ -95,6 +95,7 @@ en:
   remove_product: "Remove product?"
   check_integration: "Check integration"
   set_products_xml: "Set products XML"
+  add_order_webhook: "Add order webhook"
   
   activerecord:
     models:
@@ -425,6 +426,27 @@ en:
 
   subscriptions:
     subscriptions: "Subscriptions"
+    subscription: "Subscription"
+    new_subscription: "New Subscription"
+    edit_subscription: "Edit Subscription"
+    update_subscription: "Update Subscription"
+    create_subscription: "Create Subscription"
+    subscription_details: "Subscription Details"
+    created: "Created"
+    created_at: "Created At"
+    plan: "Plan"
+    status: "Status"
+    period: "Period"
+    payment: "Payment"
+    cancel: "Cancel"
+    select_plan: "Select Plan"
+    choose_plan: "Choose Plan"
+    pay_subscription: "Pay Subscription"
+    not_available: "N/A"
+    month: "month"
+    trial: "Trial Period"
+    days: "days"
+    access_restricted: "Active subscription required. Please subscribe to continue."
     create:
       success: "Subscription created successfully."
     update:

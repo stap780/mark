@@ -93,7 +93,7 @@ class SubscriptionsController < ApplicationController
 
   def cancel
     if @subscription.status == 'active'
-      flash.now[:error] = t('.forbidden', default: 'Active subscription cannot be canceled')
+      flash.now[:error] = t('.forbidden')
       ok = false
     else
       Subscription.transaction do
