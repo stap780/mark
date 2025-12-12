@@ -4,10 +4,10 @@ ru:
   back: "← Назад"
   cancel: "Отмена"
   update: "Обновить"
-  
+
   date:
     abbr_month_names:
-      - 
+      - ""
       - янв
       - фев
       - мар
@@ -20,11 +20,29 @@ ru:
       - окт
       - ноя
       - дек
-  
+    month_names:
+      - ""
+      - января
+      - февраля
+      - марта
+      - апреля
+      - мая
+      - июня
+      - июля
+      - августа
+      - сентября
+      - октября
+      - ноября
+      - декабря
+    formats:
+      long: "%d %B %Y"
+      short: "%d %b %Y"
+      default: "%d.%m.%Y"
+
   time:
     formats:
       short: "%d %b %Y, %H:%M"
-  
+
   # Navigation
   jobs: "Задачи"
   settings: "Настройки"
@@ -39,10 +57,13 @@ ru:
     lists: "Списки"
     swatches: "Группы"
     webforms: "Веб-формы"
+    insales: "Insale"
+    users: "Пользователи"
+
   # Actions
   sign_in: "Войти"
   sign_out: "Выйти"
-  
+
   # Swatch groups
   swatch_groups: "Группы"
   add_items: "Добавить товары"
@@ -50,11 +71,11 @@ ru:
   selected: "Выбрано"
   not_selected: "Не выбрано"
   swatch_file: "Файл"
-  
+
   # Webforms
   webforms: "Веб-формы"
   webform_file: "Файл"
-  regenerate_json: "Регенерировать JSON"
+  regenerate_json: "Обновить JSON"
   search_by_name: "Поиск по названию"
   search: "Поиск"
   clear: "Очистить"
@@ -66,8 +87,8 @@ ru:
   delete: "Удалить"
   remove: "Убрать"
   add: "Добавить"
+  new: "Новый"
   toggle_status: "Изменить статус"
-  regenerate_json: "Обновить JSON"
   assigned_products: "Назначенные товары"
   add_product_to_group: "Добавить товар в группу"
   new_swatch_group: "Новая группа"
@@ -77,14 +98,18 @@ ru:
   price: "Цена"
   are_you_sure: "Вы уверены?"
   remove_product: "Убрать товар?"
-  
+  check_integration: "Проверить интеграцию"
+  set_products_xml: "Настроить XML товаров"
+
   activerecord:
     models:
       swatch_group: "Группа"
+      swatch_group_product: "Товар группы"
       webform_field: "Поле формы"
       product: "Товар"
       incase: "заявка"
       client: "Клиент"
+      message_template: "Шаблон сообщения"
     attributes:
       product:
         title: "Название"
@@ -107,6 +132,14 @@ ru:
         css_class_preview: "CSS класс превью"
         product_page_image_source: "Страница товара. Источник изображения"
         collection_page_image_source: "Страница коллекции. Источник изображения"
+      swatch_group_product:
+        swatch_label: "Подпись"
+        swatch_value: "Значение"
+        title: "Название"
+        color: "Цвет"
+        image_link: "Ссылка на изображение"
+        image: "Изображение"
+        product_id: "Товар"
       webform:
         title: "Название"
         kind: "Тип"
@@ -126,6 +159,25 @@ ru:
           attributes:
             name:
               taken: "уже занято в этой форме"
+        message_template:
+          attributes:
+            content:
+              blank: "не может быть пустым"
+        swatch_group:
+          attributes:
+            name:
+              blank: "не может быть пустым"
+            option_name:
+              blank: "не может быть пустым"
+        swatch_group_product:
+          attributes:
+            swatch_value:
+              blank: "не может быть пустым"
+            product_id:
+              taken: "уже добавлен в эту группу"
+            image:
+              invalid_type: "должно быть изображением"
+              invalid_dimensions: "размер не должен превышать 300x300px"
       messages:
         taken: "уже занято"
     columns:
@@ -138,36 +190,36 @@ ru:
         active: "Активно"
         inactive: "Неактивно"
       styles:
-        "circular_small_desktop": "Кр Маленький"
-        "circular_medium_desktop": "Кр Средний"
-        "circular_large_desktop": "Кр Большой"
-        "circular_small_mobile": "Кр Маленький"
-        "circular_medium_mobile": "Кр Средний"
-        "circular_large_mobile": "Кр Большой"
-        "dropdown_label_small": "Вып Маленький"
-        "dropdown_label_medium": "Вып Средний"
-        "dropdown_label_large": "Вып Большой"
-        "square_desktop_small": "Кв Маленький"
-        "square_desktop_medium": "Кв Средний"
-        "square_desktop_large": "Кв Большой"
-        "square_mobile_small": "Кв Маленький"
-        "square_mobile_medium": "Кв Средний"
-        "square_mobile_large": "Кв Большой"
-        "desktop_hide": "Скрыть (десктоп)"
-        "mobile_hide": "Скрыть (мобильный)"
-        "hide": "Скрыть"
+        circular_small_desktop: "Кр Маленький"
+        circular_medium_desktop: "Кр Средний"
+        circular_large_desktop: "Кр Большой"
+        circular_small_mobile: "Кр Маленький"
+        circular_medium_mobile: "Кр Средний"
+        circular_large_mobile: "Кр Большой"
+        dropdown_label_small: "Вып Маленький"
+        dropdown_label_medium: "Вып Средний"
+        dropdown_label_large: "Вып Большой"
+        square_desktop_small: "Кв Маленький"
+        square_desktop_medium: "Кв Средний"
+        square_desktop_large: "Кв Большой"
+        square_mobile_small: "Кв Маленький"
+        square_mobile_medium: "Кв Средний"
+        square_mobile_large: "Кв Большой"
+        desktop_hide: "Скрыть (десктоп)"
+        mobile_hide: "Скрыть (мобильный)"
+        hide: "Скрыть"
       image_sources:
-        "first_product_image": "Первое изображение товара"
-        "second_product_image": "Второе изображение товара"
-        "last_product_image": "Последнее изображение товара"
-        "custom_color_image": "Цвет / пользовательское изображение"
-  
+        first_product_image: "Первое изображение товара"
+        second_product_image: "Второе изображение товара"
+        last_product_image: "Последнее изображение товара"
+        custom_color_image: "Цвет / пользовательское изображение"
+
   # Additional translations for style group headers
   swatch_group_style_groups:
-    "circular swatch": "Круглый"
-    "dropdown with label": "Выпадающий список"
-    "square button": "Квадратная кнопка"
-    "do not show": "Не показывать"
+    circular swatch: "Круглый"
+    dropdown with label: "Выпадающий список"
+    square button: "Квадратная кнопка"
+    do not show: "Не показывать"
 
   # Subscriptions
   subscriptions:
@@ -193,7 +245,15 @@ ru:
     trial: "Пробный период"
     days: "дней"
     access_restricted: "Требуется активная подписка. Пожалуйста, оформите подписку для продолжения работы."
-  
+    create:
+      success: "Подписка успешно создана."
+    update:
+      success: "Подписка успешно обновлена."
+    destroy:
+      success: "Подписка успешно удалена."
+    cancel:
+      success: "Подписка успешно отменена."
+
   # Admin
   admin:
     dashboard: "Админ панель"
@@ -262,12 +322,12 @@ ru:
       status: "Статус"
       back_to_plans: "← Назад к тарифам"
       delete_plan_confirm: "Удалить тариф?"
-  
+
   # Common
   filter: "Фильтр"
   status: "Статус"
   processor: "Способ оплаты"
-  
+
   # Payments
   payments:
     payments: "Платежи"
@@ -284,7 +344,9 @@ ru:
     invoice_number: "Номер счёта"
     download_invoice_pdf: "Скачать счёт PDF"
     pdf: "PDF"
-  
+    create:
+      success: "Платёж успешно создан."
+
   # Will Paginate
   will_paginate:
     page_entries_info:
@@ -293,7 +355,7 @@ ru:
         one: "Показан %{model}"
         other: "Показано %{count} %{model}"
       multi_page_html: "Показано %{from}–%{to} из %{count} %{model}"
-  
+
   controllers:
     products:
       create:
@@ -320,7 +382,39 @@ ru:
         confirm: "Вы уверены, что хотите удалить эту заявку?"
       update_status:
         success: "Статус заявки обновлен."
-  
+    swatch_groups:
+      create:
+        success: "Группа успешно создана."
+      update:
+        success: "Группа успешно обновлена."
+      destroy:
+        success: "Группа успешно удалена."
+      toggle_status:
+        success: "Статус группы изменен."
+      regenerate_json:
+        success: "Регенерация JSON запущена."
+    swatch_group_products:
+      create:
+        success: "Товар добавлен в группу."
+      update:
+        success: "Товар группы обновлен."
+      destroy:
+        success: "Товар удален из группы."
+    automation_rules:
+      create:
+        success: "Правило создано"
+      update:
+        success: "Правило обновлено"
+      destroy:
+        success: "Правило удалено"
+    automation_conditions:
+      destroy:
+        success: "Условие удалено"
+
+  automation_rules:
+    edit:
+      heading: "Редактировать правило"
+
   products:
     index:
       heading: "Товары"
@@ -334,6 +428,8 @@ ru:
       heading: "Новый товар"
     edit:
       heading: "Редактировать товар"
+    update:
+      success: "Товар успешно обновлен."
     form:
       save_to_manage_variants: "Сохраните товар для управления вариантами."
       variants: "Варианты"
@@ -357,6 +453,14 @@ ru:
       heading: "Новый клиент"
     edit:
       heading: "Редактировать клиента"
+    create:
+      success: "Клиент успешно создан."
+    update:
+      success: "Клиент успешно обновлен."
+    destroy:
+      success: "Клиент успешно удален."
+    insales_info:
+      success: "Клиент обновлен из InSales."
     show:
       heading: "Клиент: %{name}"
       no_list_items: "Пока нет товаров в списках."
@@ -393,6 +497,10 @@ ru:
       done: "Выполнена"
       canceled: "Отменена"
       closed: "Закрыта"
+    update_status:
+      success: "Статус заявки обновлен."
+    destroy:
+      success: "Заявка успешно удалена."
     webforms:
       create:
         success: "Веб-форма успешно создана."
@@ -404,3 +512,115 @@ ru:
         success: "Предпросмотр обновлен."
       regenerate_json:
         regenerated: "Регенерация JSON запущена."
+
+  lists:
+    create:
+      success: "Список успешно создан."
+    update:
+      success: "Список успешно обновлен."
+
+  variants:
+    create:
+      success: "Вариант успешно создан."
+    update:
+      success: "Вариант успешно обновлен."
+
+  varbinds:
+    success: "Успешно сохранено."
+
+  discounts:
+    create:
+      success: "Скидка успешно создана."
+    update:
+      success: "Скидка успешно обновлена."
+    destroy:
+      success: "Скидка успешно удалена."
+
+  insales:
+    new:
+      new: "Новые настройки InSales"
+    edit:
+      edit: "Редактировать настройки InSales"
+    xml_source:
+      products_xml_source: "Источник XML товаров"
+      option_1: "Сгенерировать XML сейчас:"
+      generate_now: "Сгенерировать"
+      option_2: "Или указать ссылку на внешний XML:"
+      xml_url: "URL XML"
+      cancel: "Отмена"
+      save: "Сохранить"
+    create:
+      success: "Настройки InSales успешно созданы."
+    update:
+      success: "Настройки InSales успешно обновлены."
+    destroy:
+      success: "Настройки InSales успешно удалены."
+    check:
+      success: "API работает."
+    add_order_webhook:
+      success: "Webhook заказа добавлен."
+    generate_products_xml:
+      success: "XML товаров сгенерирован."
+    save_products_xml_link:
+      success: "Ссылка на XML товаров сохранена."
+
+  webforms:
+    create:
+      success: "Веб-форма успешно создана."
+    update:
+      success: "Веб-форма успешно обновлена."
+    build:
+      success: "Предпросмотр обновлен."
+    destroy:
+      success: "Веб-форма успешно удалена."
+
+  webform_fields:
+    create:
+      success: "Поле формы успешно создано."
+    update:
+      success: "Поле формы успешно обновлено."
+    destroy:
+      success: "Поле формы успешно удалено."
+
+  automation_actions:
+    create:
+      success: "Действие успешно добавлено."
+    destroy:
+      success: "Действие успешно удалено."
+
+  users:
+    index:
+      email: "Email"
+      role: "Роль"
+    edit:
+      edit: "Редактировать пользователя"
+    form:
+      email_address: "Email"
+      password: "Пароль"
+      password_confirmation: "Подтверждение пароля"
+      role: "Роль"
+      leave_blank_to_keep_current_password: "Оставьте пустым, чтобы сохранить текущий пароль"
+      confirm_password: "Подтвердите пароль"
+      update_user: "Обновить пользователя"
+      create_user: "Создать пользователя"
+      cancel: "Отмена"
+
+  swatch_groups:
+    index:
+      heading: "Группы"
+    new:
+      heading: "Новая группа"
+    edit:
+      heading: "Редактировать группу"
+    show:
+      heading: "Группа: %{name}"
+
+  message_templates:
+    new:
+      heading: "Новый шаблон сообщения"
+    create:
+      success: "Шаблон сообщения успешно создан."
+    update:
+      success: "Шаблон сообщения успешно обновлен."
+    destroy:
+      success: "Шаблон сообщения успешно удален."

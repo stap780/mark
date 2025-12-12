@@ -1,0 +1,50 @@
+<% if message_template.content.present? %>
+  <% begin %>
+    <% template = Liquid::Template.parse(message_template.content) %>
+    <% rendered_content = template.render(preview_context.deep_stringify_keys, { strict_variables: false }) %>
+    
+    <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+      <% if message_template.channel == 'email' && message_template.subject.present? %>
+        <div class="mb-4 pb-4 border-b border-gray-300">
+          <div class="text-xs text-gray-500 mb-1">Тема:</div>
+          <% begin %>
+            <% subject_template = Liquid::Template.parse(message_template.subject) %>
+            <% rendered_subject = subject_template.render(preview_context.deep_stringify_keys, { strict_variables: false }) %>
+            <div class="font-semibold text-gray-900"><%= rendered_subject %></div>
+          <% rescue Liquid::Error => e %>
+            <div class="text-red-600 text-sm">Ошибка в теме: <%= e.message %></div>
+          <% end %>
+        </div>
+      <% end %>
+      
+      <div class="prose max-w-none">
+        <%= raw rendered_content %>
+      </div>
+    </div>
+  <% rescue Liquid::Error => e %>
+    <div class="border border-red-200 rounded-lg p-4 bg-red-50">
+      <div class="text-red-600 font-semibold mb-2">Ошибка в шаблоне:</div>
+      <div class="text-red-700 text-sm"><%= e.message %></div>
+    </div>
+  <% rescue => e %>
+    <div class="border border-red-200 rounded-lg p-4 bg-red-50">
+      <div class="text-red-600 font-semibold mb-2">Ошибка:</div>
+      <div class="text-red-700 text-sm"><%= e.message %></div>
+    </div>
+  <% end %>
+<% else %>
+  <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 text-gray-500 text-center">
+    Введите содержимое шаблона для предпросмотра
+  </div>
+<% end %>
+
+<div class="mt-4 text-xs text-gray-500">
+  <div class="font-semibold mb-2">Тестовые данные:</div>
+  <div class="space-y-1">
+    <div>incase.id = <%= preview_context['incase']['id'] %></div>
+    <div>client.name = <%= preview_context['client']['name'] %></div>
+    <div>client.email = <%= preview_context['client']['email'] %></div>
+    <div>webform.title = <%= preview_context['webform']['title'] %></div>
+  </div>
+</div>
+

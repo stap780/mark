@@ -1,5 +1,5 @@
 <div class="flex items-center justify-between mb-4">
-  <h1 class="text-xl font-semibold"><%= @swatch_group.name %></h1>
+  <h1 class="text-xl font-semibold"><%= t("swatch_groups.show.heading", name: @swatch_group.name) %></h1>
   <div class="space-x-2">
     <%= link_to_edit edit_account_swatch_group_path(current_account, @swatch_group), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
     <%= link_to t(:toggle_status), toggle_status_account_swatch_group_path(current_account, @swatch_group), method: :patch, class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>

@@ -2,7 +2,7 @@
   <div><%= link_to incase.id, account_incase_path(current_account, incase), class: "text-violet-600 hover:text-violet-800", data: { turbo: false } %></div>
   <div><%= l incase.created_at, format: :short %></div>
   <div><%= t("incases.status.#{incase.status}") %></div>
-  <div><%= incase.webform.title %> (<%= incase.webform.kind %>)</div>
+  <div><%= incase.webform&.title %> (<%= incase.webform&.kind %>)</div>
   <div><%= incase.client.name %> <%= incase.client.email %></div>
   <div class="flex justify-end space-x-2">
     <%= link_to_delete account_incase_path(current_account, incase), data: { turbo_confirm: t('incases.destroy.confirm', default: 'Вы уверены?') } %>

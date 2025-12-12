@@ -1,0 +1,36 @@
+<div data-nested-form-item class="border rounded p-3 mb-2">
+  <%= f.hidden_field :id unless f.object.new_record? %>
+  <%= f.select :kind,
+      [["Отправить email", "send_email"], ["Изменить статус", "change_status"]],
+      { selected: f.object.kind },
+      class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2",
+      data: { action: "change->nested-form#updateActionKind" } %>
+
+  <div data-action-kind="send_email" style="<%= 'display:none' unless f.object.kind == 'send_email' %>">
+    <%= f.label :template_id, "Шаблон", class: "block text-sm font-medium text-gray-700 mt-2" %>
+    <%= f.select :template_id,
+        (local_assigns[:current_account] || current_account).message_templates.email.pluck(:title, :id),
+        { selected: f.object.settings&.dig('template_id'), include_blank: "Выберите шаблон" },
+        class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2" %>
+  </div>
+
+  <div data-action-kind="change_status" style="<%= 'display:none' unless f.object.kind == 'change_status' %>">
+    <%= f.label :new_status, "Новый статус", class: "block text-sm font-medium text-gray-700 mt-2" %>
+    <%= f.select :new_status,
+        [["Новая", "new"], ["В работе", "in_progress"], ["Завершена", "done"], ["Отменена", "canceled"], ["Закрыта", "closed"]],
+        { selected: f.object.settings&.dig('status') },
+        class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2" %>
+  </div>
+
+  <% unless f.object.new_record? %>
+    <%= f.check_box :_destroy, class: "mt-2" %>
+    <%= f.label :_destroy, "Удалить", class: "text-sm" %>
+  <% end %>
+
+  <button type="button"
+          class="mt-2 text-sm text-red-600 hover:text-red-800"
+          data-action="click->nested-form#remove">
+    × Удалить
+  </button>
+</div>
+

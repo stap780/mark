@@ -83,7 +83,9 @@
   </div>
 
   <div>
+    <%= link_to t(:back), account_swatch_groups_path(current_account), 
+        class: "inline-flex items-center px-3 py-1 bg-white text-violet-700 border border-violet-600 rounded-md hover:bg-violet-50",
+        data: {turbo: false} %>
     <%= f.submit t(:save), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
-    <%= link_to t(:back), account_swatch_groups_path(current_account), class: "inline-flex items-center px-3 py-1 bg-white text-violet-700 border border-violet-600 rounded-md hover:bg-violet-50", data: {turbo: false} %>
   </div>
 <% end %>

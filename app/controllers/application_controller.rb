@@ -77,6 +77,9 @@ class ApplicationController < ActionController::Base
     # Разрешаем доступ к страницам подписок и платежей
     return if controller_name.in?(%w[subscriptions payments]) || controller_path.start_with?('admin/')
     
+    # Разрешаем выход из системы без проверки подписки
+    return if controller_name == 'sessions' && action_name == 'destroy'
+    
     # Для API-эндпоинтов проверяем подписку даже без сессии
     # (API-контроллеры пропускают require_authentication, но должны проверять подписку)
     if controller_path.start_with?('api/')

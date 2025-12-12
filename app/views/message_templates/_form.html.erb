@@ -1,0 +1,61 @@
+<%= form_with model: [current_account, message_template], 
+    url: message_template.new_record? ? account_message_templates_path(current_account) : account_message_template_path(current_account, message_template),
+    class: "space-y-4", 
+    data: { 
+      turbo_stream: true,
+      controller: message_template.persisted? ? "auto-submit" : nil,
+      "auto-submit-delay-value": message_template.persisted? ? 500 : nil
+    } do |f| %>
+  <%= render "shared/errors", object: message_template %>
+
+  <div>
+    <%= f.label :title, "Название", class: "block text-sm font-medium text-gray-700" %>
+    <% if message_template.new_record? %>
+      <%= f.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
+    <% else %>
+      <%= f.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
+    <% end %>
+  </div>
+
+  <div>
+    <%= f.label :channel, "Канал", class: "block text-sm font-medium text-gray-700" %>
+    <% if message_template.new_record? %>
+      <%= f.select :channel, [["Email", "email"], ["SMS", "sms"]], {},
+      class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
+    <% else %>
+      <%= f.select :channel, [["Email", "email"], ["SMS", "sms"]], {},
+      class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
+    <% end %>
+  </div>
+
+  <% if message_template.new_record? %>
+    <%= f.text_field :subject, value: %Q{ Заявка \{\{ incase.id \}\} }, class: 'hidden'%>
+  <% else %>
+    <div>
+      <%= f.label :subject, "Тема (для email)", class: "block text-sm font-medium text-gray-700" %>
+      <%= f.text_field :subject,
+          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
+    </div>
+  <% end %>
+
+  <% if message_template.new_record? %>
+    <%= f.text_area :content, value: default_message_template_content, class: 'hidden' %>
+  <% else %>
+    <div>
+      <%= f.label :content, "Содержание (Liquid)", class: "block text-sm font-medium text-gray-700" %>
+      <%= f.text_area :content, rows: 20,
+          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2 font-mono text-sm bg-gray-50",
+          style: "font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace; line-height: 1.6; tab-size: 2; letter-spacing: 0.01em;" %>
+      <p class="mt-2 text-xs text-gray-500">
+        Используйте HTML теги с inline стилями и Liquid переменные: <code><%= "{{" %> incase.id <%= "}}" %></code>, <code><%= "{{" %> client.name <%= "}}" %></code>, <code><%= "{{" %> webform.title <%= "}}" %></code>
+      </p>
+    </div>
+  <% end %>
+
+  <% if message_template.new_record? %>
+    <div class="flex justify-end space-x-2">
+      <%= f.submit message_template.new_record? ? "Создать" : "Обновить", class: "px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    </div>
+  <% end %>
+<% end %>
+

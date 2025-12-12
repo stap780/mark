@@ -25,7 +25,7 @@ class SwatchGroupsController < ApplicationController
     if @swatch_group.save
       resolve_products_for_nested(@swatch_group)
       SwatchJsonGeneratorJob.perform_later(current_account.id)
-      redirect_to account_swatch_groups_path(current_account), notice: "Swatch group created."
+      redirect_to account_swatch_groups_path(current_account), notice: t("controllers.swatch_groups.create.success")
     else
       render :new, status: :unprocessable_content
     end
@@ -35,7 +35,7 @@ class SwatchGroupsController < ApplicationController
     if @swatch_group.update(swatch_group_params)
       resolve_products_for_nested(@swatch_group)
       SwatchJsonGeneratorJob.perform_later(current_account.id)
-      redirect_to account_swatch_groups_path(current_account), notice: "Swatch group updated."
+      redirect_to account_swatch_groups_path(current_account), notice: t("controllers.swatch_groups.update.success")
     else
       respond_to do |format|
         flash.now[:notice] = @swatch_group.errors.full_messages.uniq.to_sentence
@@ -48,7 +48,7 @@ class SwatchGroupsController < ApplicationController
   def destroy
     @swatch_group.destroy
     SwatchJsonGeneratorJob.perform_later(current_account.id)
-    redirect_to account_swatch_groups_path(current_account), notice: "Swatch group deleted."
+    redirect_to account_swatch_groups_path(current_account), notice: t("controllers.swatch_groups.destroy.success")
   end
 
   def preview
@@ -57,12 +57,12 @@ class SwatchGroupsController < ApplicationController
 
   def toggle_status
     @swatch_group.update(status: @swatch_group.active? ? "inactive" : "active")
-    redirect_to account_swatch_groups_path(current_account), notice: "Swatch group #{@swatch_group.status}."
+    redirect_to account_swatch_groups_path(current_account), notice: t("controllers.swatch_groups.toggle_status.success")
   end
 
   def regenerate_json
     SwatchJsonGeneratorJob.perform_later(current_account.id)
-    redirect_to account_swatch_groups_path(current_account), notice: "JSON regeneration started."
+    redirect_to account_swatch_groups_path(current_account), notice: t("controllers.swatch_groups.regenerate_json.success")
   end
 
   # Offcanvas for selecting a style for either field

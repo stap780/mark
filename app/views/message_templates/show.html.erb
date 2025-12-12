@@ -1,0 +1,22 @@
+<div class="inline-flex items-center gap-4 mb-4">
+  <%= link_to t('back'), account_message_templates_path(current_account),
+      class: "inline-flex items-center px-3 py-1 bg-white text-violet-600 border border-violet-500 rounded-md hover:bg-violet-50",
+      data: { turbo: false } %>
+  <h2 class="text-lg font-semibold mb-3">Редактирование</h2>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+  <div class="space-y-4">
+    <%= turbo_frame_tag dom_id(current_account, dom_id(@message_template, :form)), class: "" do %>
+      <%= render 'form', message_template: @message_template %>
+    <% end %>
+  </div>
+
+  <div class="bg-white rounded-lg shadow p-4">
+    <h2 class="text-lg font-semibold mb-3">Предпросмотр</h2>
+    <%= turbo_frame_tag dom_id(current_account, dom_id(@message_template, :preview)), class: "p-4" do %>
+      <%= render 'preview', message_template: @message_template, preview_context: @preview_context %>
+    <% end %>
+  </div>
+</div>
+

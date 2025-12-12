@@ -136,6 +136,19 @@ Rails.application.routes.draw do
         end
       end
     end
+    resources :automation_rules do
+      member do
+        get :design
+        patch :build
+      end
+      resources :automation_conditions, only: [:new, :create, :destroy]
+      resources :automation_actions, only: [:new, :create, :destroy]
+    end
+    resources :automation_conditions, only: [:new, :destroy]
+    resources :automation_actions, only: [:new, :destroy]
+
+    resources :message_templates
+    resources :automation_messages, only: [:index]
     resources :users
     resources :subscriptions do
       member do
@@ -163,6 +176,11 @@ Rails.application.routes.draw do
       resources :discounts, only: [] do
         collection do
           post :calc
+        end
+      end
+      resources :automation_rules, only: [] do
+        collection do
+          get :available_fields
         end
       end
       namespace :webhooks do

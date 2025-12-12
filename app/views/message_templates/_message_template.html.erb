@@ -1,0 +1,12 @@
+<%= turbo_frame_tag dom_id(message_template, dom_id(current_account)), class: "grid grid-cols-[1fr_150px_150px_150px] gap-4 p-4 items-center hover:bg-gray-50" do %>
+  <div><%= message_template.title %></div>
+  <div><%= message_template.channel.humanize %></div>
+  <div><%= message_template.context || '-' %></div>
+  <div class="flex space-x-2 items-center">
+    <%= link_to "Редактировать", account_message_template_path(current_account, message_template),
+        class: "text-violet-600 hover:text-violet-800 text-sm", data: { turbo: false } %>
+    <%= link_to_delete account_message_template_path(current_account, message_template),
+        method: :delete, data: { turbo_confirm: "Вы уверены?", turbo_method: :delete }%> 
+  </div>
+<% end %>
+

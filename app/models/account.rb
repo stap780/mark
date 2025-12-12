@@ -11,6 +11,9 @@ class Account < ApplicationRecord
   has_many :discounts, dependent: :destroy
   has_many :webforms, dependent: :destroy
   has_many :incases, dependent: :destroy
+  has_many :automation_rules, dependent: :destroy
+  has_many :message_templates, dependent: :destroy
+  has_many :automation_messages, dependent: :destroy
   validates :name, presence: true
 
   after_create :create_subscription

@@ -16,7 +16,7 @@ class IncasesController < ApplicationController
     respond_to do |format|
       if @incase.update(status: params.require(:status))
         format.turbo_stream do
-          flash.now[:success] = t(:success)
+          flash.now[:success] = t('.success')
           render turbo_stream: [
             turbo_stream.update(dom_id(current_account, dom_id(@incase, :status)), partial: "incases/status", locals: { incase: @incase }),
             render_turbo_flash

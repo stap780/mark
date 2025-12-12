@@ -59,9 +59,9 @@ class SwatchGroupProductsController < ApplicationController
     @sgp = @swatch_group.swatch_group_products.build(sgp_params)
     respond_to do |format|
       if @sgp.save
-        flash.now[:success] = 'Product added to swatch group.'
+        flash.now[:success] = t("controllers.swatch_group_products.create.success")
         format.turbo_stream { render turbo_stream: turbo_close_offcanvas_flash }
-        format.html { redirect_to account_swatch_group_path(current_account, @swatch_group), notice: 'Product added to swatch group.' }
+        format.html { redirect_to account_swatch_group_path(current_account, @swatch_group), notice: t("controllers.swatch_group_products.create.success") }
       else
         flash.now[:error] = @sgp.errors.full_messages.to_sentence
         format.turbo_stream { render turbo_stream: [ render_turbo_flash ] }
@@ -72,7 +72,7 @@ class SwatchGroupProductsController < ApplicationController
 
   def update
     if @sgp.update(sgp_params)
-      redirect_to account_swatch_group_path(current_account, @swatch_group), notice: 'Swatch updated.'
+      redirect_to account_swatch_group_path(current_account, @swatch_group), notice: t("controllers.swatch_group_products.update.success")
     else
       redirect_to account_swatch_group_path(current_account, @swatch_group), alert: @sgp.errors.full_messages.to_sentence
     end

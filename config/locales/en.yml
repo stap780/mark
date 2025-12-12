@@ -48,6 +48,18 @@ en:
   insales: "Insales"
   users: "Users"
   
+  menu:
+    dashboard: "Dashboard"
+    incases: "Incases"
+    clients: "Clients"
+    products: "Products"
+    discounts: "Discounts"
+    lists: "Lists"
+    swatches: "Swatches"
+    webforms: "Webforms"
+    insales: "Insale"
+    users: "Users"
+  
   # Actions
   sign_in: "Sign in"
   sign_out: "Sign out"
@@ -81,10 +93,13 @@ en:
   price: "Price"
   are_you_sure: "Are you sure?"
   remove_product: "Remove product?"
+  check_integration: "Check integration"
+  set_products_xml: "Set products XML"
   
   activerecord:
     models:
       swatch_group: "Swatch Group"
+      swatch_group_product: "Swatch Group Product"
       account_user: "Account User"
     attributes:
       account_user:
@@ -102,12 +117,35 @@ en:
         css_class_preview: "Preview CSS class"
         product_page_image_source: "Product page image source"
         collection_page_image_source: "Collection page image source"
+      swatch_group_product:
+        swatch_label: "Label"
+        swatch_value: "Value"
+        title: "Title"
+        color: "Color"
+        image_link: "Image Link"
+        image: "Image"
+        product_id: "Product"
     errors:
       models:
         account_user:
           attributes:
             role:
               only_one_admin_per_account: "can only have one admin per account"
+        swatch_group:
+          attributes:
+            name:
+              blank: "can't be blank"
+            option_name:
+              blank: "can't be blank"
+        swatch_group_product:
+          attributes:
+            swatch_value:
+              blank: "can't be blank"
+            product_id:
+              taken: "has already been added to this group"
+            image:
+              invalid_type: "must be an image"
+              invalid_dimensions: "must be at most 300x300px"
     columns:
       number: "#"
       name: "Name"
@@ -150,13 +188,61 @@ en:
     "do not show": "Do not show"
 
   controllers:
+    products:
+      create:
+        success: "Product created successfully."
+      update:
+        success: "Product updated successfully."
+      destroy:
+        success: "Product deleted successfully."
+        confirm: "Are you sure you want to delete this product?"
+      insales_info:
+        success: "Product updated from InSales."
     incases:
       destroy:
         success: "Incase deleted successfully."
         confirm: "Are you sure you want to delete this incase?"
       update_status:
         success: "Incase status updated."
+    swatch_groups:
+      create:
+        success: "Swatch group created successfully."
+      update:
+        success: "Swatch group updated successfully."
+      destroy:
+        success: "Swatch group deleted successfully."
+      toggle_status:
+        success: "Swatch group status changed."
+      regenerate_json:
+        success: "JSON regeneration started."
+    swatch_group_products:
+      create:
+        success: "Product added to swatch group."
+      update:
+        success: "Swatch updated."
+      destroy:
+        success: "Product removed from swatch group."
+    automation_rules:
+      create:
+        success: "Automation rule created"
+      update:
+        success: "Automation rule updated"
+      destroy:
+        success: "Automation rule deleted"
+    automation_conditions:
+      destroy:
+        success: "Condition deleted"
   
+  swatch_groups:
+    index:
+      heading: "Swatch Groups"
+    new:
+      heading: "New Swatch Group"
+    edit:
+      heading: "Edit Swatch Group"
+    show:
+      heading: "Swatch Group: %{name}"
+
   incases:
     index:
       search_placeholder: "Search by webform, client"
@@ -175,6 +261,10 @@ en:
       done: "Done"
       canceled: "Canceled"
       closed: "Closed"
+    update_status:
+      success: "Incase status updated."
+    destroy:
+      success: "Incase deleted successfully."
     webforms:
       create:
         success: "Webform created successfully."
@@ -186,6 +276,133 @@ en:
         success: "Preview updated."
       regenerate_json:
         regenerated: "JSON regeneration started."
+
+  clients:
+    create:
+      success: "Client created successfully."
+    update:
+      success: "Client updated successfully."
+    destroy:
+      success: "Client deleted successfully."
+
+  lists:
+    create:
+      success: "List created successfully."
+    update:
+      success: "List updated successfully."
+
+  variants:
+    create:
+      success: "Variant created successfully."
+    update:
+      success: "Variant updated successfully."
+
+  varbinds:
+    success: "Saved successfully."
+
+  subscriptions:
+    subscriptions: "Subscriptions"
+    create:
+      success: "Subscription created successfully."
+    update:
+      success: "Subscription updated successfully."
+    destroy:
+      success: "Subscription deleted successfully."
+    cancel:
+      success: "Subscription canceled successfully."
+
+  discounts:
+    create:
+      success: "Discount created successfully."
+    update:
+      success: "Discount updated successfully."
+    destroy:
+      success: "Discount deleted successfully."
+
+  insales:
+    new:
+      new: "New InSales Settings"
+    edit:
+      edit: "Edit InSales Settings"
+    xml_source:
+      products_xml_source: "Products XML Source"
+      option_1: "Generate XML now:"
+      generate_now: "Generate"
+      option_2: "Or specify a link to external XML:"
+      xml_url: "XML URL"
+      cancel: "Cancel"
+      save: "Save"
+    create:
+      success: "InSales settings created successfully."
+    update:
+      success: "InSales settings updated successfully."
+    destroy:
+      success: "InSales settings deleted successfully."
+    check:
+      success: "API is working."
+    add_order_webhook:
+      success: "Order webhook added."
+    generate_products_xml:
+      success: "Products XML generated."
+    save_products_xml_link:
+      success: "Products XML link saved."
+
+  webforms:
+    create:
+      success: "Webform created successfully."
+    update:
+      success: "Webform updated successfully."
+    build:
+      success: "Preview updated."
+    destroy:
+      success: "Webform deleted successfully."
+
+  webform_fields:
+    create:
+      success: "Webform field created successfully."
+    update:
+      success: "Webform field updated successfully."
+    destroy:
+      success: "Webform field deleted successfully."
+
+  automation_actions:
+    create:
+      success: "Action added successfully."
+    destroy:
+      success: "Action deleted successfully."
+
+  users:
+    index:
+      email: "Email"
+      role: "Role"
+    edit:
+      edit: "Edit User"
+    form:
+      email_address: "Email"
+      password: "Password"
+      password_confirmation: "Password Confirmation"
+      role: "Role"
+      leave_blank_to_keep_current_password: "Leave blank to keep current password"
+      confirm_password: "Confirm Password"
+      update_user: "Update User"
+      create_user: "Create User"
+      cancel: "Cancel"
+
+  products:
+    index:
+      heading: "Products"
+      search_placeholder: "Search by title, SKU"
+      search: "Search"
+      clear: "Clear"
+      image: "Image"
+      title: "Title"
+      variants: "Variants"
+    new:
+      heading: "New Product"
+    edit:
+      heading: "Edit Product"
+    update:
+      success: "Product updated successfully."
 
 # Admin translations
   admin:

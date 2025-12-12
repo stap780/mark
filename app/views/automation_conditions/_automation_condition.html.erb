@@ -1,0 +1,54 @@
+<%= turbo_frame_tag "automation_condition_#{turbo_id_for(automation_condition)}" do %>
+  <%= fields_for "automation_rule[automation_conditions_attributes][#{turbo_id_for(automation_condition)}]", automation_condition do |ff| %>
+    <div class="grid grid-cols-[2fr_2fr_2fr_50px] gap-4 p-3 border rounded mb-2 bg-gray-50" id="automation_condition_<%= turbo_id_for(automation_condition) %>">
+      <!-- Field select -->
+      <div>
+        <%= ff.select :field,
+            options_for_select(
+              (automation_rule.event ? available_fields_for_event(automation_rule.event).map { |f| [f[:label], f[:key]] } : []),
+              automation_condition.field
+            ),
+            { include_blank: "Выберите поле" },
+            { class: "w-full px-2 py-1 border rounded-md text-sm" } %>
+      </div>
+
+      <!-- Operator select -->
+      <div>
+        <%= ff.select :operator,
+            options_for_select(
+              available_operators.map { |op| [op[:label], op[:key]] },
+              automation_condition.operator
+            ),
+            { include_blank: "Выберите оператор" },
+            { class: "w-full px-2 py-1 border rounded-md text-sm" } %>
+      </div>
+
+      <!-- Value input -->
+      <div>
+        <% field_info = (automation_rule.event ? available_fields_for_event(automation_rule.event).find { |f| f[:key] == automation_condition.field } : nil) %>
+        <% if field_info && field_info[:type] == "enum" %>
+          <%= ff.select :value,
+              options_for_select(
+                field_info[:values].map { |v| [v.humanize, v] },
+                automation_condition.value
+              ),
+              { include_blank: "Выберите значение" },
+              { class: "w-full px-2 py-1 border rounded-md text-sm" } %>
+        <% else %>
+          <%= ff.text_field :value,
+              value: automation_condition.value,
+              placeholder: "Значение",
+              class: "w-full px-2 py-1 border rounded-md text-sm" %>
+        <% end %>
+        <%= ff.hidden_field :position, value: automation_condition.position || automation_rule.automation_conditions.count %>
+      </div>
+
+      <!-- Delete button -->
+      <div class="flex items-center">
+        <% path = automation_condition.new_record? ? account_automation_rule_automation_condition_path(current_account, automation_rule, id: turbo_id_for(automation_condition)) : account_automation_rule_automation_condition_path(current_account, automation_rule, automation_condition) %>
+        <%= link_to_delete path, data: { turbo_method: :delete, turbo_confirm: 'Удалить условие?' } %>
+        <%= ff.hidden_field :id %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

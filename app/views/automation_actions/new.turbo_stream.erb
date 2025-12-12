@@ -1,0 +1,4 @@
+<%= turbo_stream.append dom_id(current_account, dom_id(@automation_rule, :automation_actions)),
+    partial: "automation_actions/automation_action",
+    locals: { automation_rule: @automation_rule, automation_action: @automation_action, current_account: current_account } %>
+

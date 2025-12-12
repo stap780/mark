@@ -10,6 +10,8 @@ class Variant < ApplicationRecord
   before_destroy :check_list_items_dependency
   before_destroy :check_items_dependency
 
+  after_update_commit :check_back_in_stock
+
   # Use Varbindable defaults
 
   def broadcast_target_for_varbinds
@@ -44,6 +46,33 @@ class Variant < ApplicationRecord
     throw(:abort)
   end
 
+  def check_back_in_stock
+    return unless quantity_changed?
+    return unless quantity.to_i > 0
+    return if quantity_was.to_i > 0
+
+    # Находим все заявки с этим товаром
+    incases = Incase.joins(items: :variant)
+                   .where(variants: { id: id })
+                   .joins(:webform)
+                   .where(webforms: { kind: ['preorder', 'notify'] })
+                   .where(status: ['new', 'in_progress'])
+                   .distinct
+
+    incases.find_each do |incase|
+      Automation::Engine.call(
+        account: incase.account,
+        event: "variant.back_in_stock",
+        object: self,
+        context: {
+          incase: incase,
+          client: incase.client,
+          webform: incase.webform,
+          product: product
+        }
+      )
+    end
+  end
 end
 
 

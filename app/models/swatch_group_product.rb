@@ -23,7 +23,7 @@ class SwatchGroupProduct < ApplicationRecord
     return unless image.attached?
     content_type = image.blob.content_type
     unless content_type.present? && content_type.start_with?("image/")
-      errors.add(:image, "must be an image")
+      errors.add(:image, I18n.t("activerecord.errors.models.swatch_group_product.attributes.image.invalid_type"))
     end
   end
 
@@ -46,7 +46,7 @@ class SwatchGroupProduct < ApplicationRecord
     end
 
     if width.to_i > 300 || height.to_i > 300
-      errors.add(:image, "must be at most 300x300px")
+      errors.add(:image, I18n.t("activerecord.errors.models.swatch_group_product.attributes.image.invalid_dimensions"))
     end
     puts "width => #{width}"
     puts "height => #{height}"

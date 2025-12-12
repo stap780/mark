@@ -134,8 +134,8 @@ class Insale < ApplicationRecord
         marketplace: {
           "name": "YM mark #{Time.now}",
           "type": "Marketplace::ModelYandexMarket",
-          "shop_name": "YM myappda",
-          "shop_company": "YM myappda",
+          "shop_name": "YM mark",
+          "shop_company": "YM mark",
           "description_type": 1,
           "vendor_id": property_id,
           "adult": false,
@@ -148,6 +148,7 @@ class Insale < ApplicationRecord
           "model_type": "name",
           "collection_ids": collection_ids,
           "use_variants": true,
+          "use_sku_as_vendor_code": true,
           "variants_action": "all"
         }
       }

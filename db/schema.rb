@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_19_132012) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_11_152804) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -66,6 +66,71 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_132012) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "automation_actions", force: :cascade do |t|
+    t.bigint "automation_rule_id", null: false
+    t.string "kind", null: false
+    t.jsonb "settings"
+    t.integer "position"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["automation_rule_id"], name: "index_automation_actions_on_automation_rule_id"
+  end
+
+  create_table "automation_conditions", force: :cascade do |t|
+    t.bigint "automation_rule_id", null: false
+    t.string "field", null: false
+    t.string "operator", null: false
+    t.string "value"
+    t.integer "position"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["automation_rule_id", "position"], name: "index_automation_conditions_on_automation_rule_id_and_position"
+    t.index ["automation_rule_id"], name: "index_automation_conditions_on_automation_rule_id"
+  end
+
+  create_table "automation_messages", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "automation_rule_id", null: false
+    t.bigint "automation_action_id", null: false
+    t.bigint "client_id", null: false
+    t.bigint "incase_id"
+    t.string "channel", null: false
+    t.string "status", default: "pending"
+    t.text "subject"
+    t.text "content"
+    t.text "error_message"
+    t.datetime "sent_at"
+    t.datetime "delivered_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "channel", "status"], name: "index_automation_messages_on_account_id_and_channel_and_status"
+    t.index ["account_id"], name: "index_automation_messages_on_account_id"
+    t.index ["automation_action_id"], name: "index_automation_messages_on_automation_action_id"
+    t.index ["automation_rule_id", "created_at"], name: "index_automation_messages_on_automation_rule_id_and_created_at"
+    t.index ["automation_rule_id"], name: "index_automation_messages_on_automation_rule_id"
+    t.index ["client_id"], name: "index_automation_messages_on_client_id"
+    t.index ["incase_id"], name: "index_automation_messages_on_incase_id"
+  end
+
+  create_table "automation_rules", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "title", null: false
+    t.string "event", null: false
+    t.string "condition_type", default: "simple"
+    t.text "condition"
+    t.boolean "active", default: true
+    t.integer "position"
+    t.integer "delay_seconds", default: 0
+    t.datetime "scheduled_for"
+    t.string "active_job_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "logic_operator", default: "AND"
+    t.index ["account_id"], name: "index_automation_rules_on_account_id"
+    t.index ["active_job_id"], name: "index_automation_rules_on_active_job_id"
+    t.index ["scheduled_for"], name: "index_automation_rules_on_scheduled_for"
+  end
+
   create_table "clients", force: :cascade do |t|
     t.integer "account_id", null: false
     t.string "name"
@@ -99,7 +164,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_132012) do
     t.integer "client_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "number"
     t.index ["account_id", "created_at"], name: "index_incases_on_account_id_and_created_at"
+    t.index ["account_id", "number"], name: "index_incases_on_account_id_and_number", unique: true, where: "(number IS NOT NULL)"
     t.index ["account_id", "status"], name: "index_incases_on_account_id_and_status"
     t.index ["account_id"], name: "index_incases_on_account_id"
     t.index ["client_id"], name: "index_incases_on_client_id"
@@ -166,6 +233,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_132012) do
     t.string "icon_color", default: "#999999", null: false
     t.index ["account_id"], name: "index_lists_on_account_id"
     t.index ["icon_style"], name: "index_lists_on_icon_style"
+  end
+
+  create_table "message_templates", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "title", null: false
+    t.string "channel", null: false
+    t.string "subject"
+    t.text "content", null: false
+    t.string "context"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_message_templates_on_account_id"
   end
 
   create_table "payments", force: :cascade do |t|
@@ -324,6 +403,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_132012) do
   add_foreign_key "account_users", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "automation_actions", "automation_rules"
+  add_foreign_key "automation_conditions", "automation_rules"
+  add_foreign_key "automation_messages", "accounts"
+  add_foreign_key "automation_messages", "automation_actions"
+  add_foreign_key "automation_messages", "automation_rules"
+  add_foreign_key "automation_messages", "clients"
+  add_foreign_key "automation_messages", "incases"
+  add_foreign_key "automation_rules", "accounts"
   add_foreign_key "clients", "accounts"
   add_foreign_key "discounts", "accounts"
   add_foreign_key "incases", "accounts"
@@ -337,6 +424,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_132012) do
   add_foreign_key "list_items", "clients"
   add_foreign_key "list_items", "lists"
   add_foreign_key "lists", "accounts"
+  add_foreign_key "message_templates", "accounts"
   add_foreign_key "payments", "subscriptions"
   add_foreign_key "products", "accounts"
   add_foreign_key "sessions", "users"

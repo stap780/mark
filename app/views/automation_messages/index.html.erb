@@ -1,0 +1,64 @@
+<div class="mb-4">
+  <h1 class="text-xl font-semibold mb-4">Статистика сообщений</h1>
+
+  <!-- Статистика -->
+  <div class="grid grid-cols-3 gap-4 mb-4">
+    <div class="bg-white rounded-lg shadow p-4">
+      <div class="text-sm text-gray-600">Всего отправлено</div>
+      <div class="text-2xl font-bold"><%= @stats[:total] %></div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+      <div class="text-sm text-gray-600">Успешно</div>
+      <div class="text-2xl font-bold text-green-600"><%= @stats[:sent] %></div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+      <div class="text-sm text-gray-600">Ошибок</div>
+      <div class="text-2xl font-bold text-red-600"><%= @stats[:failed] %></div>
+    </div>
+  </div>
+
+  <!-- Фильтры -->
+  <%= search_form_for @search, url: account_automation_messages_path(current_account), method: :get, html: { class: "flex items-center space-x-2 mb-4" } do |f| %>
+    <%= f.select :automation_rule_id_eq, current_account.automation_rules.pluck(:title, :id), { prompt: "Все правила" }, class: "px-2 py-1 border rounded" %>
+    <%= f.select :channel_eq, AutomationMessage.channels.keys.map { |k| [k.humanize, k] }, { prompt: "Все каналы" }, class: "px-2 py-1 border rounded" %>
+    <%= f.select :status_eq, AutomationMessage.statuses.keys.map { |k| [k.humanize, k] }, { prompt: "Все статусы" }, class: "px-2 py-1 border rounded" %>
+    <%= f.submit "Фильтровать", class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
+    <%= link_to "Очистить", account_automation_messages_path(current_account), class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
+  <% end %>
+</div>
+
+<div class="bg-white rounded-lg shadow divide-y">
+  <div class="grid grid-cols-[150px_200px_200px_150px_150px_200px_1fr] gap-4 p-4 font-medium text-gray-700">
+    <div>Дата</div>
+    <div>Правило</div>
+    <div>Клиент</div>
+    <div>Канал</div>
+    <div>Статус</div>
+    <div>Тема</div>
+    <div></div>
+  </div>
+  <% @automation_messages.each do |message| %>
+    <div class="grid grid-cols-[150px_200px_200px_150px_150px_200px_1fr] gap-4 p-4 items-center hover:bg-gray-50">
+      <div class="text-sm"><%= message.created_at.strftime("%d.%m.%Y %H:%M") %></div>
+      <div class="text-sm"><%= message.automation_rule.title %></div>
+      <div class="text-sm"><%= message.client.email || message.client.name %></div>
+      <div class="text-sm"><%= message.channel.humanize %></div>
+      <div>
+        <% case message.status %>
+        <% when 'sent' %>
+          <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">Отправлено</span>
+        <% when 'failed' %>
+          <span class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded">Ошибка</span>
+        <% when 'pending' %>
+          <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">Ожидает</span>
+        <% when 'delivered' %>
+          <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">Доставлено</span>
+        <% end %>
+      </div>
+      <div class="text-sm truncate"><%= message.subject %></div>
+      <div></div>
+    </div>
+  <% end %>
+  <%= render "shared/paginate", f: @automation_messages %>
+</div>
+

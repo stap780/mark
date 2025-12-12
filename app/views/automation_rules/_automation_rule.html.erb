@@ -1,0 +1,19 @@
+<%= turbo_frame_tag dom_id(automation_rule, dom_id(current_account)), class: "grid grid-cols-[1fr_200px_150px_100px_150px] gap-4 p-4 items-center hover:bg-gray-50" do %>
+  <div><%= automation_rule.title %></div>
+  <div class="text-sm text-gray-600"><%= AutomationRule::EVENTS[automation_rule.event] || automation_rule.event %></div>
+  <div>
+    <% if automation_rule.active? %>
+      <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">Активно</span>
+    <% else %>
+      <span class="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded">Неактивно</span>
+    <% end %>
+  </div>
+  <div><%= automation_rule.automation_actions.count %></div>
+  <div class="flex space-x-2 items-center">
+    <%= link_to "Редактировать", edit_account_automation_rule_path(current_account, automation_rule),
+        class: "text-violet-600 hover:text-violet-800 text-sm", data: { turbo: false } %>
+    <%= link_to_delete account_automation_rule_path(current_account, automation_rule),
+  data: { turbo_method: :delete, turbo_confirm: "Delete automation rule?" } %>
+  </div>
+<% end %>
+

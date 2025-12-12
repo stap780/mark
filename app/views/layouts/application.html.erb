@@ -65,6 +65,23 @@
               <%= link_to_sidebar t('menu.webforms'), account_webforms_path(current_account), active_if: '/webforms' if show_link?('webforms') %>
               
               <div data-controller="accordion" 
+                  data-accordion-open-value="<%= request.path.include?('/automation_rules') || request.path.include?('/message_templates') || request.path.include?('/automation_messages') %>">
+                <button type="button" data-action="click->accordion#toggle"
+                        class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 <%= 'bg-violet-500 bg-opacity-75' if request.path.include?('/automation_rules') || request.path.include?('/message_templates') || request.path.include?('/automation_messages') %>">
+                  <span>Автоматизация</span>
+                  <svg data-accordion-target="arrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                
+                <div data-accordion-target="content" class="hidden ml-4 space-y-1">
+                  <%= link_to_sidebar "Правила автоматизации", account_automation_rules_path(current_account), active_if: '/automation_rules' %>
+                  <%= link_to_sidebar "Шаблоны сообщений", account_message_templates_path(current_account), active_if: '/message_templates' %>
+                  <%= link_to_sidebar "Статистика сообщений", account_automation_messages_path(current_account), active_if: '/automation_messages' %>
+                </div>
+              </div>
+              
+              <div data-controller="accordion" 
                   data-accordion-open-value="<%= request.path.include?('/insales') || request.path.include?('/users') || request.path.include?('/subscription') || request.path.include?('/payments') %>">
                 <button type="button" data-action="click->accordion#toggle"
                         class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 <%= 'bg-violet-500 bg-opacity-75' if request.path.include?('/insales') || request.path.include?('/users') || request.path.include?('/subscription') || request.path.include?('/payments') %>">
@@ -75,8 +92,8 @@
                 </button>
                 
                 <div data-accordion-target="content" class="hidden ml-4 space-y-1">
-                  <%= link_to_sidebar t(:insales), account_insales_path(current_account), active_if: '/insales' %>
-                  <%= link_to_sidebar t(:users), account_users_path(current_account), active_if: '/users' %>
+                  <%= link_to_sidebar t('menu.insales'), account_insales_path(current_account), active_if: '/insales' %>
+                  <%= link_to_sidebar t('menu.users'), account_users_path(current_account), active_if: '/users' %>
                   <%= link_to_sidebar t('subscriptions.subscriptions'), account_subscriptions_path(current_account), active_if: '/subscriptions' unless current_account.partner? %>
                   <%= link_to_sidebar t('payments.payments'), account_payments_path(current_account), active_if: '/payments' unless current_account.partner? %>
                 </div>
