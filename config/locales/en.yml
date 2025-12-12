@@ -102,8 +102,36 @@ en:
       swatch_group_product: "Swatch Group Product"
       account_user: "Account User"
     attributes:
+      account:
+        name: "Name"
+        active: "Active"
+        admin: "Admin"
+        partner: "Partner"
       account_user:
         role: "Role"
+      product:
+        title: "Title"
+      client:
+        name: "Name"
+        surname: "Surname"
+        email: "Email"
+        phone: "Phone"
+        ya_client: "Ya.Client"
+      message_template:
+        title: "Title"
+        channel: "Channel"
+        subject: "Subject"
+        content: "Content"
+        context: "Context"
+      webform:
+        title: "Title"
+        kind: "Kind"
+        status: "Status"
+      webform_field:
+        name: "Name"
+        label: "Label"
+        field_type: "Field Type"
+        required: "Required"
       swatch_group:
         name: "Name"
         option_name: "Option Name"
@@ -125,12 +153,107 @@ en:
         image_link: "Image Link"
         image: "Image"
         product_id: "Product"
+      automation_rule:
+        title: "Title"
+        event: "Event"
+        condition_type: "Condition Type"
+        condition: "Condition"
+        active: "Active"
+        position: "Position"
+        delay_seconds: "Delay (seconds)"
+        logic_operator: "Logic Operator"
+      automation_action:
+        kind: "Kind"
+        settings: "Settings"
+        position: "Position"
+      automation_condition:
+        field: "Field"
+        operator: "Operator"
+        value: "Value"
+        position: "Position"
+      incase:
+        status: "Status"
+        number: "Number"
+      variant:
+        barcode: "Barcode"
+        sku: "SKU"
+        price: "Price"
+        image_link: "Image Link"
+        quantity: "Quantity"
+      list:
+        name: "Name"
+        icon_style: "Icon Style"
+        icon_color: "Icon Color"
+      discount:
+        title: "Title"
+        rule: "Rule"
+        move: "Move"
+        shift: "Shift"
+        points: "Points"
+        notice: "Notice"
+        position: "Position"
+      user:
+        email_address: "Email"
+        password: "Password"
+        password_confirmation: "Password Confirmation"
+      insale:
+        api_key: "API Key"
+        api_password: "API Password"
+        api_link: "API Link"
+        product_xml: "Products XML"
     errors:
+      format: "%{attribute} %{message}"
+      messages:
+        accepted: must be accepted
+        blank: can't be blank
+        confirmation: doesn't match %{attribute}
+        empty: can't be empty
+        equal_to: must be equal to %{count}
+        even: must be even
+        exclusion: is reserved
+        greater_than: must be greater than %{count}
+        greater_than_or_equal_to: must be greater than or equal to %{count}
+        inclusion: is not included in the list
+        invalid: is invalid
+        less_than: must be less than %{count}
+        less_than_or_equal_to: must be less than or equal to %{count}
+        model_invalid: 'Validation failed: %{errors}'
+        not_a_number: is not a number
+        not_an_integer: must be an integer
+        odd: must be odd
+        other_than: must be other than %{count}
+        present: must be blank
+        required: must exist
+        taken: has already been taken
+        too_long:
+          one: is too long (maximum is %{count} character)
+          other: is too long (maximum is %{count} characters)
+        too_short:
+          one: is too short (minimum is %{count} character)
+          other: is too short (minimum is %{count} characters)
+        wrong_length:
+          one: is the wrong length (should be %{count} character)
+          other: is the wrong length (should be %{count} characters)
+        record_invalid: 'Validation failed: %{errors}'
+        restrict_dependent_destroy:
+          has_one: Cannot delete record because a dependent %{record} exists
+          has_many: Cannot delete record because dependent %{record} exist
+      template:
+        body: 'There were problems with the following fields:'
+        header:
+          one: "%{count} error prohibited this %{model} from being saved"
+          other: "%{count} errors prohibited this %{model} from being saved"
       models:
         account_user:
           attributes:
             role:
               only_one_admin_per_account: "can only have one admin per account"
+        message_template:
+          attributes:
+            title:
+              blank: "can't be blank"
+            content:
+              blank: "can't be blank"
         swatch_group:
           attributes:
             name:
@@ -348,6 +471,9 @@ en:
       success: "Products XML link saved."
 
   webforms:
+    index:
+      regenerate_json: "Regenerate JSON"
+      webform_file: "Webform File"
     create:
       success: "Webform created successfully."
     update:

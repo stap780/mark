@@ -1,11 +1,9 @@
 <%= form_with model: [current_account, message_template], 
     url: message_template.new_record? ? account_message_templates_path(current_account) : account_message_template_path(current_account, message_template),
     class: "space-y-4", 
-    data: { 
-      turbo_stream: true,
-      controller: message_template.persisted? ? "auto-submit" : nil,
-      "auto-submit-delay-value": message_template.persisted? ? 500 : nil
-    } do |f| %>
+    data: (
+      message_template.new_record? ? { turbo: false } : { turbo_stream: true,
+      controller: "auto-submit", "auto-submit-delay-value": 500 } ) do |f| %>
   <%= render "shared/errors", object: message_template %>
 
   <div>
@@ -54,7 +52,7 @@
 
   <% if message_template.new_record? %>
     <div class="flex justify-end space-x-2">
-      <%= f.submit message_template.new_record? ? "Создать" : "Обновить", class: "px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+      <%= f.submit "Шаг 2 ->", class: "px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
     </div>
   <% end %>
 <% end %>

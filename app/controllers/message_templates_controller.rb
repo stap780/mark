@@ -20,15 +20,17 @@ class MessageTemplatesController < ApplicationController
         @preview_context = build_preview_context
         flash.now[:success] = t('.success')
         format.html { redirect_to account_message_template_path(current_account, @message_template) }
-        format.turbo_stream do
-          render turbo_stream: turbo_close_offcanvas_flash + [ 
-            turbo_stream.append(
-              dom_id(current_account, :message_templates),
-              partial: "message_templates/message_template",
-              locals: { message_template: @message_template, current_account: current_account }
-            )
-          ]
-        end
+        # format.turbo_stream do
+        #   render turbo_stream: turbo_close_offcanvas_flash + [ 
+        #     turbo_stream.append(
+        #       dom_id(current_account, :message_templates),
+        #       partial: "message_templates/message_template",
+        #       locals: { message_template: @message_template, current_account: current_account }
+        #     )
+        #   ]
+        # end
+        format.turbo_stream { redirect_to edit_account_message_template_path(current_account, @message_template, format: :html) }
+
       else
         format.html { render :new, status: :unprocessable_entity }
       end

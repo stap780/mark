@@ -1,6 +1,6 @@
 <div class="flex items-center justify-between mb-4">
   <div class="flex space-x-2">
-    <h1 class="text-xl font-semibold"><%= t(:webforms) %></h1>
+    <h1 class="text-xl font-semibold"><%= t('menu.webforms') %></h1>
     <%= link_to info_account_webforms_path,
           data: { turbo_frame: :offcanvas },
           class: "inline-flex items-center justify-center px-2 py-1 text-violet-600 hover:text-violet-800" do %>
@@ -13,12 +13,12 @@
   </div>
   <div class="flex space-x-2">
     <% if current_account.webforms.exists? %>
-      <%= link_to t(:regenerate_json), regenerate_json_account_webforms_path(current_account), 
+      <%= link_to t('.regenerate_json'), regenerate_json_account_webforms_path(current_account), 
         data: { turbo_method: :post }, 
         class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"%>
     <% end %>
     <% if current_account.webforms.exists? && current_account&.insales&.first&.webform_file&.attached? %>
-      <%= link_to t(:webform_file), current_account.insales.first.webform_s3_url, target: "_blank", 
+      <%= link_to t('.webform_file'), current_account.insales.first.webform_s3_url, target: "_blank", 
         class: "inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700" %>
     <% end %>
     <%= link_to_new new_account_webform_path(current_account), data: { turbo_frame: :offcanvas } %>
