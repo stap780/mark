@@ -24,7 +24,7 @@
       <%= link_to_show account_subscription_path(current_account, subscription), class: "text-violet-600 hover:underline text-sm", data: {turbo_frame: :offcanvas} %>
       <% current_subscription_id = (current_account.current_subscription || current_account.subscriptions.order(created_at: :desc).first)&.id %>
       <% if subscription.id == current_subscription_id && subscription.status != 'active' && subscription.status != 'canceled' %>
-        <%= button_to t('subscriptions.cancel'), cancel_account_subscription_path(current_account, subscription), method: :patch,
+        <%= button_to "Отмена подписки", cancel_account_subscription_path(current_account, subscription), method: :patch,
                 form: { data: { turbo_confirm: t('are_you_sure') } },
                 class: "inline-flex items-center px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm" %>
       <% end %>
