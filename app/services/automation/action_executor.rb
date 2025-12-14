@@ -40,6 +40,9 @@ module Automation
       )
 
       begin
+        # Устанавливаем контекст аккаунта для AutomationMailer
+        Account.current = @account
+        
         # Отправляем email
         AutomationMailer.notify_client(template, client, @context).deliver_later
 

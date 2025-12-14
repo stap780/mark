@@ -1,0 +1,12 @@
+<% if email_setup %>
+  <div class="grid grid-cols-[1fr_1fr_1fr_1fr_150px] gap-4 p-4 font-medium text-gray-700">
+    <div>SMTP Server</div>
+    <div>Port</div>
+    <div>Username</div>
+    <div>Domain</div>
+    <div></div>
+  </div>
+  <%= render "email_setup", email_setup: email_setup, current_account: current_account %>
+<% else %>
+  <div class="text-sm text-gray-500 border rounded p-3">Настройки Email не настроены. Добавьте настройки.</div>
+<% end %>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_11_152804) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_14_113408) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -155,6 +155,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_11_152804) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_discounts_on_account_id"
+  end
+
+  create_table "email_setups", force: :cascade do |t|
+    t.string "address"
+    t.integer "port"
+    t.string "domain"
+    t.string "authentication"
+    t.string "user_name"
+    t.string "user_password"
+    t.boolean "tls", default: true
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_email_setups_on_account_id"
   end
 
   create_table "incases", force: :cascade do |t|
@@ -413,6 +427,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_11_152804) do
   add_foreign_key "automation_rules", "accounts"
   add_foreign_key "clients", "accounts"
   add_foreign_key "discounts", "accounts"
+  add_foreign_key "email_setups", "accounts"
   add_foreign_key "incases", "accounts"
   add_foreign_key "incases", "clients"
   add_foreign_key "incases", "webforms"

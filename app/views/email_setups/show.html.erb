@@ -1,0 +1,34 @@
+<%= render 'shared/offcanvas_inner', title: t('.show', default: 'Email Settings'), width: '30rem' do %>
+  <div class="space-y-4">
+    <div>
+      <div class="text-sm text-gray-500"><%= t('activerecord.attributes.email_setup.address', default: 'SMTP Server') %></div>
+      <div class="font-medium"><%= @email_setup.address %></div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500"><%= t('activerecord.attributes.email_setup.port', default: 'Port') %></div>
+      <div class="font-medium"><%= @email_setup.port %></div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500"><%= t('activerecord.attributes.email_setup.domain', default: 'Domain') %></div>
+      <div class="font-medium"><%= @email_setup.domain %></div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500"><%= t('activerecord.attributes.email_setup.authentication', default: 'Authentication') %></div>
+      <div class="font-medium"><%= @email_setup.authentication %></div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500"><%= t('activerecord.attributes.email_setup.user_name', default: 'Username') %></div>
+      <div class="font-medium"><%= @email_setup.user_name %></div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500"><%= t('activerecord.attributes.email_setup.tls', default: 'TLS') %></div>
+      <div class="font-medium"><%= @email_setup.tls? ? t('yes', default: 'Yes') : t('no', default: 'No') %></div>
+    </div>
+    
+    <div class="space-x-2 pt-2">
+      <%= link_to t('back', default: 'Back'), account_email_setups_path(account_id: current_account), class: "inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200" %>
+      <%= link_to t('email_setups.test_email_label'), test_email_form_account_email_setup_path(current_account, @email_setup), data: { turbo_frame: 'offcanvas' }, class: "inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm" %>
+    </div>
+  </div>
+<% end %>
+

@@ -32,6 +32,7 @@ en:
   save: "Save"
   back: "Back"
   cancel: "Cancel"
+  send: "Send"
   update: "Update"
   
   # Navigation
@@ -58,6 +59,7 @@ en:
     swatches: "Swatches"
     webforms: "Webforms"
     insales: "InSales"
+    email_settings: "Email Settings"
     users: "Users"
   
   # Actions
@@ -202,6 +204,14 @@ en:
         api_password: "API Password"
         api_link: "API Link"
         product_xml: "Products XML"
+      email_setup:
+        address: "SMTP Server"
+        port: "Port"
+        domain: "Domain"
+        authentication: "Authentication"
+        user_name: "Username"
+        user_password: "Password"
+        tls: "Enable TLS"
     errors:
       format: "%{attribute} %{message}"
       messages:
@@ -492,6 +502,31 @@ en:
     save_products_xml_link:
       success: "Products XML link saved."
 
+  email_setups:
+    new:
+      new: "New Email Settings"
+    edit:
+      edit: "Edit Email Settings"
+    show:
+      show: "Email Settings"
+    create:
+      success: "Email settings created successfully."
+    update:
+      success: "Email settings updated successfully."
+    destroy:
+      success: "Email settings deleted successfully."
+    test_email_form:
+      title: "Send Test Email"
+      email_label: "Email Address"
+      description: "Enter an email address to send a test email and verify SMTP settings."
+      send: "Send Test Email"
+    test_email:
+      success: "Test email sent successfully."
+      error: "Failed to send test email."
+    send_test: "Send Test Email"
+    test_email_label: "Test Email"
+    already_exists: "Email settings already exist"
+
   webforms:
     index:
       regenerate_json: "Regenerate JSON"
@@ -518,6 +553,9 @@ en:
       success: "Action added successfully."
     destroy:
       success: "Action deleted successfully."
+  automation_conditions:
+    destroy:
+      success: "Condition deleted"
 
   users:
     index:

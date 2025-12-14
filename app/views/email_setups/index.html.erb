@@ -1,0 +1,13 @@
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-xl font-semibold"><%= t('menu.email_settings', default: 'Email Settings') %></h1>
+  <%= turbo_frame_tag :email_setups_actions do %>
+    <%= render "actions" %>
+  <% end %>
+</div>
+
+<%= turbo_stream_from [current_account, "email_setups"] %>
+
+<%= turbo_frame_tag "email_setups", class: "bg-white rounded-lg shadow divide-y" do %>
+  <%= render "index_content", email_setup: @email_setup, current_account: current_account %>
+<% end %>
+

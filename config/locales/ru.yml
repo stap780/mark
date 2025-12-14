@@ -3,6 +3,7 @@ ru:
   save: "Сохранить"
   back: "← Назад"
   cancel: "Отмена"
+  send: "Отправить"
   update: "Обновить"
 
   date:
@@ -58,6 +59,7 @@ ru:
     swatches: "Группы"
     webforms: "Веб-формы"
     insales: "InSales"
+    email_settings: "Настройки Email"
     users: "Пользователи"
 
   # Actions
@@ -211,6 +213,14 @@ ru:
         api_password: "API пароль"
         api_link: "API ссылка"
         product_xml: "XML товаров"
+      email_setup:
+        address: "SMTP сервер"
+        port: "Порт"
+        domain: "Домен"
+        authentication: "Аутентификация"
+        user_name: "Имя пользователя"
+        user_password: "Пароль"
+        tls: "Включить TLS"
     errors:
       format: "%{attribute} %{message}"
       models:
@@ -675,6 +685,31 @@ ru:
     save_products_xml_link:
       success: "Ссылка на XML товаров сохранена."
 
+  email_setups:
+    new:
+      new: "Новые настройки Email"
+    edit:
+      edit: "Редактировать настройки Email"
+    show:
+      show: "Настройки Email"
+    create:
+      success: "Настройки Email успешно созданы."
+    update:
+      success: "Настройки Email успешно обновлены."
+    destroy:
+      success: "Настройки Email успешно удалены."
+    test_email_form:
+      title: "Отправить тестовое письмо"
+      email_label: "Email адрес"
+      description: "Введите email адрес для отправки тестового письма и проверки SMTP настроек."
+      send: "Отправить тестовое письмо"
+    test_email:
+      success: "Тестовое письмо отправлено успешно."
+      error: "Ошибка при отправке тестового письма."
+    send_test: "Отправить тестовое письмо"
+    test_email_label: "Тестовое письмо"
+    already_exists: "Настройки Email уже существуют"
+
   webforms:
     index:
       regenerate_json: "Обновить JSON"
@@ -701,6 +736,9 @@ ru:
       success: "Действие успешно добавлено."
     destroy:
       success: "Действие успешно удалено."
+  automation_conditions:
+    destroy:
+      success: "Условие удалено"
 
   users:
     index:

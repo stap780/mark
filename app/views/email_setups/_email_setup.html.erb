@@ -1,0 +1,13 @@
+<%= turbo_frame_tag dom_id(email_setup) do %>
+  <div class="grid grid-cols-[1fr_1fr_1fr_1fr_150px] gap-4 p-4 items-center border-b">
+    <div class="text-sm text-gray-900"><%= email_setup.address %></div>
+    <div class="text-sm text-gray-900"><%= email_setup.port %></div>
+    <div class="text-sm text-gray-900"><%= email_setup.user_name %></div>
+    <div class="text-sm text-gray-900"><%= email_setup.domain %></div>
+    <div class="flex justify-end items-center space-x-2">
+      <%= link_to_edit edit_account_email_setup_path(account_id: current_account, id: email_setup), data: { turbo_frame: :offcanvas } %>
+      <%= link_to_show account_email_setup_path(current_account, email_setup), data: { turbo_frame: :offcanvas } %>
+    </div>
+  </div>
+<% end %>
+

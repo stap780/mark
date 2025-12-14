@@ -46,7 +46,7 @@ module ApplicationHelper
   end
 
   def link_to_sidebar(text, path, active_if: nil, **options)
-    base_classes = "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75"
+    base_classes = "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 truncate"
     active_class = "bg-violet-500 bg-opacity-75"
     
     active = if active_if.nil?

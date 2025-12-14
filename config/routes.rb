@@ -68,6 +68,12 @@ Rails.application.routes.draw do
         patch :set_product_xml
       end
     end
+    resources :email_setups do
+      member do
+        get :test_email_form
+        post :test_email
+      end
+    end
     resources :swatch_groups do
       member do
         get :preview
