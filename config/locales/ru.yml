@@ -706,6 +706,8 @@ ru:
     test_email:
       success: "Тестовое письмо отправлено успешно."
       error: "Ошибка при отправке тестового письма."
+    test_connection: "Проверить соединение"
+    test_connection_label: "Проверка доступности SMTP сервера"
     send_test: "Отправить тестовое письмо"
     test_email_label: "Тестовое письмо"
     already_exists: "Настройки Email уже существуют"

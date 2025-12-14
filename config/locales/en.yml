@@ -523,6 +523,8 @@ en:
     test_email:
       success: "Test email sent successfully."
       error: "Failed to send test email."
+    test_connection: "Test Connection"
+    test_connection_label: "Test SMTP Server Connection"
     send_test: "Send Test Email"
     test_email_label: "Test Email"
     already_exists: "Email settings already exist"

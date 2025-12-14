@@ -72,6 +72,7 @@ Rails.application.routes.draw do
       member do
         get :test_email_form
         post :test_email
+        post :test_connection
       end
     end
     resources :swatch_groups do

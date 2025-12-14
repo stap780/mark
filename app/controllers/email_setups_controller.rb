@@ -1,5 +1,5 @@
 class EmailSetupsController < ApplicationController
-  before_action :set_email_setup, only: %i[ show edit update destroy test_email test_email_form ]
+  before_action :set_email_setup, only: %i[ show edit update destroy test_email test_email_form test_connection ]
   include ActionView::RecordIdentifier
   
   def index
@@ -105,6 +105,21 @@ class EmailSetupsController < ApplicationController
 
   def test_email_form
     # Открывает offcanvas с формой для тестового письма
+  end
+
+  def test_connection
+    result, message = @email_setup.test_smtp_connection
+    
+    respond_to do |format|
+      if result
+        flash.now[:success] = message
+      else
+        flash.now[:error] = message
+      end
+      format.turbo_stream { render turbo_stream: [ render_turbo_flash ] }
+      format.html { redirect_to account_email_setups_path(current_account) }
+      format.json { render json: { success: result, message: message } }
+    end
   end
 
   def test_email
