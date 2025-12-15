@@ -7,18 +7,18 @@
       data: { action: "change->nested-form#updateActionKind" } %>
 
   <div data-action-kind="send_email" style="<%= 'display:none' unless f.object.kind == 'send_email' %>">
-    <%= f.label :template_id, "Шаблон", class: "block text-sm font-medium text-gray-700 mt-2" %>
-    <%= f.select :template_id,
+    <%= f.label :value, "Шаблон", class: "block text-sm font-medium text-gray-700 mt-2" %>
+    <%= f.select :value,
         (local_assigns[:current_account] || current_account).message_templates.email.pluck(:title, :id),
-        { selected: f.object.settings&.dig('template_id'), include_blank: "Выберите шаблон" },
+        { selected: f.object.value, include_blank: "Выберите шаблон" },
         class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2" %>
   </div>
 
   <div data-action-kind="change_status" style="<%= 'display:none' unless f.object.kind == 'change_status' %>">
-    <%= f.label :new_status, "Новый статус", class: "block text-sm font-medium text-gray-700 mt-2" %>
-    <%= f.select :new_status,
+    <%= f.label :value, "Новый статус", class: "block text-sm font-medium text-gray-700 mt-2" %>
+    <%= f.select :value,
         [["Новая", "new"], ["В работе", "in_progress"], ["Завершена", "done"], ["Отменена", "canceled"], ["Закрыта", "closed"]],
-        { selected: f.object.settings&.dig('status') },
+        { selected: f.object.value },
         class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2" %>
   </div>
 

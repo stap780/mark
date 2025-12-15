@@ -4,6 +4,9 @@
   <div><%= t("incases.status.#{incase.status}") %></div>
   <div><%= incase.webform&.title %> (<%= incase.webform&.kind %>)</div>
   <div><%= incase.client.name %> <%= incase.client.email %></div>
+  <div>
+    <%= number_to_currency(incase.items.map(&:sum).sum, unit: '₽', separator: ",", delimiter: " ", format: "%n %u") if incase.items.any? %>
+  </div>
   <div class="flex justify-end space-x-2">
     <%= link_to_delete account_incase_path(current_account, incase), data: { turbo_confirm: t('incases.destroy.confirm', default: 'Вы уверены?') } %>
   </div>

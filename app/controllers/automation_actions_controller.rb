@@ -25,7 +25,8 @@ class AutomationActionsController < ApplicationController
               dom_id(current_account, dom_id(@automation_rule, :automation_actions)),
               partial: "automation_actions/automation_action",
               locals: { automation_rule: @automation_rule, automation_action: @automation_action, current_account: current_account }
-            )
+            ),
+            turbo_stream.update(dom_id(current_account, dom_id(@automation_rule, :automation_actions_empty)), html: "")
           ]
         end
         format.html { redirect_to edit_account_automation_rule_path(current_account, @automation_rule) }
@@ -77,22 +78,7 @@ class AutomationActionsController < ApplicationController
   end
 
   def automation_action_params
-    permitted = params.require(:automation_action).permit(:kind, :position, :template_id, :status)
-
-    # Преобразуем template_id и status в settings JSONB
-    settings = {}
-    if permitted[:template_id].present? && permitted[:kind] == 'send_email'
-      settings['template_id'] = permitted[:template_id].to_i
-    end
-    if permitted[:status].present? && permitted[:kind] == 'change_status'
-      settings['status'] = permitted[:status]
-    end
-
-    permitted[:settings] = settings
-    permitted.delete(:template_id)
-    permitted.delete(:status)
-
-    permitted
+    params.require(:automation_action).permit(:kind, :position, :value)
   end
 end
 

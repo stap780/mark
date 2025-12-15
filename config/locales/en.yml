@@ -363,10 +363,18 @@ en:
         success: "Automation rule updated"
       destroy:
         success: "Automation rule deleted"
+      edit:
+        heading: "Edit automation rule"
     automation_conditions:
       destroy:
         success: "Condition deleted"
   
+  automation_rules:
+    update:
+      success: "Automation rule updated"
+    destroy:
+      success: "Automation rule deleted"
+
   swatch_groups:
     index:
       heading: "Swatch Groups"
@@ -412,6 +420,15 @@ en:
         regenerated: "JSON regeneration started."
 
   clients:
+    index:
+      heading: "Clients"
+      search_placeholder: "Search by name, surname, email, phone..."
+      search: "Search"
+      clear: "Clear"
+      all_lists: "All lists"
+      name: "Name"
+      email: "Email"
+      phone: "Phone"
     create:
       success: "Client created successfully."
     update:
@@ -420,6 +437,12 @@ en:
       success: "Client deleted successfully."
 
   lists:
+    index:
+      title: "Lists"
+    new:
+      title: "New list"
+    edit:
+      title: "Edit list"
     create:
       success: "List created successfully."
     update:
@@ -467,6 +490,12 @@ en:
       success: "Subscription canceled successfully."
 
   discounts:
+    index:
+      title: "Discounts"
+    new:
+      title: "New discount"
+    edit:
+      title: "Edit discount"
     create:
       success: "Discount created successfully."
     update:

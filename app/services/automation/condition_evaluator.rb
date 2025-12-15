@@ -61,6 +61,10 @@ module Automation
         field_value.to_f > value.to_f
       when 'less_than'
         field_value.to_f < value.to_f
+      when 'is_true'
+        field_value == true || field_value.to_s.downcase == 'true'
+      when 'is_false'
+        field_value == false || field_value.to_s.downcase == 'false'
       else
         false
       end
@@ -70,7 +74,16 @@ module Automation
       parts = field_path.split('.')
       result = @context
 
-      parts.each do |part|
+      parts.each_with_index do |part, index|
+        # Если это последний элемент и он содержит знак вопроса (метод-предикат)
+        if index == parts.length - 1 && part.end_with?('?')
+          method_name = part[0..-2] # Убираем знак вопроса
+          # Проверяем, что предыдущий объект - это модель ActiveRecord
+          if result.is_a?(ActiveRecord::Base) && result.respond_to?(method_name)
+            return result.public_send(method_name)
+          end
+        end
+        
         return nil unless result.respond_to?(:[])
         result = result[part]
         return nil if result.nil?

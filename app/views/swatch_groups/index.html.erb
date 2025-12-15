@@ -1,11 +1,18 @@
 <div class="flex items-center justify-between mb-4">
-  <h1 class="text-xl font-semibold"><%= t("swatch_groups.index.heading") %></h1>
+  <h1 class="text-xl font-semibold"><%= t("swatch_groups.index.heading") %> <small class="text-sm text-gray-500"><%= @swatch_groups.count %></small></h1>
+
   <div class="flex space-x-2">
     <%= search_form_for @search, url: account_swatch_groups_path(current_account), method: :get, html: { class: "flex items-center space-x-2" } do |f| %>      
       <%= f.label :name_cont, t(:search_by_name), class: "sr-only" %>
-      <%= f.search_field :name_cont, value: params.dig(:q, :name_cont), placeholder: "#{t(:search_by_name)}...", class: "px-2 py-1 border rounded", style: "width: 350px;" %>
-      <%= f.submit t(:search), class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
-      <%= link_to_clear account_swatch_groups_path(current_account) %>
+      <%= f.search_field :name_cont,
+          value: params.dig(:q, :name_cont),
+          placeholder: "#{t(:search_by_name)}...",
+          class: "h-8 px-2 border rounded text-sm leading-none",
+          style: "width: 350px;" %>
+      <%= f.submit t(:search),
+          class: "h-8 px-3 bg-gray-200 rounded hover:bg-gray-300 text-sm leading-none" %>
+      <%= link_to_clear account_swatch_groups_path(current_account),
+          class: "h-8 px-3 bg-gray-100 rounded hover:bg-gray-200 flex items-center text-sm leading-none" %>
     <% end %>
   </div>
   <div class="flex space-x-2">

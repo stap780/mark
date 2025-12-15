@@ -528,13 +528,17 @@ ru:
         success: "Правило обновлено"
       destroy:
         success: "Правило удалено"
+      edit:
+        heading: "Редактировать правило"
     automation_conditions:
       destroy:
         success: "Условие удалено"
 
   automation_rules:
-    edit:
-      heading: "Редактировать правило"
+    update:
+      success: "Правило обновлено"
+    destroy:
+      success: "Правило удалено"
 
   products:
     index:
@@ -567,6 +571,7 @@ ru:
       search_placeholder: "Поиск по имени, фамилии, email, телефону..."
       search: "Поиск"
       clear: "Очистить"
+      all_lists: "Все списки"
       name: "Имя"
       email: "Email"
       phone: "Телефон"
@@ -635,6 +640,12 @@ ru:
         regenerated: "Регенерация JSON запущена."
 
   lists:
+    index:
+      title: "Списки"
+    new:
+      title: "Новый список"
+    edit:
+      title: "Редактировать список"
     create:
       success: "Список успешно создан."
     update:
@@ -650,6 +661,12 @@ ru:
     success: "Успешно сохранено."
 
   discounts:
+    index:
+      title: "Скидки"
+    new:
+      title: "Новая скидка"
+    edit:
+      title: "Редактировать скидку"
     create:
       success: "Скидка успешно создана."
     update:

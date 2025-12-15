@@ -1,54 +1,51 @@
-<%= turbo_frame_tag turbo_id_for(automation_action) do %>
+<%= turbo_frame_tag "automation_action_#{turbo_id_for(automation_action)}" do %>
   <%= fields_for "automation_rule[automation_actions_attributes][#{turbo_id_for(automation_action)}]", automation_action do |ff| %>
-    <div class="border rounded p-3 mb-2 bg-gray-50" id="automation_action_<%= turbo_id_for(automation_action) %>">
-      <div class="grid grid-cols-[2fr_2fr_50px] gap-4">
-        <!-- Kind select -->
-        <div>
-          <%= ff.label :kind, "Тип действия", class: "block text-xs font-medium text-gray-700 mb-1" %>
-          <% current_kind = automation_action.kind.presence || 'send_email' %>
-          <%= ff.select :kind,
-              [["Отправить email", "send_email"], ["Изменить статус", "change_status"]],
-              { selected: current_kind },
-              { class: "w-full px-2 py-1 border rounded-md text-sm",
-                id: "action_kind_#{dom_id(automation_action)}",
-                data: { action_id: dom_id(automation_action) },
-                onchange: "(function(select) { const actionId = select.dataset.actionId; const container = document.getElementById(actionId); if (!container) return; const emailDiv = container.querySelector('[data-action-type=\"send_email\"]'); const statusDiv = container.querySelector('[data-action-type=\"change_status\"]'); if (select.value === 'send_email') { if (emailDiv) emailDiv.style.display = 'block'; if (statusDiv) statusDiv.style.display = 'none'; } else if (select.value === 'change_status') { if (emailDiv) emailDiv.style.display = 'none'; if (statusDiv) statusDiv.style.display = 'block'; } })(this);" } %>
-        </div>
+    <div class="grid grid-cols-[2fr_2fr_50px] gap-4 p-3 border rounded mb-2 bg-gray-50" 
+         id="automation_action_<%= automation_action.persisted? ? automation_action.id : turbo_id_for(automation_action) %>">
+      
+      <!-- Kind select -->
+      <div>
+        <% current_kind = automation_action.kind.presence || 'send_email' %>
+        <%= ff.select :kind,
+            [["Отправить email", "send_email"], ["Изменить статус", "change_status"]],
+            { selected: current_kind, include_blank: false },
+            { 
+              class: "w-full px-2 py-1 border rounded-md text-sm"
+            } %>
+      </div>
 
-        <!-- Conditional fields based on kind -->
-        <div>
-          <!-- Email template field -->
-          <div data-action-type="send_email" style="<%= 'display:none' unless current_kind == 'send_email' %>">
-            <%= ff.label :template_id, "Шаблон email", class: "block text-xs font-medium text-gray-700 mb-1" %>
-            <%= ff.select :template_id,
-                options_for_select(
-                  current_account.message_templates.email.pluck(:title, :id),
-                  automation_action.template_id
-                ),
-                { include_blank: "Выберите шаблон" },
-                { class: "w-full px-2 py-1 border rounded-md text-sm" } %>
-          </div>
-          
-          <!-- Status field -->
-          <div data-action-type="change_status" style="<%= 'display:none' unless current_kind == 'change_status' %>">
-            <%= ff.label :new_status, "Новый статус", class: "block text-xs font-medium text-gray-700 mb-1" %>
-            <%= ff.select :new_status,
-                options_for_select(
-                  [["Новая", "new"], ["В работе", "in_progress"], ["Завершена", "done"], ["Отменена", "canceled"], ["Закрыта", "closed"]],
-                  automation_action.new_status
-                ),
-                { include_blank: "Выберите статус" },
-                { class: "w-full px-2 py-1 border rounded-md text-sm" } %>
-          </div>
-          
-          <%= ff.hidden_field :position, value: automation_action.position || automation_rule.automation_actions.count %>
-        </div>
+      <!-- Conditional fields based on kind -->
+      <div>
+        <% if current_kind == 'send_email' %>
+          <%= ff.select :value,
+              options_for_select(
+                current_account.message_templates.email.pluck(:title, :id),
+                automation_action.value
+              ),
+              { include_blank: "Выберите шаблон" },
+              { 
+                class: "w-full px-2 py-1 border rounded-md text-sm"
+              } %>
+        <% elsif current_kind == 'change_status' %>
+          <%= ff.select :value,
+              options_for_select(
+                Incase.statuses.map { |key, value| [t("incases.status.#{key}"), value] },
+                automation_action.value
+              ),
+              { include_blank: "Выберите статус" },
+              { 
+                class: "w-full px-2 py-1 border rounded-md text-sm"
+              } %>
+        <% end %>
+        
+        <%= ff.hidden_field :position, value: automation_action.position || automation_rule.automation_actions.count %>
+      </div>
 
-        <!-- Delete button -->
-        <div class="flex items-end">
-          <% path = automation_action.new_record? ? account_automation_action_path(current_account, id: turbo_id_for(automation_action)) : account_automation_rule_automation_condition_path(current_account, automation_rule, turbo_id_for(automation_action)) %>
-          <%= link_to_delete path, data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' } %>
-        </div>
+      <!-- Delete button -->
+      <div class="flex items-center">
+        <% path = automation_action.new_record? ? account_automation_action_path(current_account, id: turbo_id_for(automation_action)) : account_automation_rule_automation_action_path(current_account, automation_rule, automation_action) %>
+        <%= link_to_delete path, data: { turbo_method: :delete, turbo_confirm: 'Удалить действие?' } %>
+        <%= ff.hidden_field :id if automation_action.persisted? %>
       </div>
     </div>
   <% end %>

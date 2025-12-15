@@ -1,9 +1,8 @@
-<% content_for :title, "Lists" %>
 <%= turbo_stream_from [current_account, :lists] %>
 
 <div class="w-full">
   <div class="flex items-center justify-between mb-4">
-    <h1 class="text-xl font-semibold">Lists</h1>
+    <h1 class="text-xl font-semibold"><%= t("menu.lists") %></h1>
     <%= link_to_new new_account_list_path(current_account), data: { turbo_frame: :offcanvas } %>
   </div>
 

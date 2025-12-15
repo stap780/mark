@@ -50,3 +50,64 @@ Plan.find_or_create_by(name: "Enterprise") do |plan|
 end
 
 puts "Seeded billing plans: Basic (1000₽), Pro (3000₽), Enterprise (10000₽)"
+
+# Создание правила автоматизации для брошенной корзины
+account1 = Account.find_by(name: "Default Account")
+if account1
+  # Создаем или находим шаблон сообщения для брошенной корзины
+  template = account1.message_templates.find_or_create_by!(
+    title: "Брошенная корзина",
+    channel: "email"
+  ) do |t|
+    t.subject = "Вы забыли товары в корзине"
+    t.content = <<~HTML
+      <h2>Здравствуйте, {{ client.name }}!</h2>
+      <p>Вы оставили товары в корзине, но не завершили заказ.</p>
+      <p>Вот что вы выбрали:</p>
+      <ul>
+        {% for item in incase.items %}
+        <li>{{ item.product.title }} - {{ item.quantity }} шт. - {{ item.price }}₽</li>
+        {% endfor %}
+      </ul>
+      <p>Не упустите возможность приобрести эти товары!</p>
+    HTML
+  end
+
+  # Создаем правило автоматизации
+  rule = account1.automation_rules.find_or_create_by!(
+    title: "Брошенная корзина (без заказа)",
+    event: "incase.created.abandoned_cart"
+  ) do |r|
+    r.condition_type = "simple"
+    r.active = true
+    r.position = 1
+    r.delay_seconds = 0
+  end
+
+  # Создаем условие: нет заказа с такими же позициями
+  condition = rule.automation_conditions.find_or_create_by!(
+    field: "incase.has_order_with_same_items?",
+    operator: "is_false"
+  ) do |c|
+    c.value = ""
+    c.position = 1
+  end
+
+  # Создаем действие: отправить email
+  action = rule.automation_actions.find_or_create_by!(
+    kind: "send_email"
+  ) do |a|
+    a.position = 1
+  end
+  # Устанавливаем template_id через виртуальный атрибут
+  action.template_id = template.id
+  action.save!
+
+  # Обновляем JSON условие (вызывается через before_save callback)
+  rule.save!
+
+  puts "Created automation rule: '#{rule.title}' (id=#{rule.id})"
+  puts "  - Event: #{rule.event}"
+  puts "  - Condition: #{condition.field} #{condition.operator}"
+  puts "  - Action: #{action.kind} (template_id=#{template.id})"
+end

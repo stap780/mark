@@ -1,13 +1,26 @@
 <div class="flex items-center justify-between mb-4">
-  <h1 class="text-xl font-semibold"><%= t('incases.index.title') %></h1>
+  <h1 class="text-xl font-semibold"><%= t("incases.index.title") %> <small class="text-sm text-gray-500"><%= @incases.count %></small></h1>
+
   <div class="flex space-x-2">
     <%= search_form_for @search, url: account_incases_path(current_account), method: :get, html: { class: "flex items-center space-x-2" } do |f| %>
-      <%= f.search_field :client_name_or_client_email_cont, value: params.dig(:q, :client_name_or_client_email_cont), placeholder: t('incases.index.search_placeholder'), class: "px-2 py-1 border rounded", style: "width: 350px;" %>
-      <%= f.select :webform_id_eq, @webforms.pluck(:title, :id), { prompt: t('incases.index.webform')}, class: "px-2 py-1 border rounded" %>
-      <%= f.select :status_eq, Incase.statuses.keys.map { |k| [t("incases.status.#{k}"), k] }, { prompt: t('incases.index.status')}, class: "px-2 py-1 border rounded" %>
+      <%= f.search_field :client_name_or_client_email_cont,
+          value: params.dig(:q, :client_name_or_client_email_cont),
+          placeholder: t('incases.index.search_placeholder'),
+          class: "h-8 px-2 border rounded text-sm leading-none",
+          style: "width: 350px;" %>
+      <%= f.select :webform_id_eq,
+          @webforms.pluck(:title, :id),
+          { prompt: t('incases.index.webform')},
+          { class: "h-8 px-2 border rounded text-sm leading-none" } %>
+      <%= f.select :status_eq,
+          Incase.statuses.keys.map { |k| [t("incases.status.#{k}"), k] },
+          { prompt: t('incases.index.status')},
+          { class: "h-8 px-2 border rounded text-sm leading-none" } %>
 
-      <%= f.submit t('incases.index.search', default: 'Search'), class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
-      <%= link_to_clear account_incases_path(current_account) %>
+      <%= f.submit t('incases.index.search', default: 'Search'),
+          class: "h-8 px-3 bg-gray-200 rounded hover:bg-gray-300 text-sm leading-none" %>
+      <%= link_to_clear account_incases_path(current_account),
+          class: "h-8 px-3 bg-gray-100 rounded hover:bg-gray-200 flex items-center text-sm leading-none" %>
     <% end %>
   </div>
 </div>
@@ -19,6 +32,7 @@
     <div><%= t('incases.index.status') %></div>
     <div><%= t('incases.index.webform') %></div>
     <div><%= t('incases.index.client') %></div>
+    <div><%= t('incases.index.totalsum') %></div>
     <div></div>
   </div>
   <%= turbo_frame_tag :incases do %>

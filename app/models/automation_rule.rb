@@ -14,14 +14,12 @@ class AutomationRule < ApplicationRecord
   scope :without_delay, -> { where(delay_seconds: 0) }
 
   EVENTS = {
-    'incase.created' => 'Заявка создана',
     'incase.created.order' => 'Заявка создана (заказ)',
     'incase.created.notify' => 'Заявка создана (уведомление)',
     'incase.created.preorder' => 'Заявка создана (предзаказ)',
     'incase.created.abandoned_cart' => 'Заявка создана (брошенная корзина)',
     'incase.created.custom' => 'Заявка создана (кастомная форма)',
     'incase.updated' => 'Заявка обновлена',
-    'incase.status_changed' => 'Статус заявки изменен',
     'variant.back_in_stock' => 'Товар появился в наличии'
   }.freeze
 

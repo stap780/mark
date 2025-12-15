@@ -7,45 +7,51 @@ class AutomationAction < ApplicationRecord
   }
 
   validates :kind, presence: true
+  validates :value, presence: true
+  validate :value_matches_kind
 
-  # Virtual attributes for form handling
-  attr_accessor :template_id, :new_status
+  # Маппинг для определения семантики value
+  VALUE_MAPPING = {
+    'send_email' => {
+      type: 'integer',
+      label: 'ID шаблона сообщения',
+      validation: ->(value) { value.present? && value.to_i > 0 }
+    },
+    'change_status' => {
+      type: 'string',
+      label: 'Статус заявки',
+      validation: ->(value) { value.present? && Incase.statuses.key?(value) }
+    }
+  }.freeze
 
-  before_save :build_settings_from_virtual_attributes
-
+  # Методы для удобного доступа к значению
   def template_id
-    @template_id || settings&.dig('template_id')
+    return nil unless kind == 'send_email'
+    value.to_i if value.present?
   end
 
+  def status
+    return nil unless kind == 'change_status'
+    value
+  end
+
+  # Для обратной совместимости
   def new_status
-    @new_status || settings&.dig('status')
+    status
   end
 
   private
 
-  def build_settings_from_virtual_attributes
-    self.settings ||= {}
-    self.settings = {} if self.settings.blank?
+  def value_matches_kind
+    return if kind.blank?
+    return if value.blank? # Пропускаем валидацию если value пустое (будет валидироваться presence отдельно)
+    
+    mapping = VALUE_MAPPING[kind]
+    return unless mapping
 
-    case kind
-    when 'send_email'
-      if @template_id.present?
-        self.settings['template_id'] = @template_id.to_i
-      else
-        self.settings.delete('template_id')
-      end
-      self.settings.delete('status')
-    when 'change_status'
-      if @new_status.present?
-        self.settings['status'] = @new_status
-      else
-        self.settings.delete('status')
-      end
-      self.settings.delete('template_id')
+    unless mapping[:validation].call(value)
+      errors.add(:value, "неверное значение для типа действия #{kind}")
     end
-
-    # Clean up empty settings hash
-    self.settings = nil if self.settings.empty?
   end
 end
 

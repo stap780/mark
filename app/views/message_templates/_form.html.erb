@@ -2,9 +2,8 @@
     url: message_template.new_record? ? account_message_templates_path(current_account) : account_message_template_path(current_account, message_template),
     class: "space-y-4", 
     data: (
-      message_template.new_record? ? { turbo: false } : { turbo_stream: true,
-      controller: "auto-submit", "auto-submit-delay-value": 500 } ) do |f| %>
-  <%= render "shared/errors", object: message_template %>
+      message_template.new_record? ? { turbo: false } : { turbo_stream: true, controller: "auto-submit", "auto-submit-delay-value": 500 } ) do |f| %>
+    <%= render "shared/errors", object: message_template %>
 
   <div>
     <%= f.label :title, "Название", class: "block text-sm font-medium text-gray-700" %>

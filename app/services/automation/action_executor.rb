@@ -20,7 +20,7 @@ module Automation
     private
 
     def send_email
-      template_id = @action.settings['template_id']
+      template_id = @action.template_id
       template = @account.message_templates.find_by(id: template_id)
       return unless template
 
@@ -60,7 +60,7 @@ module Automation
     end
 
     def change_status
-      new_status = @action.settings['status']
+      new_status = @action.status
       incase = @context['incase']
       return unless incase && new_status.present?
 

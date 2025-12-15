@@ -1,5 +1,5 @@
 <%= form_with model: [current_account, automation_rule],
-  data: (automation_rule.new_record? ? { turbo: false } : { turbo_stream: true }),
+  data: (automation_rule.new_record? ? { turbo: false } : { turbo_stream: true, controller: "auto-submit", "auto-submit-delay-value": 200 }),
   class: "space-y-4" do |f| %>
   <%= render "shared/errors", object: automation_rule %>
 
@@ -118,7 +118,7 @@
 
   <div class="flex justify-end space-x-2">
     <%= f.submit automation_rule.new_record? ? "Создать" : "Обновить",
-        class: "px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+        class: "px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700", data: { turbo: false } %>
     <%= link_to "Отмена", account_automation_rules_path(current_account),
         class: "px-3 py-1 bg-gray-200 rounded-md hover:bg-gray-300" %>
   </div>

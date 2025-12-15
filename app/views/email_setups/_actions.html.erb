@@ -1,6 +1,11 @@
 <div class="space-x-1">
   <% if current_account&.email_setup&.present? %>
     <% email_setup = current_account.email_setup %>
+    <%= button_to t('email_setups.test_connection'), 
+    test_connection_account_email_setup_path(current_account, @email_setup), 
+    method: :post, form: { data: { turbo_stream: true } },
+    class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm" %>
+
     <%= link_to t('email_setups.test_email_label'), test_email_form_account_email_setup_path(current_account, email_setup), data: { turbo_frame: 'offcanvas' }, class: "inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm" %>
   <% else %>
     <%= link_to_new new_account_email_setup_path(current_account), data: { turbo_frame: 'offcanvas', turbo_prefetch: false } %>
