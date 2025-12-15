@@ -617,6 +617,7 @@ ru:
       price: "Цена"
       sum: "Сумма"
       total: "Всего"
+      totalsum: "Сумма заказа"
     status:
       new: "Новая"
       in_progress: "В работе"

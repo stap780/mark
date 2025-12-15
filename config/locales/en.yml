@@ -397,6 +397,7 @@ en:
       status: "Status"
       webform: "Webform"
       client: "Client"
+      totalsum: "Order total"
     status:
       new: "New"
       in_progress: "In progress"
