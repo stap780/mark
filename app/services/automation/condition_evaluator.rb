@@ -6,9 +6,9 @@ module Automation
     end
 
     def evaluate
-      return false unless @condition.present?
-      return false unless @condition['conditions'].is_a?(Array)
-      return false if @condition['conditions'].empty?
+      return true unless @condition.present? # Если условия нет, считаем что условие выполнено
+      return true unless @condition['conditions'].is_a?(Array)
+      return true if @condition['conditions'].empty? # Если условий нет, считаем что условие выполнено
 
       results = @condition['conditions'].map { |cond| evaluate_single_condition(cond) }
 
@@ -77,15 +77,23 @@ module Automation
       parts.each_with_index do |part, index|
         # Если это последний элемент и он содержит знак вопроса (метод-предикат)
         if index == parts.length - 1 && part.end_with?('?')
-          method_name = part[0..-2] # Убираем знак вопроса
+          method_name = part # Оставляем знак вопроса в имени метода
           # Проверяем, что предыдущий объект - это модель ActiveRecord
-          if result.is_a?(ActiveRecord::Base) && result.respond_to?(method_name)
+          if result.is_a?(ActiveRecord::Base) && result.respond_to?(method_name, true)
             return result.public_send(method_name)
           end
         end
         
-        return nil unless result.respond_to?(:[])
-        result = result[part]
+        # Сначала пытаемся получить через [] (для Hash)
+        if result.respond_to?(:[]) && result.is_a?(Hash)
+          result = result[part]
+        # Если это ActiveRecord объект, используем метод
+        elsif result.is_a?(ActiveRecord::Base) && result.respond_to?(part)
+          result = result.public_send(part)
+        else
+          return nil
+        end
+        
         return nil if result.nil?
       end
 

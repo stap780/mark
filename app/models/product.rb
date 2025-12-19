@@ -53,6 +53,15 @@ class Product < ApplicationRecord
     %w[variants]
   end
 
+  def insales_link
+    return '' unless account.insales.present?
+
+    external_id = varbinds.find_by(varbindable: account.insales.first)&.value
+    return '' if external_id.to_s.strip.blank?
+    
+    "/product_by_id/#{external_id}"
+  end
+
   def insale_api_update
     ok, msg = account.insales.first.api_work?
     return [false, Array(msg)] unless ok

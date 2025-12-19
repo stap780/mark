@@ -2,7 +2,7 @@
   <div class="text-sm font-medium"><%= user.email_address %></div>
   <div class="text-sm">
     <span class="px-2 py-1 text-xs rounded-full <%= user.admin_in_account?(current_account) ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800' %>">
-      <%= user.role_in_account(current_account)&.humanize %>
+      <%= t("activerecord.enums.account_user.role.#{user.role_in_account(current_account)}") %>
     </span>
   </div>
   <div class="flex justify-end items-center space-x-2">

@@ -41,8 +41,15 @@ class AutomationRulesController < ApplicationController
         format.turbo_stream { redirect_to edit_account_automation_rule_path(current_account, @automation_rule) }
         format.html { redirect_to account_automation_rules_path(current_account), notice: t('.success')}
       else
+        puts "errors: #{@automation_rule.errors.full_messages.join(' ')}"
+        flash.now[:notice] = @automation_rule.errors.full_messages.join(' ')
         format.html { render :edit, status: :unprocessable_entity }
-        format.turbo_stream { redirect_to edit_account_automation_rule_path(current_account, @automation_rule), status: :see_other }
+        format.turbo_stream {
+          render turbo_stream: [
+            render_turbo_flash
+          ]
+          # redirect_to edit_account_automation_rule_path(current_account, @automation_rule), status: :see_other 
+        }
       end
     end
   end
@@ -133,6 +140,10 @@ class AutomationRulesController < ApplicationController
     actions_attrs = params.dig(:automation_rule, :automation_actions_attributes)
     return unless actions_attrs.present?
 
+    # Собираем все позиции существующих действий
+    existing_positions = @automation_rule.automation_actions.pluck(:position).compact.map(&:to_i)
+    max_position = existing_positions.any? ? existing_positions.max : 0
+
     actions_attrs.each do |key, attrs|
       next if attrs[:_destroy] == '1' || attrs[:kind].blank?
       
@@ -141,6 +152,15 @@ class AutomationRulesController < ApplicationController
       
       mapping = AutomationAction::VALUE_MAPPING[kind]
       next unless mapping
+      
+      # Если это новое действие (нет id) и позиция не указана или конфликтует, устанавливаем следующую
+      if attrs[:id].blank?
+        position = attrs[:position].to_i
+        if position.zero? || existing_positions.include?(position)
+          max_position += 1
+          attrs[:position] = max_position
+        end
+      end
       
       # Проверяем, соответствует ли value новому kind
       if value.present?

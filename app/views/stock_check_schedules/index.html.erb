@@ -1,0 +1,28 @@
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-xl font-semibold"><%= t('.heading') %></h1>
+  <%= turbo_frame_tag :stock_check_schedule_actions do %>
+    <div class="flex space-x-1">
+      <%= link_to_new new_account_stock_check_schedule_path(current_account), 
+          data: { turbo_frame: 'offcanvas', turbo_prefetch: false } if current_account&.insales&.first&.product_xml.present? %>
+    </div>
+  <% end %>
+</div>
+
+<%= turbo_stream_from [current_account, "stock_check_schedules"] %>
+
+<%= turbo_frame_tag "stock_check_schedules", class: "bg-white rounded-lg shadow divide-y" do %>
+  <div class="grid grid-cols-[1fr_1fr_1fr_200px_150px] gap-4 p-4 font-medium text-gray-700">
+    <div><%= t('.active') %></div>
+    <div><%= t('.recurrence') %></div>
+    <div><%= t('.time') %></div>
+    <div><%= t('.next_check') %></div>
+    <div></div>
+  </div>
+  <%= render @stock_check_schedules %>
+  <% if @stock_check_schedules.empty? %>
+    <div class="p-4 text-gray-500">
+      <%= t('.no_schedules') %>
+      <%= tag.p 'Добавьте ссылку на xml файл в настройках InSales' unless current_account&.insales&.first&.product_xml.present? %>
+    </div>
+  <% end %>
+<% end %>

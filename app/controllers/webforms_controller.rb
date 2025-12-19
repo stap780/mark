@@ -2,7 +2,7 @@ class WebformsController < ApplicationController
   include OffcanvasResponder
   include ActionView::RecordIdentifier
   
-  before_action :set_webform, only: [:show, :edit, :update, :destroy, :schema, :preview, :build]
+  before_action :set_webform, only: [:show, :edit, :update, :destroy, :schema, :preview, :build, :design]
 
   def index
     @webforms = current_account.webforms.order(created_at: :asc)
@@ -108,6 +108,9 @@ class WebformsController < ApplicationController
     @schema = Webforms::BuildSchema.new(@webform).call
     render :preview
   end
+
+  def design; end
+
 
   def info; end
 

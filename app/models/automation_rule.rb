@@ -14,11 +14,7 @@ class AutomationRule < ApplicationRecord
   scope :without_delay, -> { where(delay_seconds: 0) }
 
   EVENTS = {
-    'incase.created.order' => 'Заявка создана (заказ)',
-    'incase.created.notify' => 'Заявка создана (уведомление)',
-    'incase.created.preorder' => 'Заявка создана (предзаказ)',
-    'incase.created.abandoned_cart' => 'Заявка создана (брошенная корзина)',
-    'incase.created.custom' => 'Заявка создана (кастомная форма)',
+    'incase.created' => 'Заявка создана',
     'incase.updated' => 'Заявка обновлена',
     'variant.back_in_stock' => 'Товар появился в наличии'
   }.freeze
@@ -93,7 +89,8 @@ class AutomationRule < ApplicationRecord
   def validate_condition_format
     return if condition.blank? && !persisted?
 
-    # Для persisted записей проверяем наличие хотя бы одного условия
+    # Условия обязательны для всех правил автоматизации
+    # Правило должно проверять условия перед выполнением действий
     if persisted? && automation_conditions.empty?
       errors.add(:base, "должно быть хотя бы одно условие")
       return
@@ -166,5 +163,6 @@ class AutomationRule < ApplicationRecord
       'conditions' => conditions_array
     }.to_json
   end
+  
 end
 

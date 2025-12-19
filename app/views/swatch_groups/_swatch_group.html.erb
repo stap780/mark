@@ -1,11 +1,11 @@
-<%= turbo_frame_tag [swatch_group.account, dom_id(swatch_group)], class: "grid grid-cols-[50px_1fr_1fr_1fr_120px] gap-4 p-4 items-center" do %>
+<%= turbo_frame_tag dom_id(swatch_group.account, dom_id(swatch_group)), class: "grid grid-cols-[50px_1fr_1fr_1fr_120px] gap-4 p-4 items-center" do %>
   <div class="truncate"><%= swatch_group.id %></div>
   <div class="truncate"><%= swatch_group.name %></div>
   <div class="truncate"><%= swatch_group.option_name %></div>
   <div class="truncate"><%= swatch_group.status %></div>
   <div class="flex justify-end items-center space-x-2">
     <%= link_to_edit edit_account_swatch_group_path(swatch_group.account, swatch_group), 
-    data: { turbo_frame: "_top" } %>
+    data: { turbo: false, turbo_prefetch: false } %>
     <%= link_to_delete account_swatch_group_path(swatch_group.account, swatch_group), 
     data: { turbo_confirm: t(:are_you_sure) } %>
   </div>

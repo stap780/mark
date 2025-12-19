@@ -7,6 +7,7 @@ class Webform < ApplicationRecord
   accepts_nested_attributes_for :webform_fields, allow_destroy: true
   has_many :incases
 
+
   before_destroy :check_incases_presence
 
   validates :title, :kind, presence: true

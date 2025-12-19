@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_15_123243) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_18_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -104,6 +104,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_15_123243) do
     t.datetime "delivered_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "message_id"
+    t.string "x_track_id"
     t.index ["account_id", "channel", "status"], name: "index_automation_messages_on_account_id_and_channel_and_status"
     t.index ["account_id"], name: "index_automation_messages_on_account_id"
     t.index ["automation_action_id"], name: "index_automation_messages_on_automation_action_id"
@@ -111,6 +113,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_15_123243) do
     t.index ["automation_rule_id"], name: "index_automation_messages_on_automation_rule_id"
     t.index ["client_id"], name: "index_automation_messages_on_client_id"
     t.index ["incase_id"], name: "index_automation_messages_on_incase_id"
+    t.index ["message_id"], name: "index_automation_messages_on_message_id"
+    t.index ["x_track_id"], name: "index_automation_messages_on_x_track_id"
   end
 
   create_table "automation_rules", force: :cascade do |t|
@@ -250,6 +254,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_15_123243) do
     t.index ["icon_style"], name: "index_lists_on_icon_style"
   end
 
+  create_table "mailganers", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "api_key", null: false
+    t.string "smtp_login", null: false
+    t.string "api_key_web_portal", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_mailganers_on_account_id"
+  end
+
   create_table "message_templates", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.string "title", null: false
@@ -303,6 +317,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_15_123243) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "stock_check_schedules", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.boolean "active", default: false
+    t.string "time"
+    t.string "recurrence"
+    t.datetime "scheduled_for"
+    t.string "active_job_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_stock_check_schedules_on_account_id"
   end
 
   create_table "subscriptions", force: :cascade do |t|
@@ -382,6 +408,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_15_123243) do
     t.string "image_link"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "quantity", default: 0, null: false
     t.index ["barcode"], name: "index_variants_on_barcode"
     t.index ["product_id"], name: "index_variants_on_product_id"
     t.index ["sku"], name: "index_variants_on_sku"
@@ -410,7 +437,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_15_123243) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id", "kind", "status"], name: "index_webforms_on_account_id_and_kind_and_status"
-    t.index ["account_id", "kind"], name: "index_webforms_on_account_kind_singleton", unique: true, where: "((kind)::text = ANY ((ARRAY['order'::character varying, 'notify'::character varying, 'preorder'::character varying, 'abandoned_cart'::character varying])::text[]))"
+    t.index ["account_id", "kind"], name: "index_webforms_on_account_kind_singleton", unique: true, where: "((kind)::text = ANY (ARRAY[('order'::character varying)::text, ('notify'::character varying)::text, ('preorder'::character varying)::text, ('abandoned_cart'::character varying)::text]))"
     t.index ["account_id"], name: "index_webforms_on_account_id"
   end
 
@@ -440,10 +467,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_15_123243) do
   add_foreign_key "list_items", "clients"
   add_foreign_key "list_items", "lists"
   add_foreign_key "lists", "accounts"
+  add_foreign_key "mailganers", "accounts"
   add_foreign_key "message_templates", "accounts"
   add_foreign_key "payments", "subscriptions"
   add_foreign_key "products", "accounts"
   add_foreign_key "sessions", "users"
+  add_foreign_key "stock_check_schedules", "accounts"
   add_foreign_key "subscriptions", "accounts"
   add_foreign_key "subscriptions", "plans"
   add_foreign_key "swatch_group_products", "products"

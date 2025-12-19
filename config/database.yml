@@ -35,7 +35,11 @@ test:
     # adapter: sqlite3 # Override default for development
     # database: db/test_queue.sqlite3
     migrations_paths: db/queue_migrate
-
+  cable:
+    <<: *default
+    database: mark_test_cable
+    migrations_paths: db/cable_migrate
+    
 production:
   primary: &primary_production
     <<: *default

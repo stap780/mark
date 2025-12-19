@@ -1,7 +1,7 @@
 <% s = (schema[:settings] || {}).with_indifferent_access rescue (schema[:settings] || {}) %>
 
 <% container_style = [
-  "background: #{s['background_color']}",
+  "background-color: #{s['background_color'] || '#ffffff'}",
   "color: #{s['font_color']}",
   "line-height: 1",
   "padding: #{s['padding_y']} #{s['padding_x']}",
@@ -15,14 +15,100 @@
   "box-shadow: #{[s['box_shadow_offset_x'], s['box_shadow_offset_y'], s['box_shadow_blur'], s['box_shadow_spread'], s['box_shadow_color']].join(' ')}"
 ].join('; ') %>
 
-<div class="webform-preview" style="<%= container_style %>">
-  <form>
+<%# Собираем image поля с их позициями %>
+<% image_fields = schema[:fields].select { |f| f[:type] == 'image' } %>
+<% behind_images = image_fields.select { |f| (f[:settings] || {})['image_position'] == 'behind' } %>
+<% positioned_images = image_fields.select { |f| ['left', 'right', 'top', 'bottom'].include?((f[:settings] || {})['image_position']) } %>
+<% inline_images = image_fields.select { |f| !f[:settings] || f[:settings]['image_position'].blank? || f[:settings]['image_position'] == 'none' } %>
+
+<%# Контейнер для формы с изображениями слева/справа %>
+<% left_images = positioned_images.select { |f| f[:settings]['image_position'] == 'left' } %>
+<% right_images = positioned_images.select { |f| f[:settings]['image_position'] == 'right' } %>
+<% has_left = left_images.any? %>
+<% has_right = right_images.any? %>
+
+<%# Определяем grid стили для webform-preview %>
+<% if has_left || has_right %>
+  <% left_width = has_left ? (left_images.first[:settings] || {})['image_width_percent'] || 50 : 0 %>
+  <% right_width = has_right ? (right_images.first[:settings] || {})['image_width_percent'] || 50 : 0 %>
+  <% form_width = 100 - left_width - right_width %>
+  <% grid_template = has_left && has_right ? "#{left_width}% #{form_width}% #{right_width}%" : has_left ? "#{left_width}% #{form_width}%" : "#{form_width}% #{right_width}%" %>
+  <% grid_style = "display: grid; grid-template-columns: #{grid_template}; gap: 16px; align-items: start;" %>
+<% else %>
+  <% grid_style = "" %>
+<% end %>
+
+<%# Основной контейнер webform-preview с позиционированием %>
+<div class="twc-webform-preview" style="<%= container_style %>; position: relative; overflow: hidden; <%= grid_style %>">
+  <%# Фоновые изображения %>
+  <% behind_images.each do |field| %>
+    <% if field[:image_url] %>
+      <% fs = (field[:settings] || {}).with_indifferent_access rescue (field[:settings] || {}) %>
+      <% object_fit = fs['image_object_fit'] || 'cover' %>
+      <% bg_style = [
+        "position: absolute",
+        "top: 0",
+        "left: 0",
+        "width: 100%",
+        "height: 100%",
+        "object-fit: #{object_fit}",
+        "object-position: 50% 50%",
+        "z-index: 0"
+      ].join('; ') %>
+      <img src="<%= field[:image_url] %>" alt="<%= field[:label] %>" style="<%= bg_style %>">
+    <% end %>
+  <% end %>
+
+  <%# Изображения сверху (если нет left/right, они вне grid) %>
+  <% unless has_left || has_right %>
+    <% top_images = positioned_images.select { |f| f[:settings]['image_position'] == 'top' } %>
+    <% top_images.each do |field| %>
+      <% fs = (field[:settings] || {}).with_indifferent_access rescue (field[:settings] || {}) %>
+      <% image_width = fs['image_width_percent'] || 100 %>
+      <% image_style = [
+        "width: #{image_width}%",
+        "display: block",
+        "margin: 0 auto",
+        "position: relative",
+        "z-index: 1"
+      ].join('; ') %>
+      <div class="twc-webform-preview-image" style="<%= image_style %>; width: 100%; height: 100%;">
+        <% if field[:image_url] %>
+          <% object_fit = fs['image_object_fit'] || 'cover' %>
+          <img src="<%= field[:image_url] %>" alt="<%= field[:label] %>" style="width: 100%; height: 100%; object-fit: <%= object_fit %>; object-position: 50% 50%;">
+        <% else %>
+          <div style="width: 100%; height: 200px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; color: #9ca3af;">Изображение</div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# Изображения слева (внутри grid) %>
+  <% if has_left %>
+    <div class="twc-webform-preview-image" style="position: relative; z-index: 1; width: 100%; height: 100%;">
+      <% left_images.each do |field| %>
+        <% if field[:image_url] %>
+          <% fs = (field[:settings] || {}).with_indifferent_access rescue (field[:settings] || {}) %>
+          <% object_fit = fs['image_object_fit'] || 'cover' %>
+          <img src="<%= field[:image_url] %>" alt="<%= field[:label] %>" style="width: 100%; height: 100%; object-fit: <%= object_fit %>; object-position: 50% 50%; display: block;">
+        <% else %>
+          <div style="width: 100%; height: 200px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; color: #9ca3af;">Изображение</div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Форма с полями %>
+  <form class="twc-webform-preview-form" style="position: relative;">
     <% schema[:fields].each do |field| %>
+      <% next if field[:type] == 'image' && ['behind', 'left', 'right', 'top', 'bottom'].include?((field[:settings] || {})['image_position']) %>
+      
       <% fs = (field[:settings] || {}).with_indifferent_access rescue (field[:settings] || {}) %>
       <% style = [
         "font-size: #{fs['font_size']}",
         "line-height: 1",
         "color: #{fs['font_color']}",
+        "background-color: #{fs['background_color'] || '#ffffff'}",
         "padding: #{fs['padding_y']} #{fs['padding_x']}",
         "margin: #{fs['margin_y']} #{fs['margin_x']}",
         "border-radius: #{fs['border_radius']}",
@@ -42,10 +128,66 @@
         <textarea placeholder="<%= placeholder %>" <%= 'required' if field[:required] %> rows="4" style="<%= style %>"></textarea>
       <% when 'button' %>
         <button type="submit" style="<%= [style, "background: #{fs['background_color']}"].join('; ') %>"><%= field[:label] %></button>
+      <% when 'image' %>
+        <%# Inline изображения (в списке полей) %>
+        <% image_width = fs['image_width_percent'] || 100 %>
+        <% object_fit = fs['image_object_fit'] || 'cover' %>
+        <% image_style = [
+          "width: #{image_width}%",
+          "max-width: 100%",
+          "display: block",
+          "margin: #{fs['margin_y']} #{fs['margin_x']}"
+        ].join('; ') %>
+        <div class="twc-webform-preview-image" style="<%= image_style %>; width: 100%; height: 100%;">
+          <% if field[:image_url] %>
+            <img src="<%= field[:image_url] %>" alt="<%= field[:label] %>" style="width: 100%; height: 100%; object-fit: <%= object_fit %>; object-position: 50% 50%;">
+          <% else %>
+            <div style="width: 100%; height: 200px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; color: #9ca3af;">Изображение</div>
+          <% end %>
+        </div>
       <% else %>
         <% placeholder = field[:label] %>
         <input type="text" placeholder="<%= placeholder %>" <%= 'required' if field[:required] %> style="<%= style %>">
       <% end %>
     <% end %>
   </form>
+
+  <%# Изображения справа (внутри grid) %>
+  <% if has_right %>
+    <div class="twc-webform-preview-image" style="position: relative; z-index: 1; width: 100%; height: 100%;">
+      <% right_images.each do |field| %>
+        <% if field[:image_url] %>
+          <% fs = (field[:settings] || {}).with_indifferent_access rescue (field[:settings] || {}) %>
+          <% object_fit = fs['image_object_fit'] || 'cover' %>
+          <img src="<%= field[:image_url] %>" alt="<%= field[:label] %>" style="width: 100%; height: 100%; object-fit: <%= object_fit %>; object-position: 50% 50%; display: block;">
+        <% else %>
+          <div style="width: 100%; height: 200px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; color: #9ca3af;">Изображение</div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Изображения снизу (если нет left/right, они вне grid) %>
+  <% unless has_left || has_right %>
+    <% bottom_images = positioned_images.select { |f| f[:settings]['image_position'] == 'bottom' } %>
+    <% bottom_images.each do |field| %>
+      <% fs = (field[:settings] || {}).with_indifferent_access rescue (field[:settings] || {}) %>
+      <% image_width = fs['image_width_percent'] || 100 %>
+      <% object_fit = fs['image_object_fit'] || 'cover' %>
+      <% image_style = [
+        "width: #{image_width}%",
+        "display: block",
+        "margin: 0 auto",
+        "position: relative",
+        "z-index: 1"
+      ].join('; ') %>
+      <div class="twc-webform-preview-image" style="<%= image_style %>; width: 100%; height: 100%;">
+        <% if field[:image_url] %>
+          <img src="<%= field[:image_url] %>" alt="<%= field[:label] %>" style="width: 100%; height: 100%; object-fit: <%= object_fit %>; object-position: 50% 50%;">
+        <% else %>
+          <div style="width: 100%; height: 200px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; color: #9ca3af;">Изображение</div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
 </div>

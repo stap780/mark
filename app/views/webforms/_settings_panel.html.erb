@@ -22,10 +22,12 @@
         <% case key.to_s %>
         <% when /color$/ %>
           <%= sf.label key, label, class: "block text-sm font-medium text-gray-700" %>
-          <%= sf.text_field key,
-              value: settings_data[key.to_s],
-              type: "color",
-              class: "mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm" %>
+          <div class="mt-1" data-controller="colors" data-colors-alpha-value="true">
+            <%= sf.text_field key,
+                value: settings_data[key.to_s],
+                data: { "colors-target": "input" },
+                class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm px-3 py-2 cursor-pointer" %>
+          </div>
         <% when /present$/ %>
           <%= sf.label key, label, class: "block text-sm font-medium text-gray-700" %>
           <%= sf.check_box key,
@@ -47,6 +49,48 @@
               class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm" %>
         <% end %>
       </div>
+    <% end %>
+    
+    <%# Специальные настройки для image полей %>
+    <% if target == :field_settings && field.field_type == 'image' %>
+      <% WebformSettings::IMAGE_DEFAULT.keys.each do |key| %>
+        <div class="<%= key == 'image_position' ? 'col-span-3' : '' %>">
+          <% case key.to_s %>
+          <% when 'image_position' %>
+            <%= sf.label key, "Положение изображения", class: "block text-sm font-medium text-gray-700" %>
+            <%= sf.select key,
+                [
+                  ['Нет положения', 'none'],
+                  ['Сзади (фон)', 'behind'],
+                  ['Слева', 'left'],
+                  ['Справа', 'right'],
+                  ['Сверху', 'top'],
+                  ['Снизу', 'bottom']
+                ],
+                { selected: settings_data[key.to_s] || 'none' },
+                class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
+          <% when 'image_width_percent' %>
+            <%= sf.label key, "Ширина (%)", class: "block text-sm font-medium text-gray-700" %>
+            <%= sf.number_field key,
+                value: settings_data[key.to_s] || 100,
+                min: 1,
+                max: 100,
+                step: 1,
+                class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
+          <% when 'image_object_fit' %>
+            <%= sf.label key, "Object Fit", class: "block text-sm font-medium text-gray-700" %>
+            <%= sf.select key,
+                [
+                  ['Contain', 'contain'],
+                  ['Cover', 'cover'],
+                  ['Fill', 'fill'],
+                  ['None', 'none']
+                ],
+                { selected: settings_data[key.to_s] || 'cover' },
+                class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
+          <% end %>
+        </div>
+      <% end %>
     <% end %>
   </div>
 

@@ -63,28 +63,31 @@
               <%= link_to_sidebar t('menu.lists'), account_lists_path(current_account), active_if: '/lists' if show_link?('lists') %>
               <%= link_to_sidebar t('menu.swatches'), account_swatch_groups_path(current_account), active_if: '/swatch_groups' if show_link?('swatches') %>
               <%= link_to_sidebar t('menu.webforms'), account_webforms_path(current_account), active_if: '/webforms' if show_link?('webforms') %>
-              
-              <div data-controller="accordion" 
-                  data-accordion-open-value="<%= request.path.include?('/automation_rules') || request.path.include?('/message_templates') || request.path.include?('/automation_messages') %>">
-                <button type="button" data-action="click->accordion#toggle"
-                        class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 <%= 'bg-violet-500 bg-opacity-75' if request.path.include?('/automation_rules') || request.path.include?('/message_templates') || request.path.include?('/automation_messages') %>">
-                  <span class="truncate">Автоматизация</span>
-                  <svg data-accordion-target="arrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </button>
-                
-                <div data-accordion-target="content" class="hidden ml-4 space-y-1">
-                  <%= link_to_sidebar "Правила автоматизации", account_automation_rules_path(current_account), active_if: '/automation_rules' %>
-                  <%= link_to_sidebar "Шаблоны сообщений", account_message_templates_path(current_account), active_if: '/message_templates' %>
-                  <%= link_to_sidebar "Статистика сообщений", account_automation_messages_path(current_account), active_if: '/automation_messages' %>
+              <% if show_link?('automation_rules') %>
+                <% active_automation = ['/automation_rules', '/message_templates', '/automation_messages'].any? { |path| request.path.include?(path) } %>
+                <div data-controller="accordion" 
+                    data-accordion-open-value="<%= active_automation %>">
+                  <button type="button" data-action="click->accordion#toggle"
+                          class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 mb-1 cursor-pointer <%= 'bg-violet-500 bg-opacity-75' if active_automation %>">
+                    <span class="truncate"><%= t('menu.automation') %></span>
+                    <svg data-accordion-target="arrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </button>
+                  
+                  <div data-accordion-target="content" class="hidden ml-4 space-y-1">
+                    <%= link_to_sidebar t('menu.automation_rules'), account_automation_rules_path(current_account), active_if: '/automation_rules' %>
+                    <%= link_to_sidebar t('menu.message_templates'), account_message_templates_path(current_account), active_if: '/message_templates' %>
+                    <%= link_to_sidebar t('menu.automation_messages'), account_automation_messages_path(current_account), active_if: '/automation_messages' %>
+                  </div>
                 </div>
-              </div>
-              
+              <% end %>
+
+              <% active_settings = ['/insales', '/stock_check_schedules', '/users', '/subscription', '/payments', '/email_setups', '/mailganers'].any? { |path| request.path.include?(path) } %>
               <div data-controller="accordion"
-                  data-accordion-open-value="<%= ['/insales', '/users', '/subscription', '/payments', '/email_setups'].any? { |path| request.path.include?(path) } %>">
+                  data-accordion-open-value="<%= active_settings %>">
                 <button type="button" data-action="click->accordion#toggle"
-                        class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 <%= 'bg-violet-500 bg-opacity-75' if request.path.include?('/insales') || request.path.include?('/users') || request.path.include?('/subscription') || request.path.include?('/payments') %>">
+                        class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 mb-1 cursor-pointer <%= 'bg-violet-500 bg-opacity-75' if active_settings %>">
                   <span class="truncate"><%= t(:settings) %></span>
                   <svg data-accordion-target="arrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -93,7 +96,8 @@
                 
                 <div data-accordion-target="content" class="hidden ml-4 space-y-1">
                   <%= link_to_sidebar t('menu.insales'), account_insales_path(current_account), active_if: '/insales' %>
-                  <%= link_to_sidebar t('menu.email_settings'), account_email_setups_path(current_account), active_if: '/email_setups' %>
+                  <%= link_to_sidebar t('menu.stock_check_schedule', default: 'Проверка остатков'), account_stock_check_schedules_path(current_account), active_if: '/stock_check_schedules' unless current_account.partner? %>
+                  <%= link_to_sidebar t('menu.mailganer', default: 'Mailganer'), account_mailganers_path(current_account), active_if: '/mailganers' unless current_account.partner? %>
                   <%= link_to_sidebar t('menu.users'), account_users_path(current_account), active_if: '/users' %>
                   <%= link_to_sidebar t('subscriptions.subscriptions'), account_subscriptions_path(current_account), active_if: '/subscriptions' unless current_account.partner? %>
                   <%= link_to_sidebar t('payments.payments'), account_payments_path(current_account), active_if: '/payments' unless current_account.partner? %>

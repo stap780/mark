@@ -68,11 +68,25 @@ Rails.application.routes.draw do
         patch :set_product_xml
       end
     end
+    resources :stock_check_schedules do
+      member do
+        post :run
+      end
+    end
     resources :email_setups do
       member do
         get :test_email_form
         post :test_email
         post :test_connection
+      end
+    end
+    resources :mailganers do
+      collection do
+        get :info
+      end
+      member do
+        get :test_email_form
+        post :test_email
       end
     end
     resources :swatch_groups do
@@ -130,6 +144,7 @@ Rails.application.routes.draw do
         get :preview
         get :schema
         patch :build
+        get :design
       end
       collection do
         get :info
@@ -151,7 +166,11 @@ Rails.application.routes.draw do
     resources :automation_actions, only: [:new, :destroy]
 
     resources :message_templates
-    resources :automation_messages, only: [:index]
+    resources :automation_messages, only: [:index] do
+      member do
+        get :check_status
+      end
+    end
     resources :users
     resources :subscriptions do
       member do

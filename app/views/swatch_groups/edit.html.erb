@@ -1,4 +1,10 @@
 <div class="bg-white rounded-lg shadow p-4">
-  <h1 class="text-xl font-semibold mb-4"><%= t("swatch_groups.edit.heading") %></h1>
+ <div class="flex items-center justify-start gap-4 mb-4">
+  <%= link_to t(:back), account_swatch_groups_path(current_account), 
+    class: "inline-flex items-center px-3 py-1 bg-white text-violet-700 border border-violet-600 rounded-md hover:bg-violet-50",
+    data: {turbo: false} %>
+    <h1 class="text-xl font-semibold"><%= t("swatch_groups.edit.heading") %></h1>
+  </div>
+
   <%= render "form", swatch_group: @swatch_group %>
 </div>

@@ -59,8 +59,17 @@ ru:
     swatches: "Группы"
     webforms: "Веб-формы"
     insales: "InSales"
+    stock_check_schedule: "Проверка остатков"
     email_settings: "Настройки Email"
     users: "Пользователи"
+    status: "Статус"
+    automation: "Автоматизация"
+    automation_rules: "Правила автоматизации"
+    message_templates: "Шаблоны сообщений"
+    automation_messages: "Статистика сообщений"
+  
+  dashboard:
+    status_ok: "OK"
 
   # Actions
   sign_in: "Войти"
@@ -221,6 +230,15 @@ ru:
         user_name: "Имя пользователя"
         user_password: "Пароль"
         tls: "Включить TLS"
+      stock_check_schedule:
+        recurrence: "Интервал"
+        time: "Время"
+        active: "Включено"
+    enums:
+      account_user:
+        role:
+          admin: "Админ"
+          member: "Обычный"
     errors:
       format: "%{attribute} %{message}"
       models:
@@ -535,6 +553,8 @@ ru:
         success: "Условие удалено"
 
   automation_rules:
+    edit:
+      heading: "Редактировать правило"
     update:
       success: "Правило обновлено"
     destroy:
@@ -730,10 +750,61 @@ ru:
     test_email_label: "Тестовое письмо"
     already_exists: "Настройки Email уже существуют"
 
+  stock_check_schedules:
+    index:
+      heading: "Проверка остатков"
+      no_schedules: "Настройки проверки остатков не созданы"
+      active: "Включено"
+      recurrence: "Интервал"
+      time: "Время"
+      next_check: "Следующая проверка"
+    new:
+      heading: "Новая настройка проверки остатков"
+      already_exists: "Настройка уже существует"
+    edit:
+      heading: "Редактировать настройку проверки остатков"
+    show:
+      heading: "Настройка проверки остатков"
+    create:
+      success: "Настройка проверки остатков успешно создана."
+    update:
+      success: "Настройка проверки остатков успешно обновлена."
+    destroy:
+      success: "Настройка проверки остатков успешно удалена."
+    _form:
+      active: "Включено"
+      recurrence: "Интервал"
+      recurrence_daily: "Раз в день"
+      recurrence_hourly: "Раз в час"
+      select_recurrence: "Выберите интервал"
+      time: "Время"
+      time_label: "Время"
+      time_description_daily: "Формат: ЧЧ:ММ (например, 09:00)"
+      time_description_hourly: "Минута (0-59, например, 30 для :30 каждого часа)"
+      next_check: "Следующая проверка"
+      new: "Создать настройку"
+    _stock_check_schedule:
+      active: "Включено"
+      recurrence: "Интервал"
+      recurrence_daily: "Раз в день"
+      recurrence_hourly: "Раз в час"
+      time: "Время"
+      next_check: "Следующая проверка"
+      yes: "Да"
+      no: "Нет"
+      confirm_destroy: "Вы уверены, что хотите удалить это расписание?"
+
   webforms:
     index:
       regenerate_json: "Обновить JSON"
       webform_file: "Файл веб-формы"
+    new:
+      title: "Новая веб-форма"
+    edit:
+      title: "Редактировать веб-форму"
+    _form:
+      create: "Создать"
+      update: "Обновить"
     create:
       success: "Веб-форма успешно создана."
     update:
@@ -764,6 +835,8 @@ ru:
     index:
       email: "Email"
       role: "Роль"
+    new:
+      title: "Новый пользователь"
     edit:
       edit: "Редактировать пользователя"
     form:

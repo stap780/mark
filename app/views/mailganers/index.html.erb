@@ -1,0 +1,25 @@
+<div class="flex items-center justify-between mb-4">
+  <div class="flex space-x-2 items-center">
+    <h1 class="text-xl font-semibold"><%= t('menu.mailganer', default: 'Mailganer') %></h1>
+    <%= link_to info_account_mailganers_path(current_account),
+          data: { turbo_frame: :offcanvas },
+          class: "inline-flex items-center justify-center px-2 py-1 text-violet-600 hover:text-violet-800" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+        <line x1="12" y1="8" x2="12" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="12" y1="12" x2="12" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    <% end %>
+  </div>
+  <%= turbo_frame_tag :mailganers_actions do %>
+    <%= render "actions", mailganer: @mailganer %>
+  <% end %>
+</div>
+
+<%= turbo_stream_from [current_account, "mailganers"] %>
+
+<%= turbo_frame_tag "mailganers", class: "bg-white rounded-lg shadow divide-y" do %>
+  <%= render "index_content", mailganer: @mailganer, current_account: current_account %>
+<% end %>
+
+

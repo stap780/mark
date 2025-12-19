@@ -33,9 +33,9 @@ module ApplicationHelper
   end
 
   def sortable_with_badge(position)
-    content_tag :div, class: 'js-sort-handle text-base relative cursor-grab active:cursor-grabbing mr-2 pt-1 inline-block' do
+    content_tag :div, class: 'js-sort-handle text-base relative cursor-grab active:cursor-grabbing inline-block' do
       concat sortable_icon
-      concat content_tag(:span, position, class: 'absolute -top-1 -right-1 bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full border border-white', data: { sortable_target: 'position' })
+      concat content_tag(:span, position, class: 'absolute bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full border border-white', data: { sortable_target: 'position' })
     end
   end
 
@@ -159,6 +159,24 @@ module ApplicationHelper
       clear_icon
     end
   end
+
+  def varbind_icon
+    '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+      </svg>'.html_safe
+  end
+
+  def link_to_varbind(path, **options)
+    if options[:class]
+      options[:class]
+    elsif !options[:class]
+      options[:class] = "p-2 rounded-md bg-blue-50 hover:bg-blue-100 flex items-center justify-center"
+    end
+    link_to path, options do
+      varbind_icon
+    end
+  end
+
 
   # Change the default link renderer for will_paginate
   def will_paginate(collection_or_options = nil, options = {})

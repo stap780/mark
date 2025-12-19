@@ -1,22 +1,43 @@
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-  <div class="rounded-lg border bg-white p-4 shadow-sm">
-    <h2 class="text-sm font-medium text-gray-500">Account</h2>
-    <p class="mt-1 text-xl font-semibold text-gray-900"><%= current_account&.name || "none" %></p>
-  </div>
-  <div class="rounded-lg border bg-white p-4 shadow-sm">
-    <h2 class="text-sm font-medium text-gray-500">Users</h2>
-    <p class="mt-1 text-xl font-semibold text-gray-900"><%= current_account.users.count if current_account %></p>
-  </div>
-  <div class="rounded-lg border bg-white p-4 shadow-sm">
-    <h2 class="text-sm font-medium text-gray-500">Status</h2>
-    <p class="mt-1 text-xl font-semibold text-gray-900">OK</p>
-  </div>
-  <div class="rounded-lg border bg-white p-4 shadow-sm">
-    <h2 class="text-sm font-medium text-gray-500">Products</h2>
-    <p class="mt-1 text-xl font-semibold text-gray-900"><%= current_account.products.count if current_account %></p>
-  </div>
-  <div class="rounded-lg border bg-white p-4 shadow-sm">
-    <h2 class="text-sm font-medium text-gray-500">Clients</h2>
-    <p class="mt-1 text-xl font-semibold text-gray-900"><%= current_account.clients.count if current_account %></p>
-  </div>
+  <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
+    <%= tag.h2 t('menu.users'), class: 'text-sm font-medium text-gray-500' %>
+    <%= tag.p((current_account.users.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
+  <% end %>
+  <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
+    <%= tag.h2 t('menu.status'), class: 'text-sm font-medium text-gray-500' %>
+    <%= tag.p(t('dashboard.status_ok'), class: 'mt-1 text-xl font-semibold text-gray-900') %>
+  <% end %>
+  <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
+    <%= tag.h2 t('menu.products'), class: 'text-sm font-medium text-gray-500' %>
+    <%= tag.p((current_account.products.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
+  <% end %>
+  <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
+    <%= tag.h2 t('menu.clients'), class: 'text-sm font-medium text-gray-500' %>
+    <%= tag.p((current_account.clients.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
+  <% end %>
+  <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
+    <%= tag.h2 t('menu.incases'), class: 'text-sm font-medium text-gray-500' %>
+    <%= tag.p((current_account.incases.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
+  <% end if current_account.incases.any? %>
+  <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
+    <%= tag.h2 t('menu.webforms'), class: 'text-sm font-medium text-gray-500' %>
+    <%= tag.p((current_account.webforms.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
+  <% end if current_account.webforms.any? %>
+  <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
+    <%= tag.h2 t('menu.automation_rules'), class: 'text-sm font-medium text-gray-500' %>
+    <%= tag.p((current_account.automation_rules.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
+  <% end if current_account.automation_rules.any? %>
+  <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
+    <%= tag.h2 t('menu.message_templates'), class: 'text-sm font-medium text-gray-500' %>
+    <%= tag.p((current_account.message_templates.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
+  <% end if current_account.message_templates.any? %>
+  <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
+    <%= tag.h2 t('menu.automation_messages'), class: 'text-sm font-medium text-gray-500' %>
+    <%= tag.p((current_account.automation_messages.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
+  <% end if current_account.automation_messages.any? %>  
+  <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
+    <%= tag.h2 t('menu.swatches'), class: 'text-sm font-medium text-gray-500' %>
+    <%= tag.p((current_account.swatch_groups.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
+  <% end if current_account.swatch_groups.any? %>
+
 </div>

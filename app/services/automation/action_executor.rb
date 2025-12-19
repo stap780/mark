@@ -24,31 +24,85 @@ module Automation
       template = @account.message_templates.find_by(id: template_id)
       return unless template
 
-      client = @context['client']
-      return unless client&.email.present?
+      recipient = @context['client'] || @context[:client]
+      return unless recipient&.email.present?
 
-      # Создаем запись для статистики
+      # Для IncaseNotifyGroupByClient incases доступны через client.incases_for_notify
+      # Для обычных автоматизаций передается одна заявка 'incase'
+      incase = @context['incase'] || @context[:incase]
+      
+      # variants передаются из контекста (из IncaseNotifyGroupByClient)
+      variants = @context['variants'] || []
+
+      webform = @context['webform'] || incase&.webform
+
+      # Строим контекст для Liquid через Drops
+      # incases доступны через client.incases_for_notify в Liquid шаблоне
+      liquid_context = Automation::LiquidContextBuilder.build(
+        incase: incase,
+        client: recipient,
+        webform: webform,
+        variants: variants
+      )
+
+      rendered_subject = render_liquid(template.subject, liquid_context)
+      rendered_content = render_liquid(template.content, liquid_context)
+
+      # Создаем одну запись для одного письма
       message = @account.automation_messages.create!(
         automation_rule: @action.automation_rule,
         automation_action: @action,
-        client: client,
-        incase: @context['incase'],
+        client: recipient,
+        incase: incase, # Используем заявку для связи (если есть)
         channel: 'email',
         status: 'pending',
-        subject: render_liquid(template.subject, @context),
-        content: render_liquid(template.content, @context)
+        subject: rendered_subject,
+        content: rendered_content
       )
 
       begin
-        # Устанавливаем контекст аккаунта для AutomationMailer
-        Account.current = @account
-        
-        # Отправляем email
-        AutomationMailer.notify_client(template, client, @context).deliver_later
+        # Отправляем email через Mailganer
+        # Используем настройки аккаунта, если есть, иначе глобальную конфигурацию
+        mailganer_settings = @account.mailganer || MailganerClient.configuration
+        return unless mailganer_settings # Если Mailganer не настроен, не отправляем
+
+        mailganer_client = MailganerClient::Client.new(
+          api_key: mailganer_settings.api_key,
+          smtp_login: mailganer_settings.smtp_login,
+          api_key_web_portal: mailganer_settings.api_key_web_portal
+        )
+
+        # Определяем from_email: если это объект Mailganer, используем его from_email, иначе дефолт
+        from_email = if mailganer_settings.respond_to?(:from_email)
+          mailganer_settings.from_email.presence || "info@teletri.ru"
+        else
+          "info@teletri.ru"
+        end
+
+        # Формируем x_track_id в формате "#{smtp_login}-#{Time.now.to_i}-#{automation_message.id}"
+        x_track_id = [
+          mailganer_settings.smtp_login.presence || "mailganer",
+          Time.now.to_i,
+          message.id
+        ].join("-")
+
+        response = mailganer_client.send_email_smtp_v1(
+          type: "body",
+          to: recipient.email,
+          from: from_email,
+          subject: rendered_subject,
+          body: rendered_content,
+          x_track_id: x_track_id
+        )
+
+        # Ожидаемый ответ: { status: "OK", message_id: "..." }
+        message_id = response[:message_id] || response["message_id"]
 
         message.update!(
           status: 'sent',
-          sent_at: Time.current
+          sent_at: Time.current,
+          message_id: message_id,
+          x_track_id: x_track_id
         )
       rescue => e
         message.update!(
@@ -65,16 +119,16 @@ module Automation
       return unless incase && new_status.present?
 
       incase.update!(status: new_status)
+      Rails.logger.info "Changed incase ##{incase.id} status to #{new_status}"
     end
 
-    def render_liquid(content, context)
+    def render_liquid(content, liquid_context)
       return '' if content.blank?
       template = Liquid::Template.parse(content)
-      template.render(context.deep_stringify_keys)
+      template.render(liquid_context, { strict_variables: false })
     rescue Liquid::Error => e
       Rails.logger.error "Liquid render error: #{e.message}"
       content
     end
   end
 end
-

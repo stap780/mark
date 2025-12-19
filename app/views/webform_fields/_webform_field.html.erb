@@ -1,19 +1,27 @@
 <%= turbo_frame_tag dom_id(current_account, dom_id(field)), 
-    class: "grid grid-cols-[50px_1fr_70px_70px_150px] gap-4 p-4 items-center",
+    class: "grid grid-cols-[40px_1fr_70px_150px] gap-4 p-4 items-center",
     data: {sort_url: sort_account_webform_webform_field_path(current_account, webform, field), sort_item_id: field.id } do %>
   <%= sortable_with_badge(field.position) %>
   <div class="text-sm font-medium truncate">
-    <%= field.name %> <span class="text-gray-500">(<%= field.label %>)</span>
+    <% if field.field_type == 'image' %>
+      <% if field.image.attached? %>
+        <%= image_tag field.image if field.image.attached? %>
+      <% else %>
+        <span class="text-gray-500">no image</span>
+      <% end %>
+    <% else %>
+      <%= field.name %> <span class="text-gray-500">(<%= field.label %>)</span>
+    <% end %>
   </div>
-  <div class="text-sm text-gray-600"><%= field.field_type %></div>
-  <div class="text-sm text-gray-600">
-    <% if field.required %><span class="text-red-600">Required</span><% else %>Optional<% end %>
+  <div class="flex flex-col">
+    <span class="font-sm text-gray-600"><%= field.field_type %></span>
+    <span class="text-xs"><% if field.required %><span class="text-red-600">Required</span><% else %>Optional<% end %></span>
   </div>
   <div class="flex justify-end items-center space-x-2">
     <%= link_to_edit edit_account_webform_webform_field_path(current_account, webform, field),
-        data: { turbo_frame: :offcanvas, turbo_prefetch: false } %>
+        data: { turbo_frame: :offcanvas, turbo_prefetch: false }, title: "Edit" %>
     <%= link_to_show design_account_webform_webform_field_path(current_account, webform, field),
-        data: { turbo_frame: :offcanvas, turbo_prefetch: false } %>
+        data: { turbo_frame: :offcanvas, turbo_prefetch: false }, title: "Design" %>
     <%= link_to_delete account_webform_webform_field_path(current_account, webform, field),
         data: { turbo_method: :delete, turbo_confirm: "Delete field?" } %>
   </div>

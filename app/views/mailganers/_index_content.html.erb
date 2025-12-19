@@ -1,0 +1,15 @@
+<% if mailganer %>
+  <div class="grid grid-cols-[1fr_1fr_1fr_150px] gap-4 p-4 font-medium text-gray-700">
+    <div>API Key</div>
+    <div>SMTP Login</div>
+    <div>API Key Web Portal</div>
+    <div></div>
+  </div>
+  <%= render "mailganer", mailganer: mailganer, current_account: current_account %>
+<% else %>
+  <div class="text-sm text-gray-500 border rounded p-3">
+    Настройки Mailganer не настроены. Добавьте настройки для интеграции с Mailganer.
+  </div>
+<% end %>
+
+

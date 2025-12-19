@@ -35,6 +35,13 @@ class Api::IncasesController < ApplicationController
       resolve_item!(incase, account, it, from_insales: false)
     end
 
+    # Запускаем автоматику после того, как заявка и все позиции созданы
+    Automation::Engine.call(
+      account: account,
+      event: "incase.created",
+      object: incase
+    )
+
     render json: { incase: { id: incase.id, status: incase.status, webform_id: webform.id, client_id: client.id } }, status: :created
   rescue ActiveRecord::RecordInvalid => e
     render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
@@ -73,6 +80,13 @@ class Api::IncasesController < ApplicationController
         price: order_line[:sale_price] || order_line[:total_price]
       }, from_insales: true)
     end
+
+    # Запускаем автоматику после создания заявки и всех позиций
+    Automation::Engine.call(
+      account: account,
+      event: "incase.created",
+      object: incase
+    )
 
     head :ok
   rescue ActiveRecord::RecordInvalid => e

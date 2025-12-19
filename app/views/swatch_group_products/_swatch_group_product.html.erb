@@ -12,15 +12,25 @@
         <%= ff.hidden_field :swatch_value %>
       </div>
     </div>
-    <div class="text-sm">
-      <%= ff.text_field :swatch_label, class: "rounded-md border-gray-300 px-2 py-1", placeholder: "label" %>
-      <%= ff.text_field :color, class: "h-9 p-0 rounded-md border-gray-300" , placeholder: "color"%>
-      <div>
-        <%= ff.hidden_field :image, value: ff.object.image.signed_id if ff.object.image.attached? %>
-        <%= ff.file_field :image, accept: ["image/jpeg", "image/png"].join(','), direct_upload: true, class: "w-48 text-sm" %>
+    <div class="text-sm flex flex-col gap-2" data-controller="colors" data-colors-alpha-value="true">
+      <%= ff.text_field :swatch_label, class: "rounded-md border-1 border-gray-300 px-2 py-1", placeholder: "label" %>
+      <%= ff.text_field :color, 
+        class: "rounded-md border-1 border-gray-300 px-2 py-1 cursor-pointer" , 
+        placeholder: "color", 
+        data: { "colors-target": "input" },
+        value: ff.object.color %>
       </div>
-    </div>
-      <%= image_tag ff.object.image.variant(resize_to_limit: [32, 32]), class: "h-8 w-8 object-cover rounded" if ff.object.image&.attached? %>
+      <div class="mt-0">
+        <%= image_tag ff.object.image, class: "h-9 w-9 object-cover rounded" if ff.object.image&.attached? %>
+        <%= ff.hidden_field :image, value: ff.object.image.signed_id if ff.object.image.attached? %>
+        <label class="relative inline-flex items-center px-3 py-1.5 text-sm font-medium text-violet-700 bg-white border border-violet-300 rounded-md hover:bg-violet-50 cursor-pointer focus-within:ring-2 focus-within:ring-violet-500 focus-within:ring-offset-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          <%= ff.object.image.attached? ? "Изменить" : "Загрузить" %>
+          <%= ff.file_field :image, accept: ["image/jpeg", "image/png"].join(','), direct_upload: true, class: "absolute inset-0 w-full h-full opacity-0 cursor-pointer" %>
+        </label>
+      </div>
 
     <%= ff.hidden_field :product_id %>
     <%= ff.hidden_field :id %>

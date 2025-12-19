@@ -5,9 +5,19 @@ class Client < ApplicationRecord
 
   belongs_to :account
   has_many :list_items, dependent: :destroy
+  has_many :incases
   has_one_attached :list_items_file
 
   validates :name, presence: true
+
+  # Метод для получения заявок со статусом in_progress и типом notify
+  # Используется в IncaseNotifyGroupByClient для отправки уведомлений
+  def incases_for_notify
+    incases
+      .joins(:webform)
+      .where(status: 'in_progress')
+      .where(webforms: { kind: 'notify' })
+  end
 
   # Use Varbindable defaults
 

@@ -29,7 +29,7 @@
   </div>
 </div>
 
-<%= turbo_stream_from [current_account, :swatch_groups] %>
+<%= turbo_stream_from dom_id(current_account, :swatch_groups) %>
 
 <div class="bg-white rounded-lg shadow divide-y">
   <div class="grid grid-cols-[50px_1fr_1fr_1fr_120px] gap-4 p-4 font-medium text-gray-700">
@@ -39,7 +39,7 @@
     <div><%= t('activerecord.columns.status') %></div>
     <div></div>
   </div>
-  <%= turbo_frame_tag [current_account, :swatch_groups] do %>
+  <%= turbo_frame_tag dom_id(current_account, :swatch_groups) do %>
     <%= render @swatch_groups %>
     <%= render "shared/paginate", f: @swatch_groups %>
   <% end %>

@@ -60,7 +60,6 @@ class InsalesController < ApplicationController
         message = t('.success')
         flash.now[:success] = message
         format.turbo_stream { 
-          # render turbo_stream: turbo_close_offcanvas_flash + [ turbo_stream.replace([current_account, "insales"], target:  dom_id(@insale), partial: "insales/insale") ]
           render turbo_stream: [
             render_turbo_flash,
             turbo_stream.update(:offcanvas, ""),

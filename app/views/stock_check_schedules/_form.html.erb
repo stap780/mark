@@ -1,0 +1,27 @@
+<%= form_with model: [current_account, stock_check_schedule], local: true, class: "space-y-4" do |f| %>
+  <%= render 'shared/errors', object: stock_check_schedule %>
+  
+  <div>
+    <%= f.label :recurrence, t("activerecord.attributes.stock_check_schedule.recurrence"), class: "block text-sm font-medium text-gray-700" %>
+    <%= f.select :recurrence, options_for_select([[t("stock_check_schedules._form.recurrence_daily", default: "Раз в день"), "daily"]], stock_check_schedule.recurrence), {}, class: "mt-1 block w-full border rounded px-3 py-2" %>
+  </div>
+
+  <div>
+    <%= f.label :time, t("stock_check_schedules._form.time_label"), class: "block text-sm font-medium text-gray-700" %>
+    <% time_options = (0..23).flat_map { |h| [0].map { |m| format("%02d:%02d", h, m) } } %>
+    <%= f.select :time, options_for_select(time_options, stock_check_schedule.time), {}, class: "mt-1 block w-full border rounded px-3 py-2" %>
+  </div>
+
+  <div class="flex items-center">
+    <%= f.check_box :active, class: "h-4 w-4" %>
+    <%= f.label :active, t("activerecord.attributes.stock_check_schedule.active"), class: "ml-2 text-sm text-gray-700" %>
+  </div>
+
+  <div class="flex items-center space-x-4">
+    <button type="button" data-action="click->offcanvas#close"
+        class="inline-flex items-center px-3 py-1 bg-white text-violet-700 border border-violet-600 rounded-md hover:bg-violet-50">
+      <%= t("actions.cancel") %>
+    </button>
+    <%= f.submit t(:save), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+  </div>
+<% end %>

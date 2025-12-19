@@ -498,9 +498,93 @@
           : 'none'
       };
 
-      let fieldsHTML = '';
-      fields.forEach(field => {
+      // Разделяем поля по позициям изображений
+      const imageFields = fields.filter(f => f.type === 'image');
+      const behindImages = imageFields.filter(f => (f.settings || {}).image_position === 'behind');
+      const topImages = imageFields.filter(f => (f.settings || {}).image_position === 'top');
+      const leftImages = imageFields.filter(f => (f.settings || {}).image_position === 'left');
+      const rightImages = imageFields.filter(f => (f.settings || {}).image_position === 'right');
+      const bottomImages = imageFields.filter(f => (f.settings || {}).image_position === 'bottom');
+      const inlineImages = imageFields.filter(f => !f.settings || !f.settings.image_position || f.settings.image_position === 'none');
+      
+      // Обычные поля (не image или image с позицией none)
+      const regularFields = fields.filter(f => f.type !== 'image' || !f.settings || !f.settings.image_position || f.settings.image_position === 'none');
+
+      // Генерируем HTML для изображений сверху
+      let topImagesHTML = '';
+      topImages.forEach(field => {
         const fieldSettings = field.settings || {};
+        const imageWidth = fieldSettings.image_width_percent || 100;
+        const imageUrl = field.image_url || '#';
+        const objectFit = fieldSettings.image_object_fit || 'cover';
+        topImagesHTML += `
+          <div class="twc-webform-preview-image" style="width: ${imageWidth}%; display: block; margin: 0 auto; width: 100%; height: 100%;">
+            <img src="${imageUrl}" alt="${field.label || ''}" style="width: 100%; height: 100%; object-fit: ${objectFit}; object-position: 50% 50%; display: block;" />
+          </div>
+        `;
+      });
+
+      // Генерируем HTML для изображений слева
+      let leftImagesHTML = '';
+      leftImages.forEach(field => {
+        const fieldSettings = field.settings || {};
+        const imageUrl = field.image_url || '#';
+        const objectFit = fieldSettings.image_object_fit || 'cover';
+        leftImagesHTML += `
+          <img src="${imageUrl}" alt="${field.label || ''}" style="width: 100%; height: 100%; object-fit: ${objectFit}; object-position: 50% 50%; display: block;" />
+        `;
+      });
+
+      // Генерируем HTML для изображений справа
+      let rightImagesHTML = '';
+      rightImages.forEach(field => {
+        const fieldSettings = field.settings || {};
+        const imageUrl = field.image_url || '#';
+        const objectFit = fieldSettings.image_object_fit || 'cover';
+        rightImagesHTML += `
+          <img src="${imageUrl}" alt="${field.label || ''}" style="width: 100%; height: 100%; object-fit: ${objectFit}; object-position: 50% 50%; display: block;" />
+        `;
+      });
+
+      // Генерируем HTML для изображений снизу
+      let bottomImagesHTML = '';
+      bottomImages.forEach(field => {
+        const fieldSettings = field.settings || {};
+        const imageWidth = fieldSettings.image_width_percent || 100;
+        const imageUrl = field.image_url || '#';
+        const objectFit = fieldSettings.image_object_fit || 'cover';
+        bottomImagesHTML += `
+          <div class="twc-webform-preview-image" style="width: ${imageWidth}%; display: block; margin: 0 auto; width: 100%; height: 100%;">
+            <img src="${imageUrl}" alt="${field.label || ''}" style="width: 100%; height: 100%; object-fit: ${objectFit}; object-position: 50% 50%; display: block;" />
+          </div>
+        `;
+      });
+
+      // Генерируем HTML для фоновых изображений
+      let behindImagesHTML = '';
+      behindImages.forEach(field => {
+        const fieldSettings = field.settings || {};
+        const imageUrl = field.image_url || '#';
+        const objectFit = fieldSettings.image_object_fit || 'cover';
+        behindImagesHTML += `
+          <img src="${imageUrl}" alt="${field.label || ''}" style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: ${objectFit};
+            object-position: 50% 50%;
+            z-index: 0;
+          " />
+        `;
+      });
+
+      // Генерируем HTML для обычных полей (включая inline изображения)
+      let fieldsHTML = '';
+      regularFields.forEach(field => {
+        const fieldSettings = field.settings || {};
+        
         // Стили полей (значения уже содержат 'px' из schema)
         const fieldStyles = {
           width: fieldSettings.width || '100%',
@@ -508,10 +592,10 @@
           fontSize: fieldSettings.font_size || '14px',
           padding: `${fieldSettings.padding_y || '12px'} ${fieldSettings.padding_x || '12px'}`,
           color: fieldSettings.font_color || '#000000',
+          backgroundColor: fieldSettings.background_color || '#ffffff',
           borderColor: fieldSettings.border_color || '#000000',
           borderWidth: fieldSettings.border_width || '0px',
           borderRadius: fieldSettings.border_radius || '8px',
-          backgroundColor: fieldSettings.background_color || '#ffffff',
           boxShadow: fieldSettings.box_shadow_offset_x || fieldSettings.box_shadow_offset_y || fieldSettings.box_shadow_blur
             ? `${fieldSettings.box_shadow_offset_x || '0px'} ${fieldSettings.box_shadow_offset_y || '0px'} ${fieldSettings.box_shadow_blur || '0px'} ${fieldSettings.box_shadow_spread || '0px'} ${fieldSettings.box_shadow_color || 'rgba(0, 0, 0, 0.12)'}`
             : 'none'
@@ -522,7 +606,7 @@
           return `${cssKey}: ${value}`;
         }).join('; ');
 
-        // Обработка разных типов полей (как в _preview.html.erb)
+        // Обработка разных типов полей
         if (field.type === 'button') {
           const buttonStyle = `${styleString}; background: ${fieldSettings.background_color || '#ffffff'}`;
           fieldsHTML += `
@@ -547,6 +631,16 @@
           fieldsHTML += `
             <input type="email" name="${field.name}" placeholder="${placeholder}" ${requiredAttr} style="${styleString}" />
           `;
+        } else if (field.type === 'image') {
+          // Inline изображения (позиция none или не указана)
+          const imageWidth = fieldSettings.image_width_percent || 100;
+          const imageUrl = field.image_url || '#';
+          const objectFit = fieldSettings.image_object_fit || 'cover';
+          fieldsHTML += `
+            <div class="twc-webform-preview-image" style="width: ${imageWidth}%; max-width: 100%; display: block; margin: ${fieldSettings.margin_y || '0px'} ${fieldSettings.margin_x || '0px'}; width: 100%; height: 100%;">
+              <img src="${imageUrl}" alt="${field.label || ''}" style="width: 100%; height: 100%; object-fit: ${objectFit}; object-position: 50% 50%; display: block;" />
+            </div>
+          `;
         } else {
           // Для остальных типов (phone, number, и т.д.)
           const inputType = field.type === 'phone' ? 'tel' : field.type === 'number' ? 'number' : 'text';
@@ -558,6 +652,28 @@
         }
       });
 
+      // Определяем grid стили для webform-container
+      const hasLeft = leftImages.length > 0;
+      const hasRight = rightImages.length > 0;
+      let gridStyle = '';
+      
+      if (hasLeft || hasRight) {
+        const leftWidth = hasLeft ? (leftImages[0].settings || {}).image_width_percent || 50 : 0;
+        const rightWidth = hasRight ? (rightImages[0].settings || {}).image_width_percent || 50 : 0;
+        const formWidth = 100 - leftWidth - rightWidth;
+        
+        let gridTemplate = '';
+        if (hasLeft && hasRight) {
+          gridTemplate = `${leftWidth}% ${formWidth}% ${rightWidth}%`;
+        } else if (hasLeft) {
+          gridTemplate = `${leftWidth}% ${formWidth}%`;
+        } else {
+          gridTemplate = `${formWidth}% ${rightWidth}%`;
+        }
+        
+        gridStyle = `display: grid; grid-template-columns: ${gridTemplate}; gap: 16px; align-items: start;`;
+      }
+
       return `
         <div class="webform-overlay-content" style="
           position: fixed;
@@ -567,33 +683,53 @@
           height: 100%;
           background: rgba(0, 0, 0, 0.5);
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
           z-index: 10000;
         ">
-          <div class="webform-container" style="
-            position: relative;
-            ${Object.entries(formStyles).map(([key, value]) => {
-              const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-              return `${cssKey}: ${value}`;
-            }).join('; ')}
-          ">
-            <button class="webform-close" style="
-              position: absolute;
-              top: 10px;
-              right: 10px;
-              background: none;
-              border: none;
-              font-size: 24px;
-              cursor: pointer;
-            ">&times;</button>
-            <form class="webform-form">
-              ${fieldsHTML}
-              <div class="webform-error-message" style="display: none; color: red; font-size: 14px; margin-top: 10px;"></div>
-              <div class="webform-success-message" style="display: none; color: green; margin-top: 10px;">
-                Форма успешно отправлена!
-              </div>
-            </form>
+          <div class="webform-wrapper">
+            ${!hasLeft && !hasRight ? topImagesHTML : ''}
+            
+            <div class="twc-webform-preview" style="
+              position: relative;
+              overflow: hidden;
+              ${gridStyle}
+              background-color: ${settings.background_color || '#ffffff'};
+              ${Object.entries(formStyles).map(([key, value]) => {
+                const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                // Пропускаем backgroundColor, так как он уже добавлен выше
+                if (key === 'backgroundColor') return '';
+                return `${cssKey}: ${value}`;
+              }).filter(s => s).join('; ')}
+            ">
+              ${behindImagesHTML}
+              
+              <button class="webform-close" style="
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+                z-index: 2;
+              ">&times;</button>
+              
+              ${hasLeft ? `<div class="twc-webform-preview-image" style="position: relative; z-index: 1; width: 100%; height: 100%;">${leftImagesHTML}</div>` : ''}
+              
+              <form class="twc-webform-preview-form" style="position: relative;">
+                ${fieldsHTML}
+                <div class="webform-error-message" style="display: none; color: red; font-size: 14px; margin-top: 10px;"></div>
+                <div class="webform-success-message" style="display: none; color: green; margin-top: 10px;">
+                  Форма успешно отправлена!
+                </div>
+              </form>
+              
+              ${hasRight ? `<div class="twc-webform-preview-image" style="position: relative; z-index: 1; width: 100%; height: 100%;">${rightImagesHTML}</div>` : ''}
+            </div>
+            
+            ${!hasLeft && !hasRight ? bottomImagesHTML : ''}
           </div>
         </div>
       `;

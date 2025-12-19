@@ -45,12 +45,12 @@ class SwatchGroupProduct < ApplicationRecord
       end
     end
 
-    if width.to_i > 300 || height.to_i > 300
+    if width.to_i > 512 || height.to_i > 512
       errors.add(:image, I18n.t("activerecord.errors.models.swatch_group_product.attributes.image.invalid_dimensions"))
     end
     puts "width => #{width}"
     puts "height => #{height}"
-    puts "width.to_i > 300 => #{width.to_i > 300}"
-    puts "height.to_i > 300 => #{height.to_i > 300}"
+    puts "width.to_i > 512 => #{width.to_i > 512}"
+    puts "height.to_i > 512 => #{height.to_i > 512}"
   end
 end

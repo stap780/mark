@@ -97,24 +97,59 @@ class MessageTemplatesController < ApplicationController
   end
 
   def build_preview_context
-    # Создаем тестовые данные для предпросмотра
-    {
-      'incase' => {
-        'id' => 12345,
-        'status' => 'new',
-        'created_at' => Time.current.strftime('%d.%m.%Y %H:%M')
-      },
-      'client' => {
-        'name' => 'Иван Иванов',
-        'email' => 'ivan@example.com',
-        'phone' => '+7 (999) 123-45-67'
-      },
-      'webform' => {
-        'title' => 'Форма обратной связи',
-        'kind' => 'order'
-      }
-    }
+    # Для предпросмотра всегда используем фейковые объекты,
+    # но их интерфейс должен соответствовать тому, что ожидают LiquidDrops.
+    require 'ostruct'
+
+    # Фейковые товары (нужны title и product_link через IncaseItemDrop#product_link)
+    fake_product1 = OpenStruct.new(
+      title: 'Тестовый товар 1',
+      insales_link: 'https://example.com/products/test-1'
+    )
+    fake_product2 = OpenStruct.new(
+      title: 'Тестовый товар 2',
+      insales_link: 'https://example.com/products/test-2'
+    )
+
+    # Фейковые позиции заявки (item)
+    fake_item1 = OpenStruct.new(product: fake_product1, quantity: 2, price: 100, sum: 200)
+    fake_item2 = OpenStruct.new(product: fake_product2, quantity: 1, price: 300, sum: 300)
+
+    # Фейковая заявка
+    fake_incase = OpenStruct.new(
+      id: 12345,
+      status: 'in_progress',
+      created_at: Time.current,
+      items: [fake_item1, fake_item2]
+    )
+
+    # Фейковый клиент
+    fake_client = OpenStruct.new(
+      name: 'Иван Иванов',
+      email: 'ivan@example.com',
+      phone: '+7 (999) 123-45-67'
+    )
+
+    # Для совместимости с ClientDrop: incases и incases_for_notify
+    fake_client.define_singleton_method(:incases) do
+      @incases ||= [fake_incase]
+    end
+
+    fake_client.define_singleton_method(:incases_for_notify) do
+      incases
+    end
+
+    # Фейковая вебформа
+    fake_webform = OpenStruct.new(
+      title: 'Тестовая форма заказа',
+      kind: 'notify'
+    )
+
+    Automation::LiquidContextBuilder.build(
+      incase: fake_incase,
+      client: fake_client,
+      webform: fake_webform
+    )
   end
 
 end
-

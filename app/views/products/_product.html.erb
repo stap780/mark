@@ -1,6 +1,6 @@
 <% first_variant = product.variants.first %>
 <%= turbo_frame_tag dom_id(product, dom_id(current_account)), class: "grid grid-cols-[50px_40px_80px_1fr_80px_120px] gap-4 p-4 items-center" do %>
-  <div><%= product.id %></div>
+  <div title="<%= product.insales_link %>"><%= product.id %></div>
   <div>
     <%= link_to insales_info_account_product_path(current_account, product),
       data: { turbo_stream: true },

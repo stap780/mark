@@ -1,0 +1,20 @@
+<%= render 'shared/offcanvas_inner', title: 'Mailganer Info', width: '40rem' do %>
+  <div class="p-4 space-y-4 text-sm text-gray-800">
+    <p>
+      <strong>Mailganer</strong> — внешний сервис для отправки транзакционных и массовых email-сообщений.
+      В этом разделе настраиваются ключи доступа для интеграции с API Mailganer на уровне аккаунта.
+    </p>
+
+    <ul class="list-disc pl-5 space-y-1">
+      <li><strong>API Key</strong> — ключ для авторизации SMTP- и HTTP-запросов.</li>
+      <li><strong>SMTP Login</strong> — логин, используемый для генерации <code>x_track_id</code> и отправки SMTP-писем.</li>
+      <li><strong>API Key Web Portal</strong> — ключ для доступа к веб-порталу и дополнительным API методам.</li>
+    </ul>
+
+    <p>
+      Кнопка отправки тестового сообщения позволяет быстро проверить корректность настроек Mailganer на текущем аккаунте.
+    </p>
+  </div>
+<% end %>
+
+

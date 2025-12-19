@@ -6,10 +6,21 @@
           <img src="<%= i[:image_link] %>" class="h-8 w-8 object-cover rounded" onerror="this.style.display='none'">
           <span class="text-sm"><%= i[:title] %><%= " · #{i[:price]}" if i[:price].present? %><%= " (#{i[:group_id]}-#{i[:offer_id]})" %><%= " · #{i[:vendor_code]}" if i[:vendor_code].present? %></span>
         </div>
-        <%= link_to 'Add item', 
-        new_account_swatch_group_swatch_group_product_path(current_account, @swatch_group, 
-        offer_id: i[:offer_id], group_id: i[:group_id], title: i[:title], image_link: i[:image_link]), 
-        data: { turbo_stream: true }, class: 'px-2 py-1 text-sm rounded-md border hover:bg-gray-50' %>
+        <%= link_to new_account_swatch_group_swatch_group_product_path(
+              current_account, 
+              @swatch_group, 
+              offer_id: i[:offer_id], 
+              group_id: i[:group_id], 
+              title: i[:title], 
+              image_link: i[:image_link]
+            ), 
+            data: { turbo_stream: true }, 
+            class: 'p-2 rounded-md border hover:bg-gray-50 flex items-center justify-center', 
+            title: 'Добавить' do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+        <% end %>
       </div>
     <% end %>
   </div>

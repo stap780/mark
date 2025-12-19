@@ -59,8 +59,17 @@ en:
     swatches: "Swatches"
     webforms: "Webforms"
     insales: "InSales"
+    stock_check_schedule: "Stock Check"
     email_settings: "Email Settings"
     users: "Users"
+    status: "Status"
+    automation: "Automation"
+    automation_rules: "Automation Rules"
+    message_templates: "Message Templates"
+    automation_messages: "Message Statistics"
+  
+  dashboard:
+    status_ok: "OK"
   
   # Actions
   sign_in: "Sign in"
@@ -212,6 +221,15 @@ en:
         user_name: "Username"
         user_password: "Password"
         tls: "Enable TLS"
+      stock_check_schedule:
+        recurrence: "Interval"
+        time: "Time"
+        active: "Enabled"
+    enums:
+      account_user:
+        role:
+          admin: "Admin"
+          member: "Member"
     errors:
       format: "%{attribute} %{message}"
       messages:
@@ -370,6 +388,8 @@ en:
         success: "Condition deleted"
   
   automation_rules:
+    edit:
+      heading: "Edit automation rule"
     update:
       success: "Automation rule updated"
     destroy:
@@ -559,10 +579,61 @@ en:
     test_email_label: "Test Email"
     already_exists: "Email settings already exist"
 
+  stock_check_schedules:
+    index:
+      heading: "Stock Check"
+      no_schedules: "No stock check schedules created"
+      active: "Enabled"
+      recurrence: "Interval"
+      time: "Time"
+      next_check: "Next check"
+    new:
+      heading: "New Stock Check Schedule"
+      already_exists: "Schedule already exists"
+    edit:
+      heading: "Edit Stock Check Schedule"
+    show:
+      heading: "Stock Check Schedule"
+    create:
+      success: "Stock check schedule created successfully."
+    update:
+      success: "Stock check schedule updated successfully."
+    destroy:
+      success: "Stock check schedule deleted successfully."
+    _form:
+      active: "Enabled"
+      recurrence: "Interval"
+      recurrence_daily: "Daily"
+      recurrence_hourly: "Hourly"
+      select_recurrence: "Select interval"
+      time: "Time"
+      time_label: "Time"
+      time_description_daily: "Format: HH:MM (e.g., 09:00)"
+      time_description_hourly: "Minute (0-59, e.g., 30 for :30 past every hour)"
+      next_check: "Next check"
+      new: "Create schedule"
+    _stock_check_schedule:
+      active: "Enabled"
+      recurrence: "Interval"
+      recurrence_daily: "Daily"
+      recurrence_hourly: "Hourly"
+      time: "Time"
+      next_check: "Next check"
+      yes: "Yes"
+      no: "No"
+      confirm_destroy: "Are you sure you want to delete this schedule?"
+
   webforms:
     index:
       regenerate_json: "Regenerate JSON"
       webform_file: "Webform File"
+    new:
+      title: "New Webform"
+    edit:
+      title: "Edit Webform"
+    _form:
+      create: "Create"
+      update: "Update"
     create:
       success: "Webform created successfully."
     update:
@@ -593,6 +664,8 @@ en:
     index:
       email: "Email"
       role: "Role"
+    new:
+      title: "New User"
     edit:
       edit: "Edit User"
     form:

@@ -1,0 +1,28 @@
+<div id="<%= dom_id(current_account, dom_id(stock_check_schedule)) %>" class="grid grid-cols-[1fr_1fr_1fr_200px_150px] gap-4 p-4 items-center hover:bg-gray-50">
+  <div>
+    <span class="px-2 py-1 text-xs rounded <%= stock_check_schedule.active? ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+      <%= stock_check_schedule.active? ? t('.yes', default: 'Да') : t('.no', default: 'Нет') %>
+    </span>
+  </div>
+  <div class="text-sm text-gray-600">
+    <%= t('.recurrence_daily', default: 'Раз в день') %>
+  </div>
+  <div class="text-sm text-gray-600"><%= stock_check_schedule.time %></div>
+  <div class="text-sm text-gray-600">
+    <% if stock_check_schedule.scheduled_for.present? %>
+      <%= l(stock_check_schedule.scheduled_for, format: :short) %>
+    <% else %>
+      <span class="text-gray-400">—</span>
+    <% end %>
+  </div>
+  <div class="flex justify-end space-x-2">
+    <%= link_to t('.run', default: 'Запустить'),
+                run_account_stock_check_schedule_path(current_account, stock_check_schedule),
+                class: "px-3 py-1 rounded-md bg-violet-600 text-white text-xs hover:bg-violet-700 flex items-center justify-center",
+                data: { turbo_method: :post } if Rails.env.development? %>
+    <%= link_to_edit edit_account_stock_check_schedule_path(current_account, stock_check_schedule), 
+        data: { turbo_frame: 'offcanvas' } %>
+    <%= link_to_delete account_stock_check_schedule_path(current_account, stock_check_schedule),
+        data: { turbo_method: :delete, turbo_confirm: t('.confirm_destroy', default: 'Вы уверены?') } %>
+  </div>
+</div>

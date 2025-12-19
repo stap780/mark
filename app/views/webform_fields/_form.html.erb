@@ -16,7 +16,7 @@
 
   <div>
     <%= f.label :field_type, class: "block text-sm font-medium text-gray-700" %>
-    <%= f.select :field_type, [['text','text'],['email','email'],['textarea','textarea'],['phone','phone'],['number','number'],['select','select'],['checkbox','checkbox'],['button','button']], {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
+    <%= f.select :field_type, WebformField::FIELD_TYPES, {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
   </div>
 
   <div>
@@ -24,10 +24,9 @@
     <%= f.check_box :required, class: "mt-1 h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded" %>
   </div>
 
-  <%# tag.div do %>
-    <%# f.label :position, class: "block text-sm font-medium text-gray-700" %>
-    <%# f.number_field :position, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5", value: (@webform_field.new_record? ? (@webform.webform_fields.count + 1) : @webform_field.position) %>
-  <%# end %>
+  <div>
+    <%= f.file_field :image, direct_upload: true %>
+  </div>
 
   <div>
     <%= f.submit (@webform_field.new_record? ? 'Create' : 'Update'), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>

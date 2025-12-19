@@ -2,9 +2,8 @@
   <div><%= message_template.title %></div>
   <div><%= message_template.channel.humanize %></div>
   <div><%= message_template.context || '-' %></div>
-  <div class="flex space-x-2 items-center">
-    <%= link_to "Редактировать", account_message_template_path(current_account, message_template),
-        class: "text-violet-600 hover:text-violet-800 text-sm", data: { turbo: false } %>
+  <div class="flex space-x-2 items-center justify-end">
+    <%= link_to_edit account_message_template_path(current_account, message_template), data: { turbo: false } %>
     <%= link_to_delete account_message_template_path(current_account, message_template),
         method: :delete, data: { turbo_confirm: "Вы уверены?", turbo_method: :delete }%> 
   </div>

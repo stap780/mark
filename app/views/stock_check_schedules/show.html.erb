@@ -1,0 +1,14 @@
+<%= turbo_frame_tag :offcanvas do %>
+  <div class="bg-white rounded-lg shadow-lg max-w-md w-full">
+    <div class="flex items-center justify-between p-4 border-b">
+      <h2 class="text-lg font-semibold"><%= t('.heading', default: 'Настройка проверки остатков') %></h2>
+      <%= link_to "✕", account_stock_check_schedules_path(current_account), 
+          data: { turbo_frame: '_top' },
+          class: "text-gray-400 hover:text-gray-600" %>
+    </div>
+    <div class="p-4">
+      <%= render "stock_check_schedule", stock_check_schedule: @stock_check_schedule %>
+    </div>
+  </div>
+<% end %>
+

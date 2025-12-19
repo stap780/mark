@@ -18,8 +18,20 @@ module WebformSettings
     'box_shadow_color' => 'rgba(0, 0, 0, 0.12)'
   }.freeze
 
+  # Специальные настройки для image полей
+  IMAGE_DEFAULT = {
+    'image_position' => 'none',  # none, behind, left, right, top, bottom
+    'image_width_percent' => 100,  # ширина в процентах
+    'image_object_fit' => 'cover'  # contain, cover, fill, none
+  }.freeze
+
   def default_settings
-    DEFAULT.dup
+    settings = DEFAULT.dup
+    # Если это WebformField с типом image, добавляем специальные настройки
+    if self.is_a?(WebformField) && self.field_type == 'image'
+      settings.merge!(IMAGE_DEFAULT)
+    end
+    settings
   end
 
   def merge_with_defaults(settings_hash = nil)

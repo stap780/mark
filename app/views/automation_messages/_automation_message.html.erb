@@ -1,0 +1,33 @@
+<%= turbo_frame_tag dom_id(current_account, dom_id(automation_message)) do %>
+    <div class="grid grid-cols-[50_150px_200px_200px_200px_200px_1fr] gap-4 p-4 items-center hover:bg-gray-50">
+      <div class="text-sm"><%= automation_message.id %></div>
+      <div class="text-sm"><%= automation_message.created_at.strftime("%d.%m.%Y %H:%M") %></div>
+      <div class="text-sm"><%= automation_message.automation_rule.title %></div>
+      <div class="text-sm"><%= automation_message.client.email || automation_message.client.name %></div>
+      <div class="text-sm flex items-center justify-between">
+        <div><%= automation_message.channel.humanize %></div>
+        <div class="mt-1">
+          <% case automation_message.status %>
+          <% when 'sent' %>
+            <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">Отправлено</span>
+          <% when 'failed' %>
+            <span class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded">Ошибка</span>
+          <% when 'pending' %>
+            <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">Ожидает</span>
+          <% when 'delivered' %>
+            <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">Доставлено</span>
+          <% end %>
+        </div>
+        <% if automation_message.email? && (automation_message.message_id.present? || automation_message.x_track_id.present?) %>
+          <%= link_to check_status_account_automation_message_path(current_account, automation_message), data: {turbo_stream: true, turbo_prefetch: false},
+          class: "p-2 rounded-md bg-violet-100 hover:bg-violet-200 flex items-center justify-center", title: "Проверить статус" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+          </svg>
+          <% end %>
+        <% end %>
+      </div>
+      <div class="text-sm truncate"><%= automation_message.subject %></div>
+    </div>
+
+<% end %>

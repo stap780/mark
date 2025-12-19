@@ -154,7 +154,7 @@ class WebformFieldsController < ApplicationController
   end
 
   def webform_field_params
-    permitted = params.require(:webform_field).permit(:name, :label, :field_type, :required, :position, settings: {})
+    permitted = params.require(:webform_field).permit(:name, :label, :field_type, :required, :position, :image, settings: {})
     
     # Handle settings hash from form
     if params[:webform_field][:settings].is_a?(ActionController::Parameters)

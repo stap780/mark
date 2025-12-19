@@ -35,7 +35,7 @@
       <% if account_user&.account_id == account.id %>
         <%= f.hidden_field :id %>
         <%= f.hidden_field :account_id, value: account.id %>
-        <% collection = AccountUser.roles.keys.map { |role| [role.humanize, role] } %>
+        <% collection = AccountUser.roles.keys.map { |role| [t("activerecord.enums.account_user.role.#{role}"), role] } %>
         <%= f.select :role, collection, { selected: account_user&.role }, 
             { class: "block shadow-sm rounded-md border px-3 py-2 mt-2 w-full border-gray-400 focus:outline-blue-600" } %>
       <% end %>
