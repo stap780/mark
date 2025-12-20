@@ -384,6 +384,27 @@ en:
       edit:
         heading: "Edit automation rule"
     automation_conditions:
+      select_field: "Select field"
+      select_operator: "Select operator"
+      select_value: "Select value"
+      value_placeholder: "Value"
+      delete_confirm: "Delete condition?"
+      values:
+        boolean:
+          true: "Yes"
+          false: "No"
+        incase_status:
+          new: "New"
+          in_progress: "In Progress"
+          done: "Done"
+          canceled: "Canceled"
+          closed: "Closed"
+        incase_webform_kind:
+          order: "Order"
+          notify: "Notify when in stock"
+          preorder: "Preorder"
+          abandoned_cart: "Abandoned cart"
+          custom: "Custom"
       destroy:
         success: "Condition deleted"
   
@@ -394,6 +415,14 @@ en:
       success: "Automation rule updated"
     destroy:
       success: "Automation rule deleted"
+    index:
+      add_standard_scenarios: "Add Standard Scenarios"
+    create_standard_scenarios:
+      title: "Add Standard Scenarios"
+      description: "The following scenarios will be created:"
+      warning: "Warning! Existing scenarios with the same names will be updated."
+      create_button: "Create"
+      success: "Standard scenarios created successfully"
 
   swatch_groups:
     index:
@@ -634,6 +663,12 @@ en:
     _form:
       create: "Create"
       update: "Update"
+    kinds:
+      order: "Order"
+      notify: "Notify when in stock"
+      preorder: "Preorder"
+      abandoned_cart: "Abandoned cart"
+      custom: "Custom"
     create:
       success: "Webform created successfully."
     update:

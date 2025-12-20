@@ -159,6 +159,10 @@ Rails.application.routes.draw do
       end
     end
     resources :automation_rules do
+      collection do
+        get :create_standard_scenarios_form
+        post :create_standard_scenarios
+      end
       resources :automation_conditions, only: [:new, :create, :destroy]
       resources :automation_actions, only: [:new, :create, :destroy]
     end

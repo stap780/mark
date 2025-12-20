@@ -68,6 +68,45 @@ class AutomationRulesController < ApplicationController
     end
   end
 
+  def create_standard_scenarios_form
+    # Отображаем форму в offcanvas
+  end
+
+  def create_standard_scenarios
+    service = Automation::CreateStandardScenarios.new(current_account)
+    
+    respond_to do |format|
+      service.call
+      @automation_rules = current_account.automation_rules.order(:position, :created_at)
+      flash.now[:success] = t('automation_rules.create_standard_scenarios.success')
+      format.turbo_stream do
+        render turbo_stream: [
+          turbo_stream.update(
+            dom_id(current_account, :automation_rules),
+            partial: 'automation_rules/index_list',
+            locals: { automation_rules: @automation_rules, current_account: current_account }
+          ),
+          turbo_stream.update(:offcanvas, ""),
+          render_turbo_flash
+        ]
+      end
+      format.html { redirect_to account_automation_rules_path(current_account), notice: t('automation_rules.create_standard_scenarios.success') }
+    end
+  rescue => e
+    Rails.logger.error "Error creating standard scenarios: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    
+    respond_to do |format|
+      flash.now[:error] = "Ошибка: #{e.message}"
+      format.turbo_stream do
+        render turbo_stream: [
+          render_turbo_flash
+        ]
+      end
+      format.html { redirect_to account_automation_rules_path(current_account), alert: "Ошибка: #{e.message}" }
+    end
+  end
+
   private
 
   def set_automation_rule

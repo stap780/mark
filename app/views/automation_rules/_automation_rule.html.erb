@@ -9,9 +9,8 @@
     <% end %>
   </div>
   <div><%= automation_rule.automation_actions.count %></div>
-  <div class="flex space-x-2 items-center">
-    <%= link_to "Редактировать", edit_account_automation_rule_path(current_account, automation_rule),
-        class: "text-violet-600 hover:text-violet-800 text-sm", data: { turbo: false } %>
+  <div class="flex space-x-2 items-center justify-end">
+    <%= link_to_edit edit_account_automation_rule_path(current_account, automation_rule), data: { turbo: false } %>
     <%= link_to_delete account_automation_rule_path(current_account, automation_rule),
   data: { turbo_method: :delete, turbo_confirm: "Delete automation rule?" } %>
   </div>

@@ -10,7 +10,7 @@
               (automation_rule.event ? available_fields_for_event(automation_rule.event).map { |f| [f[:label], f[:key]] } : []),
               automation_condition.field
             ),
-            { include_blank: "Выберите поле" },
+            { include_blank: t('automation_conditions.select_field') },
             { 
               class: "w-full px-2 py-1 border rounded-md text-sm"
             } %>
@@ -25,7 +25,7 @@
               available_ops.map { |op| [op[:label], op[:key]] },
               automation_condition.operator
             ),
-            { include_blank: "Выберите значение" },
+            { include_blank: t('automation_conditions.select_operator') },
             { 
               class: "w-full px-2 py-1 border rounded-md text-sm"
             } %>
@@ -43,24 +43,24 @@
           <% select_options = select_options_for_condition(field_info, operator) %>
           <%= ff.select :value,
               options_for_select(select_options, automation_condition.value),
-              { include_blank: "Выберите значение" },
+              { include_blank: t('automation_conditions.select_value') },
               { 
                 class: "w-full px-2 py-1 border rounded-md text-sm"
               } %>
         <% elsif input_type == 'number' %>
           <%= ff.number_field :value,
               value: automation_condition.value,
-              placeholder: "Значение",
+              placeholder: t('automation_conditions.value_placeholder'),
               class: "w-full px-2 py-1 border rounded-md text-sm"%>
         <% elsif input_type == 'text' %>
           <%= ff.text_field :value,
               value: automation_condition.value,
-              placeholder: "Значение",
+              placeholder: t('automation_conditions.value_placeholder'),
               class: "w-full px-2 py-1 border rounded-md text-sm"%>
         <% else %>
           <%= ff.text_field :value,
               value: automation_condition.value,
-              placeholder: "Значение",
+              placeholder: t('automation_conditions.value_placeholder'),
               class: "w-full px-2 py-1 border rounded-md text-sm"%>
         <% end %>
         
@@ -70,7 +70,7 @@
       <!-- Delete button -->
       <div class="flex items-center">
         <% path = automation_condition.new_record? ? account_automation_rule_automation_condition_path(current_account, automation_rule, id: turbo_id_for(automation_condition)) : account_automation_rule_automation_condition_path(current_account, automation_rule, automation_condition) %>
-        <%= link_to_delete path, data: { turbo_method: :delete, turbo_confirm: 'Удалить условие?' } %>
+        <%= link_to_delete path, data: { turbo_method: :delete, turbo_confirm: t('automation_conditions.delete_confirm') } %>
         <%= ff.hidden_field :id %>
       </div>
     </div>

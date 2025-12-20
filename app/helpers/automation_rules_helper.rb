@@ -68,25 +68,14 @@ module AutomationRulesHelper
         field_info_by_key("incase.webform.title"),
         field_info_by_key("client.email"),
         field_info_by_key("client.phone"),
-        field_info_by_key("incase.items.count")
+        field_info_by_key("incase.items.count"),
+        field_info_by_key("incase.has_order_with_same_items?")
       ].compact.map do |field|
         {
           key: field[:key],
           label: field_label(field[:key]),
           type: field[:type],
           values: field[:values]
-        }
-      end
-      
-      # Добавляем специальное поле для брошенных корзин
-      if event.to_s.include?('abandoned_cart')
-        boolean_field = field_info_by_key("incase.has_order_with_same_items?")
-        fields << {
-          key: boolean_field[:key],
-          label: field_label(boolean_field[:key]),
-          type: boolean_field[:type],
-          values: boolean_field[:values],
-          description: "Проверяет наличие заказа у клиента с идентичными позициями"
         }
       end
       
@@ -202,11 +191,20 @@ module AutomationRulesHelper
   def select_options_for_condition(field_info, operator)
     return [] unless field_info
     
+    field_key = field_info[:key] || field_info['key']
+    
     case field_info[:type]
     when 'boolean'
-      [["Да", "true"], ["Нет", "false"]]
+      [
+        [I18n.t('automation_conditions.values.boolean.true'), "true"],
+        [I18n.t('automation_conditions.values.boolean.false'), "false"]
+      ]
     when 'enum'
-      field_info[:values].map { |v| [v.humanize, v] }
+      field_info[:values].map do |v|
+        translation_key = "automation_conditions.values.#{field_key&.gsub('.', '_')&.gsub('?', '')}.#{v}"
+        label = I18n.t(translation_key, default: v.humanize)
+        [label, v]
+      end
     else
       []
     end

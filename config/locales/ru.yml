@@ -559,6 +559,14 @@ ru:
       success: "Правило обновлено"
     destroy:
       success: "Правило удалено"
+    index:
+      add_standard_scenarios: "Добавить стандартные сценарии"
+    create_standard_scenarios:
+      title: "Добавить стандартные сценарии"
+      description: "Будут созданы следующие сценарии:"
+      warning: "Внимание! Существующие сценарии с такими же названиями будут обновлены."
+      create_button: "Создать"
+      success: "Стандартные сценарии успешно созданы"
 
   products:
     index:
@@ -805,6 +813,12 @@ ru:
     _form:
       create: "Создать"
       update: "Обновить"
+    kinds:
+      order: "Заказ"
+      notify: "Сообщить о поступлении"
+      preorder: "Предзаказ"
+      abandoned_cart: "Брошенная корзина"
+      custom: "Кастомная"
     create:
       success: "Веб-форма успешно создана."
     update:
@@ -828,6 +842,27 @@ ru:
     destroy:
       success: "Действие успешно удалено."
   automation_conditions:
+    select_field: "Выберите поле"
+    select_operator: "Выберите оператор"
+    select_value: "Выберите значение"
+    value_placeholder: "Значение"
+    delete_confirm: "Удалить условие?"
+    values:
+      boolean:
+        true: "Да"
+        false: "Нет"
+      incase_status:
+        new: "Новая"
+        in_progress: "В обработке"
+        done: "Выполнена"
+        canceled: "Отменена"
+        closed: "Закрыта"
+      incase_webform_kind:
+        order: "Заказ"
+        notify: "Сообщить о поступлении"
+        preorder: "Предзаказ"
+        abandoned_cart: "Брошенная корзина"
+        custom: "Кастомная"
     destroy:
       success: "Условие удалено"
 
