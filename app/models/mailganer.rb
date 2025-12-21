@@ -41,6 +41,38 @@ class Mailganer < ApplicationRecord
     [false, I18n.t('mailganers.test_email.error', msg: e.message)]
   end
 
+  # Класс-метод: проверяет, можно ли отправить письмо через глобальную конфигурацию Mailganer.
+  # Если у аккаунта есть свой Mailganer, ограничение не применяется.
+  #
+  # @param account [Account]
+  # @return [Array(Boolean, String)] [можно_отправить, сообщение_об_ошибке]
+  def self.can_send_email_via_global_mailganer?(account:)
+    # Если у аккаунта есть свой Mailganer, ограничение не применяется
+    return [true, nil] if account.mailganer.present?
+
+    # Лимит для глобальной конфигурации
+    limit = 50
+
+    # Подсчитываем отправленные письма за текущий месяц
+    current_month_start = Time.current.beginning_of_month
+    current_month_end = Time.current.end_of_month
+
+    sent_count = account.automation_messages
+      .where(channel: 'email', status: 'sent')
+      .where(sent_at: current_month_start..current_month_end)
+      .count
+
+    if sent_count >= limit
+      message = I18n.t('automation_messages.global_mailganer_limit_exceeded',
+                       limit: limit,
+                       count: sent_count,
+                       reset_date: current_month_end.strftime('%d.%m.%Y'))
+      [false, message]
+    else
+      [true, nil]
+    end
+  end
+
   # Класс-метод: проверяет статус доставки сообщения.
   # Если у аккаунта есть Mailganer — используется его конфигурация,
   # иначе используется глобальная конфигурация MailganerClient.

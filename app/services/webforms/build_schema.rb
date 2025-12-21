@@ -20,7 +20,19 @@ module Webforms
         kind: @webform.kind,
         status: @webform.status,
         settings: normalize_settings(merged_settings),
-        fields: @webform.webform_fields.order(:position).map { |f| serialize_field(f) }
+        fields: @webform.webform_fields.order(:position).map { |f| serialize_field(f) },
+        # Добавляем настройки триггеров (для всех типов форм)
+        trigger: {
+          type: merged_settings['trigger_type'] || default_trigger_type_for_kind(@webform.kind),
+          value: merged_settings['trigger_value'],
+          show_delay: merged_settings['show_delay'] || 0,
+          show_once_per_session: merged_settings['show_once_per_session'] != false,
+          show_frequency_days: merged_settings['show_frequency_days'],
+          target_pages: merged_settings['target_pages'] || [],
+          exclude_pages: merged_settings['exclude_pages'] || [],
+          target_devices: merged_settings['target_devices'] || ['desktop', 'mobile', 'tablet'],
+          cookie_name: merged_settings['cookie_name'] || "webform_#{@webform.id}_shown"
+        }
       }
     end
 
@@ -84,6 +96,19 @@ module Webforms
       return "#{str}px" if str.match?(/\A-?\d+(?:\.\d+)?\z/) # Число без единиц
       
       fallback
+    end
+
+    def default_trigger_type_for_kind(kind)
+      case kind
+      when 'custom'
+        'manual'
+      when 'notify', 'preorder'
+        'event'
+      when 'abandoned_cart'
+        'activity'
+      else
+        nil
+      end
     end
   end
 end

@@ -1,5 +1,5 @@
 <%= turbo_frame_tag dom_id(current_account, dom_id(incase)), class: "grid grid-cols-[80px_160px_120px_2fr_2fr_120px_120px] gap-4 p-4 hover:bg-gray-50 items-center" do %>
-  <div><%= link_to incase.id, account_incase_path(current_account, incase), class: "text-violet-600 hover:text-violet-800", data: { turbo: false } %></div>
+  <div><%= link_to incase.display_number || incase.number || incase.id, account_incase_path(current_account, incase), class: "text-violet-600 hover:text-violet-800", data: { turbo: false } %></div>
   <div><%= l incase.created_at, format: :short %></div>
   <div><%= t("incases.status.#{incase.status}") %></div>
   <div><%= incase.webform&.title %> (<%= incase.webform&.kind %>)</div>

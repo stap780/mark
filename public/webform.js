@@ -131,91 +131,347 @@
     }
 
     handleNotify(webform) {
-      if (typeof EventBus !== 'undefined' && EventBus.subscribe) {
-        this.debugLog(`[handleNotify] Subscribing to empty-product:insales:site for webform ${webform.id}`);
-        EventBus.subscribe("empty-product:insales:site", (data) => {
-          this.debugLog(`[handleNotify] Event received:`, data);
-          // Получаем productId и variantId из события или data-атрибутов
-          const productId = data?.productId || document.querySelector("[data-feedback-product-id]")?.dataset?.feedbackProductId;
-          const variantId = data?.variantId || document.querySelector("[data-variant-id]")?.dataset?.variantId;
-          this.debugLog(`[handleNotify] ProductId: ${productId}, VariantId: ${variantId}`);
-          this.showForm(webform, { productId, variantId });
-        });
+      const trigger = webform.trigger || {};
+      const triggerType = trigger.type || 'event';
+      
+      this.debugLog(`[handleNotify] Webform ${webform.id} trigger type: ${triggerType}`);
+      
+      // Существующий механизм через EventBus (для совместимости)
+      if (triggerType === 'event' || triggerType === 'manual') {
+        if (typeof EventBus !== 'undefined' && EventBus.subscribe) {
+          this.debugLog(`[handleNotify] Subscribing to empty-product:insales:site for webform ${webform.id}`);
+          EventBus.subscribe("empty-product:insales:site", (data) => {
+            this.debugLog(`[handleNotify] Event received:`, data);
+            const productId = data?.productId || document.querySelector("[data-feedback-product-id]")?.dataset?.feedbackProductId;
+            const variantId = data?.variantId || document.querySelector("[data-variant-id]")?.dataset?.variantId;
+            this.debugLog(`[handleNotify] ProductId: ${productId}, VariantId: ${variantId}`);
+            this.showForm(webform, { productId, variantId });
+          });
+        } else {
+          this.debugLog(`[handleNotify] EventBus not available`);
+        }
+        
+        // Ручной показ через data-twc-webform-id (новый функционал)
+        if (triggerType === 'manual') {
+          this.setupManualTrigger(webform);
+        }
       } else {
-        this.debugLog(`[handleNotify] EventBus not available`);
+        // Автоматические триггеры (exit_intent, time_on_page, scroll_depth)
+        this.handleWebformWithTrigger(webform, 'notify');
       }
     }
 
     handlePreorder(webform) {
-      // Ищем элементы с стандартным data-атрибутом InSales для предзаказа
-      const preorderTriggers = document.querySelectorAll('[data-product-card-preorder]');
-      this.debugLog(`[handlePreorder] Found ${preorderTriggers.length} preorder triggers for webform ${webform.id}`);
+      const trigger = webform.trigger || {};
+      const triggerType = trigger.type || 'event';
       
-      preorderTriggers.forEach(trigger => {
-        trigger.addEventListener('click', (e) => {
-          e.preventDefault();
-          // Получаем productId и variantId из data-атрибутов элемента
-          const productId = trigger.getAttribute('data-product-id') || trigger.closest('[data-product-id]')?.getAttribute('data-product-id');
-          const variantId = trigger.getAttribute('data-variant-id') || trigger.closest('[data-variant-id]')?.getAttribute('data-variant-id');
-          this.debugLog(`[handlePreorder] Trigger clicked - ProductId: ${productId}, VariantId: ${variantId}`);
-          this.showForm(webform, { productId, variantId });
+      this.debugLog(`[handlePreorder] Webform ${webform.id} trigger type: ${triggerType}`);
+      
+      // Существующий механизм через клики (для совместимости)
+      if (triggerType === 'event' || triggerType === 'manual') {
+        const preorderTriggers = document.querySelectorAll('[data-product-card-preorder]');
+        this.debugLog(`[handlePreorder] Found ${preorderTriggers.length} preorder triggers for webform ${webform.id}`);
+        
+        preorderTriggers.forEach(trigger => {
+          trigger.addEventListener('click', (e) => {
+            e.preventDefault();
+            const productId = trigger.getAttribute('data-product-id') || trigger.closest('[data-product-id]')?.getAttribute('data-product-id');
+            const variantId = trigger.getAttribute('data-variant-id') || trigger.closest('[data-variant-id]')?.getAttribute('data-variant-id');
+            this.debugLog(`[handlePreorder] Trigger clicked - ProductId: ${productId}, VariantId: ${variantId}`);
+            this.showForm(webform, { productId, variantId });
+          });
         });
-      });
+        
+        // Ручной показ через data-twc-webform-id (новый функционал)
+        if (triggerType === 'manual') {
+          this.setupManualTrigger(webform);
+        }
+      } else {
+        // Автоматические триггеры (exit_intent, time_on_page, scroll_depth)
+        this.handleWebformWithTrigger(webform, 'preorder');
+      }
     }
 
     handleCustom(webform) {
-      // Ищем элементы с data-атрибутом для кастомных форм
-      const customTriggers = document.querySelectorAll(`[data-webform-id="${webform.id}"]`);
-      this.debugLog(`[handleCustom] Found ${customTriggers.length} custom triggers for webform ${webform.id}`);
-      customTriggers.forEach(trigger => {
-        trigger.addEventListener('click', (e) => {
-          e.preventDefault();
-          const productId = trigger.getAttribute('data-product-id');
-          const variantId = trigger.getAttribute('data-variant-id');
-          this.debugLog(`[handleCustom] Trigger clicked - ProductId: ${productId}, VariantId: ${variantId}`);
-          this.showForm(webform, { productId, variantId });
-        });
-      });
+      this.handleWebformWithTrigger(webform, 'custom');
     }
 
     handleAbandonedCart(webform) {
-      const intervalForSend = 4000;
-      const userDataKey = "userData";
+      const trigger = webform.trigger || {};
+      const triggerType = trigger.type || 'activity';
+      
+      this.debugLog(`[handleAbandonedCart] Webform ${webform.id} trigger type: ${triggerType}`);
+      
+      // Существующий механизм через отслеживание активности (для совместимости)
+      if (triggerType === 'activity') {
+        const intervalForSend = 4000;
+        const userDataKey = "userData";
 
-      // Отслеживание активности
-      document.addEventListener("mousemove", () => this.setTimestamp());
-      document.addEventListener("click", () => this.setTimestamp());
-      document.addEventListener("keydown", () => this.setTimestamp());
-      document.body.addEventListener("mouseleave", () => {
-        if (this.isRegistered()) {
-          this.getRegisteredData(webform, userDataKey);
-        } else {
-          this.getUnregisteredData(webform, userDataKey);
-        }
-      });
-
-      // Сбор данных из полей формы
-      const emailInput = document.querySelector("input[name='client[email]']");
-      const phoneInput = document.querySelector("input[name='client[phone]']");
-      const nameInput = document.querySelector("input[name='client[name]']");
-      const shippingAddressPhone = document.querySelector("input[name='shipping_address[phone]']");
-
-      if (emailInput) emailInput.addEventListener("input", (e) => this.abandonedCartData.email = e.target.value);
-      if (phoneInput) phoneInput.addEventListener("input", (e) => this.abandonedCartData.phone = e.target.value);
-      if (nameInput) nameInput.addEventListener("input", (e) => this.abandonedCartData.name = e.target.value);
-      if (shippingAddressPhone) shippingAddressPhone.addEventListener("input", (e) => this.abandonedCartData.phone = e.target.value);
-
-      // Периодическая проверка и отправка
-      setInterval(() => {
-        const send = (this.abandonedCartData.timestamp + intervalForSend) < new Date().getTime();
-        if (send) {
+        // Отслеживание активности
+        document.addEventListener("mousemove", () => this.setTimestamp());
+        document.addEventListener("click", () => this.setTimestamp());
+        document.addEventListener("keydown", () => this.setTimestamp());
+        document.body.addEventListener("mouseleave", () => {
           if (this.isRegistered()) {
+            this.getRegisteredData(webform, userDataKey);
+          } else {
+            this.getUnregisteredData(webform, userDataKey);
+          }
+        });
+
+        // Сбор данных из полей формы
+        const emailInput = document.querySelector("input[name='client[email]']");
+        const phoneInput = document.querySelector("input[name='client[phone]']");
+        const nameInput = document.querySelector("input[name='client[name]']");
+        const shippingAddressPhone = document.querySelector("input[name='shipping_address[phone]']");
+
+        if (emailInput) emailInput.addEventListener("input", (e) => this.abandonedCartData.email = e.target.value);
+        if (phoneInput) phoneInput.addEventListener("input", (e) => this.abandonedCartData.phone = e.target.value);
+        if (nameInput) nameInput.addEventListener("input", (e) => this.abandonedCartData.name = e.target.value);
+        if (shippingAddressPhone) shippingAddressPhone.addEventListener("input", (e) => this.abandonedCartData.phone = e.target.value);
+
+        // Периодическая проверка и отправка
+        setInterval(() => {
+          if (this.abandonedCartData.sent) return;
+          
+          const timeSinceLastActivity = new Date().getTime() - this.abandonedCartData.timestamp;
+          if (timeSinceLastActivity >= intervalForSend) {
+            if (this.isRegistered()) {
             this.getRegisteredData(webform, userDataKey);
           } else {
             this.getUnregisteredData(webform, userDataKey);
           }
         }
       }, 2000);
+      } else {
+        // Автоматические триггеры (exit_intent, time_on_page, scroll_depth) или manual
+        this.handleWebformWithTrigger(webform, 'abandoned_cart');
+      }
+    }
+    
+    // Универсальный метод для обработки форм с триггерами
+    handleWebformWithTrigger(webform, kind) {
+      const trigger = webform.trigger || {};
+      const triggerType = trigger.type || this.getDefaultTriggerType(kind);
+      
+      this.debugLog(`[handleWebformWithTrigger] Webform ${webform.id} (${kind}) trigger type: ${triggerType}`);
+      
+      // Ручной показ через data-атрибуты
+      if (triggerType === 'manual') {
+        this.setupManualTrigger(webform);
+        return;
+      }
+      
+      // Проверяем условия показа для автоматических триггеров
+      if (!this.shouldShowForm(webform, trigger)) {
+        this.debugLog(`[handleWebformWithTrigger] Form ${webform.id} should not be shown (conditions not met)`);
+        return;
+      }
+      
+      // Настраиваем триггер в зависимости от типа
+      switch (triggerType) {
+        case 'exit_intent':
+          this.setupExitIntent(webform, trigger);
+          break;
+        case 'time_on_page':
+          this.setupTimeOnPage(webform, trigger);
+          break;
+        case 'scroll_depth':
+          this.setupScrollDepth(webform, trigger);
+          break;
+        case 'event':
+        case 'activity':
+          // Эти типы обрабатываются в специфичных методах handleNotify, handlePreorder, handleAbandonedCart
+          break;
+      }
+    }
+    
+    setupManualTrigger(webform) {
+      const manualTriggers = document.querySelectorAll(`[data-twc-webform-id="${webform.id}"]`);
+      this.debugLog(`[setupManualTrigger] Found ${manualTriggers.length} manual triggers for webform ${webform.id}`);
+      manualTriggers.forEach(trigger => {
+        trigger.addEventListener('click', (e) => {
+          e.preventDefault();
+          const productId = trigger.getAttribute('data-product-id');
+          const variantId = trigger.getAttribute('data-variant-id');
+          this.debugLog(`[setupManualTrigger] Manual trigger clicked - ProductId: ${productId}, VariantId: ${variantId}`);
+          this.showForm(webform, { productId, variantId });
+        });
+      });
+    }
+    
+    getDefaultTriggerType(kind) {
+      switch (kind) {
+        case 'custom':
+          return 'manual';
+        case 'notify':
+        case 'preorder':
+          return 'event';
+        case 'abandoned_cart':
+          return 'activity';
+        default:
+          return null;
+      }
+    }
+    
+    setupExitIntent(webform, trigger) {
+      this.debugLog(`[setupExitIntent] Setting up exit intent for webform ${webform.id}`);
+      let exitIntentTriggered = false;
+      
+      document.addEventListener('mouseout', (e) => {
+        // Проверяем, что мышь движется к верхней части окна
+        if (!e.toElement && !e.relatedTarget && e.clientY < 10) {
+          if (!exitIntentTriggered && this.shouldShowForm(webform, trigger)) {
+            exitIntentTriggered = true;
+            this.debugLog(`[setupExitIntent] Exit intent detected for webform ${webform.id}`);
+            this.showFormWithDelay(webform, trigger);
+          }
+        }
+      });
+    }
+    
+    setupTimeOnPage(webform, trigger) {
+      this.debugLog(`[setupTimeOnPage] Setting up time on page (${trigger.value}s) for webform ${webform.id}`);
+      if (this.shouldShowForm(webform, trigger)) {
+        setTimeout(() => {
+          this.showFormWithDelay(webform, trigger);
+        }, (trigger.value || 30) * 1000);
+      }
+    }
+    
+    setupScrollDepth(webform, trigger) {
+      this.debugLog(`[setupScrollDepth] Setting up scroll depth (${trigger.value}%) for webform ${webform.id}`);
+      if (!this.shouldShowForm(webform, trigger)) return;
+      
+      let scrollTriggered = false;
+      
+      window.addEventListener('scroll', () => {
+        if (!scrollTriggered) {
+          const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+          
+          if (scrollPercent >= (trigger.value || 75)) {
+            scrollTriggered = true;
+            this.debugLog(`[setupScrollDepth] Scroll depth reached for webform ${webform.id}`);
+            this.showFormWithDelay(webform, trigger);
+          }
+        }
+      });
+    }
+    
+    shouldShowForm(webform, trigger) {
+      // Проверка cookie/sessionStorage
+      if (this.isFormShown(webform, trigger)) {
+        this.debugLog(`[shouldShowForm] Form ${webform.id} already shown`);
+        return false;
+      }
+      
+      // Проверка устройства
+      const deviceType = this.getDeviceType();
+      if (trigger.target_devices && !trigger.target_devices.includes(deviceType)) {
+        this.debugLog(`[shouldShowForm] Device ${deviceType} not in target devices`);
+        return false;
+      }
+      
+      // Проверка таргетинга страниц
+      if (!this.isPageTargeted(trigger)) {
+        this.debugLog(`[shouldShowForm] Current page not targeted`);
+        return false;
+      }
+      
+      return true;
+    }
+    
+    getDeviceType() {
+      const width = window.innerWidth;
+      if (width < 768) return 'mobile';
+      if (width < 1024) return 'tablet';
+      return 'desktop';
+    }
+    
+    isPageTargeted(trigger) {
+      const currentPath = window.location.pathname;
+      const currentUrl = window.location.href;
+      
+      // Проверка exclude_pages
+      if (trigger.exclude_pages && trigger.exclude_pages.length > 0) {
+        for (let i = 0; i < trigger.exclude_pages.length; i++) {
+          if (currentPath.includes(trigger.exclude_pages[i]) || currentUrl.includes(trigger.exclude_pages[i])) {
+            return false;
+          }
+        }
+      }
+      
+      // Проверка target_pages
+      if (trigger.target_pages && trigger.target_pages.length > 0) {
+        let matched = false;
+        for (let i = 0; i < trigger.target_pages.length; i++) {
+          if (currentPath.includes(trigger.target_pages[i]) || currentUrl.includes(trigger.target_pages[i])) {
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) {
+          return false;
+        }
+      }
+      
+      return true;
+    }
+    
+    isFormShown(webform, trigger) {
+      const cookieName = trigger.cookie_name || `webform_${webform.id}_shown`;
+      
+      // Проверка sessionStorage (для show_once_per_session)
+      if (trigger.show_once_per_session && sessionStorage.getItem(cookieName)) {
+        return true;
+      }
+      
+      // Проверка cookie (для show_frequency_days)
+      const cookieValue = this.getCookie(cookieName);
+      if (cookieValue) {
+        return true;
+      }
+      
+      return false;
+    }
+    
+    showFormWithDelay(webform, trigger) {
+      const delay = trigger.show_delay || 0;
+      this.debugLog(`[showFormWithDelay] Showing form ${webform.id} with delay ${delay}ms`);
+      
+      setTimeout(() => {
+        this.showForm(webform, {});
+        this.saveFormShown(webform, trigger);
+      }, delay);
+    }
+    
+    saveFormShown(webform, trigger) {
+      const cookieName = trigger.cookie_name || `webform_${webform.id}_shown`;
+      
+      // Сохранение в sessionStorage (для show_once_per_session)
+      if (trigger.show_once_per_session) {
+        sessionStorage.setItem(cookieName, '1');
+      }
+      
+      // Сохранение в cookie (для show_frequency_days)
+      if (trigger.show_frequency_days) {
+        const expires = new Date(Date.now() + trigger.show_frequency_days * 24 * 60 * 60 * 1000);
+        document.cookie = `${cookieName}=1; expires=${expires.toUTCString()}; path=/`;
+      } else if (!trigger.show_once_per_session) {
+        // Если нет ограничений, сохраняем в cookie без срока
+        document.cookie = `${cookieName}=1; path=/`;
+      }
+    }
+    
+    getCookie(name) {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.startsWith(name + '=')) {
+          return cookie.substring(name.length + 1);
+        }
+      }
+      return null;
     }
 
     setTimestamp() {

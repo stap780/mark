@@ -145,6 +145,7 @@ Rails.application.routes.draw do
         get :schema
         patch :build
         get :design
+        get :trigger_value_field
       end
       collection do
         get :info

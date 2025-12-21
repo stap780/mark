@@ -63,6 +63,19 @@ module Automation
       begin
         # Отправляем email через Mailganer
         # Используем настройки аккаунта, если есть, иначе глобальную конфигурацию
+        # Проверяем лимит для глобальной конфигурации
+        if @account.mailganer.blank?
+          can_send, error_message = Mailganer.can_send_email_via_global_mailganer?(account: @account)
+          unless can_send
+            message.update!(
+              status: 'failed',
+              error_message: error_message
+            )
+            Rails.logger.warn "Email sending blocked for account ##{@account.id}: #{error_message}"
+            return
+          end
+        end
+
         mailganer_settings = @account.mailganer || MailganerClient.configuration
         return unless mailganer_settings # Если Mailganer не настроен, не отправляем
 

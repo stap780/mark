@@ -16,6 +16,9 @@ class Incase < ApplicationRecord
 
   validates :status, presence: true
 
+  # Генерируем порядковый номер для отображения пользователю
+  # (number используется для номеров из API/InSales и может быть строковым)
+  before_create :generate_display_number, unless: :display_number?
   after_update_commit :trigger_update_events
 
   def self.ransackable_attributes(auth_object = nil)
@@ -55,6 +58,22 @@ class Incase < ApplicationRecord
   end
 
   private
+
+  def generate_display_number
+    # Генерируем порядковый номер для отображения пользователю
+    # Номер генерируется отдельно для каждого аккаунта
+    max_display_number = account.incases
+      .where.not(display_number: nil)
+      .maximum(:display_number)
+    
+    if max_display_number.present?
+      # Увеличиваем на 1
+      self.display_number = max_display_number + 1
+    else
+      # Если это первая заявка для аккаунта, начинаем с 1
+      self.display_number = 1
+    end
+  end
 
   def trigger_update_events
     # Вызываем incase.updated при любом обновлении заявки

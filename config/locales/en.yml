@@ -68,6 +68,10 @@ en:
     message_templates: "Message Templates"
     automation_messages: "Message Statistics"
   
+  automation_messages:
+    global_mailganer_limit_exceeded: "Global Mailganer configuration limit reached (%{limit} emails per month). Sent: %{count}. Limit will reset on %{reset_date}. Configure your own Mailganer in settings to remove this limitation."
+    global_limit_warning: "%{remaining} of %{limit} emails remaining through global Mailganer configuration this month. Limit will reset on %{reset_date}. Configure your own Mailganer to remove this limitation."
+  
   dashboard:
     status_ok: "OK"
   

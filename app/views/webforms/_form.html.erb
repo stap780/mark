@@ -14,6 +14,14 @@
   </div>
     <%# f.label :settings, "Settings (JSON)", class: "block text-sm font-medium text-gray-700" %>
     <%# f.text_area :settings, value: (webform.settings || {max_width: '600px', background_color: '#ffffff', text_color: '#000000'}).to_json, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5", rows: 6 %>
+  
+  <%# Настройки триггера показа формы (только для существующих форм) %>
+  <% unless webform.new_record? %>
+    <%= f.fields_for :settings, webform.settings || {} do |sf| %>
+      <%= render 'trigger_settings', webform: webform, settings_form: sf %>
+    <% end %>
+  <% end %>
+  
   <div>
     <%= f.submit webform.new_record? ? t('webforms._form.create') : t('webforms._form.update'), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
   </div>

@@ -68,6 +68,10 @@ ru:
     message_templates: "Шаблоны сообщений"
     automation_messages: "Статистика сообщений"
   
+  automation_messages:
+    global_mailganer_limit_exceeded: "Достигнут лимит отправки писем (%{limit} писем в месяц). Отправлено: %{count}. Лимит сбросится %{reset_date}. Настройте свой Mailganer в разделе настроек для снятия ограничения."
+    global_limit_warning: "Осталось %{remaining} из %{limit} писем через глобальную конфигурацию Mailganer в этом месяце. Лимит сбросится %{reset_date}. Настройте свой Mailganer для снятия ограничения."
+  
   dashboard:
     status_ok: "OK"
 

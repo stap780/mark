@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_18_100000) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_21_122613) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -184,7 +184,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_18_100000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "number"
+    t.integer "display_number"
     t.index ["account_id", "created_at"], name: "index_incases_on_account_id_and_created_at"
+    t.index ["account_id", "display_number"], name: "index_incases_on_account_id_and_display_number", unique: true, where: "(display_number IS NOT NULL)"
     t.index ["account_id", "number"], name: "index_incases_on_account_id_and_number", unique: true, where: "(number IS NOT NULL)"
     t.index ["account_id", "status"], name: "index_incases_on_account_id_and_status"
     t.index ["account_id"], name: "index_incases_on_account_id"
@@ -261,6 +263,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_18_100000) do
     t.string "api_key_web_portal", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "from_email"
+    t.string "test_subject"
     t.index ["account_id"], name: "index_mailganers_on_account_id"
   end
 
@@ -437,7 +441,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_18_100000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id", "kind", "status"], name: "index_webforms_on_account_id_and_kind_and_status"
-    t.index ["account_id", "kind"], name: "index_webforms_on_account_kind_singleton", unique: true, where: "((kind)::text = ANY (ARRAY[('order'::character varying)::text, ('notify'::character varying)::text, ('preorder'::character varying)::text, ('abandoned_cart'::character varying)::text]))"
+    t.index ["account_id", "kind"], name: "index_webforms_on_account_kind_singleton", unique: true, where: "((kind)::text = ANY ((ARRAY['order'::character varying, 'notify'::character varying, 'preorder'::character varying, 'abandoned_cart'::character varying])::text[]))"
     t.index ["account_id"], name: "index_webforms_on_account_id"
   end
 

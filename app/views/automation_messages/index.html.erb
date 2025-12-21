@@ -1,6 +1,26 @@
 <div class="mb-4">
   <h1 class="text-xl font-semibold mb-4">Статистика сообщений</h1>
 
+  <!-- Предупреждение о лимите глобального Mailganer -->
+  <% if current_account.mailganer.blank? %>
+    <% 
+      limit = 50
+      current_month_start = Time.current.beginning_of_month
+      current_month_end = Time.current.end_of_month
+      sent_count = current_account.automation_messages
+        .where(channel: 'email', status: 'sent')
+        .where(sent_at: current_month_start..current_month_end)
+        .count
+      remaining = [limit - sent_count, 0].max
+    %>
+    <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
+      <p class="text-sm text-yellow-800">
+        <strong>Внимание!</strong>
+        <%= t('automation_messages.global_limit_warning', remaining: remaining, limit: limit, reset_date: current_month_end.strftime('%d.%m.%Y')) %>
+      </p>
+    </div>
+  <% end %>
+
   <!-- Статистика -->
   <div class="grid grid-cols-3 gap-4 mb-4">
     <div class="bg-white rounded-lg shadow p-4">

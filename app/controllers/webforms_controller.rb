@@ -2,7 +2,7 @@ class WebformsController < ApplicationController
   include OffcanvasResponder
   include ActionView::RecordIdentifier
   
-  before_action :set_webform, only: [:show, :edit, :update, :destroy, :schema, :preview, :build, :design]
+  before_action :set_webform, only: [:show, :edit, :update, :destroy, :schema, :preview, :build, :design, :trigger_value_field]
 
   def index
     @webforms = current_account.webforms.order(created_at: :asc)
@@ -17,7 +17,18 @@ class WebformsController < ApplicationController
   end
 
   def create
-    @webform = current_account.webforms.build(webform_params)
+    # Обрабатываем target_pages и exclude_pages из textarea (строки с переносами -> массивы)
+    processed_params = webform_params.dup
+    if processed_params[:settings].present?
+      if processed_params[:settings][:target_pages].is_a?(String)
+        processed_params[:settings][:target_pages] = processed_params[:settings][:target_pages].split("\n").map(&:strip).reject(&:blank?)
+      end
+      if processed_params[:settings][:exclude_pages].is_a?(String)
+        processed_params[:settings][:exclude_pages] = processed_params[:settings][:exclude_pages].split("\n").map(&:strip).reject(&:blank?)
+      end
+    end
+    
+    @webform = current_account.webforms.build(processed_params)
     
     respond_to do |format|
       if @webform.save
@@ -42,8 +53,19 @@ class WebformsController < ApplicationController
   def edit; end
 
   def update
+    # Обрабатываем target_pages и exclude_pages из textarea (строки с переносами -> массивы)
+    processed_params = webform_params.dup
+    if processed_params[:settings].present?
+      if processed_params[:settings][:target_pages].is_a?(String)
+        processed_params[:settings][:target_pages] = processed_params[:settings][:target_pages].split("\n").map(&:strip).reject(&:blank?)
+      end
+      if processed_params[:settings][:exclude_pages].is_a?(String)
+        processed_params[:settings][:exclude_pages] = processed_params[:settings][:exclude_pages].split("\n").map(&:strip).reject(&:blank?)
+      end
+    end
+    
     respond_to do |format|
-      if @webform.update(webform_params)
+      if @webform.update(processed_params)
         WebformJsonGeneratorJob.perform_later(current_account.id)
         flash.now[:success] = t('.success')
         format.turbo_stream do
@@ -63,8 +85,19 @@ class WebformsController < ApplicationController
   end
 
   def build
+    # Обрабатываем target_pages и exclude_pages из textarea (строки с переносами -> массивы)
+    processed_params = webform_params.dup
+    if processed_params[:settings].present?
+      if processed_params[:settings][:target_pages].is_a?(String)
+        processed_params[:settings][:target_pages] = processed_params[:settings][:target_pages].split("\n").map(&:strip).reject(&:blank?)
+      end
+      if processed_params[:settings][:exclude_pages].is_a?(String)
+        processed_params[:settings][:exclude_pages] = processed_params[:settings][:exclude_pages].split("\n").map(&:strip).reject(&:blank?)
+      end
+    end
+    
     respond_to do |format|
-      if @webform.update(webform_params)
+      if @webform.update(processed_params)
         @schema = Webforms::BuildSchema.new(@webform).call
         flash.now[:success] = t('.success')
         format.turbo_stream do
@@ -111,6 +144,11 @@ class WebformsController < ApplicationController
 
   def design; end
 
+  def trigger_value_field
+    @trigger_type = params[:trigger_type] || @webform.settings&.dig('trigger_type') || Webform.default_trigger_type_for_kind(@webform.kind)
+    
+    # Turbo Frame автоматически обработает ответ
+  end
 
   def info; end
 
@@ -126,7 +164,7 @@ class WebformsController < ApplicationController
   end
 
   def webform_params
-    params.require(:webform).permit(:title, :kind, :status, settings: {})
+    params.require(:webform).permit(:title, :kind, :status, settings: [:trigger_type, :trigger_value, :show_delay, :show_once_per_session, :show_frequency_days, :cookie_name, :target_pages, :exclude_pages, target_pages: [], exclude_pages: []])
   end
 end
 

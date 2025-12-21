@@ -12,6 +12,7 @@ class Webform < ApplicationRecord
 
   validates :title, :kind, presence: true
   validate :validate_singleton_kind_uniqueness
+  validate :validate_trigger_settings
 
   enum :status, {
     active: "active",
@@ -57,7 +58,17 @@ class Webform < ApplicationRecord
       "box_shadow_color": "#000000",
       "box_shadow_spread": "0",
       "box_shadow_offset_x": "0",
-      "box_shadow_offset_y": "2"
+      "box_shadow_offset_y": "2",
+      # Настройки триггеров
+      "trigger_type": default_trigger_type_for_kind,
+      "trigger_value": nil,
+      "show_delay": 0,
+      "show_once_per_session": true,
+      "show_frequency_days": nil,
+      "target_pages": [],
+      "exclude_pages": [],
+      "target_devices": ["desktop", "mobile", "tablet"],
+      "cookie_name": nil
     }
     w_fields_data = [
       {
@@ -187,6 +198,57 @@ class Webform < ApplicationRecord
     return unless incases.exists?
     errors.add(:base, "Cannot delete webform with existing incases")
     throw :abort
+  end
+
+  def validate_trigger_settings
+    return unless settings.present?
+    
+    trigger_type = settings['trigger_type']
+    return if trigger_type.blank?
+    
+    # Разрешенные типы триггеров
+    allowed_types = ['exit_intent', 'time_on_page', 'scroll_depth', 'manual', 'event', 'activity']
+    unless allowed_types.include?(trigger_type)
+      errors.add(:settings, "Неизвестный тип триггера: #{trigger_type}")
+      return
+    end
+    
+    # Валидация для триггеров, требующих значения
+    case trigger_type
+    when 'exit_intent', 'manual', 'event', 'activity'
+      # Для этих типов не нужны дополнительные значения
+    when 'time_on_page', 'scroll_depth'
+      trigger_value = settings['trigger_value']
+      if trigger_value.blank? || trigger_value.to_i <= 0
+        errors.add(:settings, "trigger_value должен быть положительным числом для #{trigger_type}")
+      end
+    end
+  end
+
+  def default_trigger_type_for_kind
+    case kind
+    when 'custom'
+      'manual'
+    when 'notify', 'preorder'
+      'event'
+    when 'abandoned_cart'
+      'activity'
+    else
+      nil
+    end
+  end
+
+  def self.default_trigger_type_for_kind(kind)
+    case kind
+    when 'custom'
+      'manual'
+    when 'notify', 'preorder'
+      'event'
+    when 'abandoned_cart'
+      'activity'
+    else
+      nil
+    end
   end
 
 end
