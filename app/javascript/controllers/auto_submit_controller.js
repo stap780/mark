@@ -17,7 +17,12 @@ export default class extends Controller {
     if (this.timer) clearTimeout(this.timer)
   }
 
-  onInput() {
+  onInput(event) {
+    // Игнорируем автосабмит для полей с атрибутом data-auto-submit-ignore
+    if (event.target.hasAttribute('data-auto-submit-ignore')) {
+      return
+    }
+    
     if (this.timer) clearTimeout(this.timer)
     this.timer = setTimeout(() => this.submit(), this.delayValue)
   }
