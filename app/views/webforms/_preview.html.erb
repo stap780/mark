@@ -7,8 +7,8 @@
   "padding: #{s['padding_y']} #{s['padding_x']}",
   "margin: #{s['margin_y']} #{s['margin_x']}",
   "border-radius: #{s['border_radius']}",
-  "max-width: #{s['width']}",
   "width: 100%",
+  "max-width: #{s['width']}",
   "height: auto",
   "font-size: #{s['font_size']}",
   "border: #{s['border_width']} solid #{s['border_color']}",
@@ -112,7 +112,8 @@
         "padding: #{fs['padding_y']} #{fs['padding_x']}",
         "margin: #{fs['margin_y']} #{fs['margin_x']}",
         "border-radius: #{fs['border_radius']}",
-        "width: #{fs['width']}",
+        "width: 100%",
+        "max-width: #{fs['width']}",
         "border: #{fs['border_width']} solid #{fs['border_color']}",
         "box-shadow: #{[fs['box_shadow_offset_x'], fs['box_shadow_offset_y'], fs['box_shadow_blur'], fs['box_shadow_spread'], fs['box_shadow_color']].join(' ')}"
       ].join('; ') %>

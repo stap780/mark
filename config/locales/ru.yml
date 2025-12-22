@@ -831,6 +831,8 @@ ru:
       success: "Предпросмотр обновлен."
     destroy:
       success: "Веб-форма успешно удалена."
+    regenerate_json:
+      regenerated: "Регенерация JSON запущена."
 
   webform_fields:
     create:

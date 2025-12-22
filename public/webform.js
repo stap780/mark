@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.1.8
+ * Версия: 1.1.9
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.1.8";
+      this.version = "1.1.9";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -759,7 +759,8 @@
 
       // Стили формы (значения уже содержат 'px' из schema)
       const formStyles = {
-        width: settings.width || '530px',
+        width: '100%',
+        maxWidth: settings.width || '530px',
         fontSize: settings.font_size || '14px',
         padding: `${settings.padding_y || '12px'} ${settings.padding_x || '12px'}`,
         color: settings.font_color || '#000000',
@@ -861,7 +862,8 @@
         
         // Стили полей (значения уже содержат 'px' из schema)
         const fieldStyles = {
-          width: fieldSettings.width || '100%',
+          width: '100%',
+          maxWidth: fieldSettings.width || '100%',
           margin: `${fieldSettings.margin_y || '0px'} ${fieldSettings.margin_x || '0px'}`,
           fontSize: fieldSettings.font_size || '14px',
           padding: `${fieldSettings.padding_y || '12px'} ${fieldSettings.padding_x || '12px'}`,
