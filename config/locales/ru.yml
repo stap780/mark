@@ -158,8 +158,8 @@ ru:
         field_type: "Тип поля"
         required: "Обязательное"
       swatch_group:
-        name: "Название"
-        option_name: "Название опции"
+        name: "Название (не отображается на сайте)"
+        option_name: "Название опции (отображается на сайте)"
         status: "Статус"
         product_page_style: "Страница товара"
         product_page_style_mob: "Страница товара (Моб)"
