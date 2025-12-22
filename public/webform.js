@@ -596,6 +596,9 @@
         if (yaClientId) {
           clientData.ya_client_id = yaClientId;
         }
+        // В потоке брошенной корзины формы на сайте нет, поэтому honeypot не используется.
+        // Явно передаём пустое значение, чтобы серверная проверка honeypot не срабатывала.
+        clientData.website = '';
         await this.sendToAPI(webform.id, clientData, items, data.id);
       }
     }
@@ -632,12 +635,27 @@
     handleFormSubmit(e, webform, eventData, overlay) {
       const form = e.target;
       const formData = new FormData(form);
+
+      // Honeypot-поле для защиты от ботов:
+      // - имя поля: website (нейтральное, не привлекает внимание)
+      // - если заполнено, считаем, что это бот и тихо отклоняем отправку без отображения ошибок
+      const honeypotValue = formData.get('website');
+      if (honeypotValue && honeypotValue.trim() !== '') {
+        this.debugLog('[handleFormSubmit] Honeypot field \"website\" filled, likely a bot. Submission blocked.');
+        return false;
+      }
+
       const yaClientId = this.getYandexClientId();
       const clientData = {
         name: formData.get('name') || '',
         email: formData.get('email') || '',
         phone: formData.get('phone') || ''
       };
+
+      // Передаём honeypot-поле на сервер (для дополнительной серверной проверки).
+      // Для нормальных пользователей поле всегда пустое.
+      clientData.website = honeypotValue || '';
+
       if (yaClientId) {
         clientData.ya_client_id = yaClientId;
       }
@@ -930,6 +948,27 @@
         gridStyle = `display: grid; grid-template-columns: ${gridTemplate}; gap: 16px; align-items: start;`;
       }
 
+      // Honeypot-поле:
+      // - скрыто с помощью position: absolute; left: -9999px (не display: none, чтобы боты его видели)
+      // - имеет tabindex="-1", autocomplete="off", aria-hidden="true", чтобы не мешать пользователю
+      const honeypotField = `
+        <input
+          type="text"
+          name="website"
+          tabindex="-1"
+          autocomplete="off"
+          aria-hidden="true"
+          style="
+            position: absolute;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+          "
+        />
+      `;
+
       return `
         <div class="webform-overlay-content" style="
           position: fixed;
@@ -976,6 +1015,7 @@
               
               <form class="twc-webform-preview-form" style="position: relative;">
                 ${fieldsHTML}
+                ${honeypotField}
                 <div class="webform-error-message" style="display: none; color: red; font-size: 14px; margin-top: 10px;"></div>
                 <div class="webform-success-message" style="display: none; color: green; margin-top: 10px;">
                   Форма успешно отправлена!

@@ -7,6 +7,20 @@ class Api::IncasesController < ApplicationController
     webform = account.webforms.find(params.require(:webform_id))
     render json: { error: 'webform inactive' }, status: :unprocessable_entity and return unless webform.status_active?
 
+    # Honeypot-поле для защиты от ботов.
+    # На клиенте поле называется "website" и скрыто от пользователей.
+    # Если оно заполнено, считаем запрос ботом и тихо отклоняем его с логированием.
+    if params[:client].is_a?(ActionController::Parameters) || params[:client].is_a?(Hash)
+      website_honeypot = params[:client][:website]
+      if website_honeypot.present?
+        Rails.logger.warn(
+          "Bot detected via honeypot field for account ##{account.id}, " \
+          "webform ##{webform.id}, ip=#{request.remote_ip}"
+        )
+        return render json: { error: 'invalid request' }, status: :unprocessable_entity
+      end
+    end
+
     client = resolve_client!(account, params[:client], from_insales: false)
 
     # Проверяем, что items переданы
