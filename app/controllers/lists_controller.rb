@@ -1,16 +1,13 @@
 class ListsController < ApplicationController
   before_action :set_list, only: %i[ show edit update destroy ]
 
-  # GET /lists or /lists.json
   def index
     @lists = current_account.lists.order(created_at: :desc)
   end
 
-  # GET /lists/1 or /lists/1.json
   def show
   end
 
-  # GET /lists/new
   def new
     @list = current_account.lists.new
   end

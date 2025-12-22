@@ -10,18 +10,15 @@ class Api::IncasesController < ApplicationController
     # Honeypot-поле для защиты от ботов.
     # На клиенте поле называется "website" и скрыто от пользователей.
     # Если оно заполнено, считаем запрос ботом и тихо отклоняем его с логированием.
-    if params[:client].is_a?(ActionController::Parameters) || params[:client].is_a?(Hash)
-      website_honeypot = params[:client][:website]
-      if website_honeypot.present?
-        Rails.logger.warn(
-          "Bot detected via honeypot field for account ##{account.id}, " \
-          "webform ##{webform.id}, ip=#{request.remote_ip}"
-        )
-        return render json: { error: 'invalid request' }, status: :unprocessable_entity
-      end
+    if client_params[:website].present?
+      Rails.logger.warn(
+        "Bot detected via honeypot field for account ##{account.id}, " \
+        "webform ##{webform.id}, ip=#{request.remote_ip}"
+      )
+      return render json: { error: 'invalid request' }, status: :unprocessable_entity
     end
 
-    client = resolve_client!(account, params[:client], from_insales: false)
+    client = resolve_client!(account, client_params, from_insales: false)
 
     # Проверяем, что items переданы
     if params[:items].blank?
@@ -30,17 +27,20 @@ class Api::IncasesController < ApplicationController
 
     # Подготавливаем атрибуты для создания заявки
     incase_attrs = { webform: webform, client: client, status: 'new' }
-    incase_attrs[:number] = params[:number] if params[:number].present?
-    incase_attrs[:custom_fields] = params[:custom_fields].to_h if params[:custom_fields].present?
+    incase_attrs[:number] = incase_params[:number] if incase_params[:number].present?
+    incase_attrs[:custom_fields] = incase_params[:custom_fields] if incase_params[:custom_fields].present?
 
     # Проверяем существующую заявку по number для всех типов форм
-    if params[:number].present?
-      incase = account.incases.find_by(number: params[:number], webform: webform)
+    if incase_attrs[:number].present?
+      incase = account.incases.find_by(number: incase_attrs[:number], webform: webform)
       
       if incase
         # Обновляем существующую заявку: удаляем старые items и создаем новые
         incase.items.destroy_all
-        incase.update!(client: client, custom_fields: incase_attrs[:custom_fields]) if client != incase.client || incase_attrs[:custom_fields].present?
+        update_attrs = {}
+        update_attrs[:client] = client if client != incase.client
+        update_attrs[:custom_fields] = incase_attrs[:custom_fields] if incase_attrs[:custom_fields].present?
+        incase.update!(update_attrs) if update_attrs.any?
       else
         # Создаем новую заявку с number
         incase = account.incases.create!(incase_attrs)
@@ -113,6 +113,14 @@ class Api::IncasesController < ApplicationController
   end
 
   private
+
+  def client_params
+    params.require(:client).permit(:name, :surname, :email, :phone, :website, :ya_client_id)
+  end
+
+  def incase_params
+    params.permit(:number, custom_fields: {})
+  end
 
   def resolve_client!(account, client_params, from_insales: false)
     external_client_id = client_params&.dig(:id)

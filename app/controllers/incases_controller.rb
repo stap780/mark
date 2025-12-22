@@ -53,6 +53,7 @@ class IncasesController < ApplicationController
   def set_incase
     @incase = current_account.incases.find(params[:id])
   end
+  
 end
 
 
