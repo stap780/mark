@@ -52,7 +52,7 @@ module Automation
       when 'not_equals'
         field_value.to_s != value.to_s
       when 'contains'
-        field_value.to_s.include?(value.to_s)
+        field_value.to_s.downcase.include?(value.to_s.downcase)
       when 'present'
         field_value.present?
       when 'blank'
