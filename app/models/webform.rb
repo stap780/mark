@@ -74,7 +74,7 @@ class Webform < ApplicationRecord
       {
         "name": "title",
         "label": "title",
-        "field_type": "text",
+        "field_type": "paragraph",
         "required": false,
         "settings": {
           "width": "600",

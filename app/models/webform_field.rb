@@ -10,12 +10,12 @@ class WebformField < ApplicationRecord
   validates :name, uniqueness: { scope: :webform_id }
 
   FIELD_TYPES = [
+    ['paragraph','paragraph'],
     ['text','text'],
     ['email','email'],
     ['textarea','textarea'],
     ['phone','phone'],
     ['number','number'],
-    ['select','select'],
     ['checkbox','checkbox'],
     ['button','button'],
     ['image','image']

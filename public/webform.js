@@ -889,9 +889,39 @@
             </button>
           `;
         } else if (field.type === 'text') {
-          // Для типа 'text' используем div, а не input
+          // Для типа 'text' используем input type="text"
+          const placeholder = fieldSettings.placeholder || field.label;
+          const requiredAttr = field.required ? 'required' : '';
           fieldsHTML += `
-            <div class="text-field" style="${styleString}">${field.label}</div>
+            <input type="text" name="${field.name}" placeholder="${placeholder}" ${requiredAttr} style="${styleString}" />
+          `;
+        } else if (field.type === 'number') {
+          // Для типа 'number' используем input type="number"
+          const placeholder = fieldSettings.placeholder || field.label;
+          const requiredAttr = field.required ? 'required' : '';
+          fieldsHTML += `
+            <input type="number" name="${field.name}" placeholder="${placeholder}" ${requiredAttr} style="${styleString}" />
+          `;
+        } else if (field.type === 'phone') {
+          // Для типа 'phone' используем input type="tel"
+          const placeholder = fieldSettings.placeholder || field.label;
+          const requiredAttr = field.required ? 'required' : '';
+          fieldsHTML += `
+            <input type="tel" name="${field.name}" placeholder="${placeholder}" ${requiredAttr} style="${styleString}" />
+          `;
+        } else if (field.type === 'paragraph') {
+          // Для типа 'paragraph' используем div, а не input
+          fieldsHTML += `
+            <div class="paragraph-field" style="${styleString}">${field.label}</div>
+          `;
+        } else if (field.type === 'checkbox') {
+          // Для типа 'checkbox' используем input checkbox с label
+          const requiredAttr = field.required ? 'required' : '';
+          fieldsHTML += `
+            <label style="${styleString}; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" name="${field.name}" value="1" ${requiredAttr} style="margin: 0;">
+              <span>${field.label}</span>
+            </label>
           `;
         } else if (field.type === 'textarea') {
           const placeholder = fieldSettings.placeholder || field.label;
@@ -916,12 +946,11 @@
             </div>
           `;
         } else {
-          // Для остальных типов (phone, number, и т.д.)
-          const inputType = field.type === 'phone' ? 'tel' : field.type === 'number' ? 'number' : 'text';
+          // Fallback для неизвестных типов
           const placeholder = fieldSettings.placeholder || field.label;
           const requiredAttr = field.required ? 'required' : '';
           fieldsHTML += `
-            <input type="${inputType}" name="${field.name}" placeholder="${placeholder}" ${requiredAttr} style="${styleString}" />
+            <input type="text" name="${field.name}" placeholder="${placeholder}" ${requiredAttr} style="${styleString}" />
           `;
         }
       });

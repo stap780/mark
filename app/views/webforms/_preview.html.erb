@@ -120,12 +120,26 @@
       <% case field[:type] %>
       <% when 'email' %>
         <% placeholder = (fs['placeholder'] || field[:label]) %>
-        <input type="email" placeholder="<%= placeholder %>" <%= 'required' if field[:required] %> style="<%= style %>">
+        <input type="email" name="<%= field[:name] %>" placeholder="<%= placeholder %>" <%= 'required' if field[:required] %> style="<%= style %>">
       <% when 'text' %>
-        <div class="text-field" style="<%= style %>"><%= field[:label] %></div>
+        <% placeholder = (fs['placeholder'] || field[:label]) %>
+        <input type="text" name="<%= field[:name] %>" placeholder="<%= placeholder %>" <%= 'required' if field[:required] %> style="<%= style %>">
+      <% when 'number' %>
+        <% placeholder = (fs['placeholder'] || field[:label]) %>
+        <input type="number" name="<%= field[:name] %>" placeholder="<%= placeholder %>" <%= 'required' if field[:required] %> style="<%= style %>">
+      <% when 'phone' %>
+        <% placeholder = (fs['placeholder'] || field[:label]) %>
+        <input type="tel" name="<%= field[:name] %>" placeholder="<%= placeholder %>" <%= 'required' if field[:required] %> style="<%= style %>">
+      <% when 'paragraph' %>
+        <div class="paragraph-field" style="<%= style %>"><%= field[:label] %></div>
       <% when 'textarea' %>
         <% placeholder = (fs['placeholder'] || field[:label]) %>
-        <textarea placeholder="<%= placeholder %>" <%= 'required' if field[:required] %> rows="4" style="<%= style %>"></textarea>
+        <textarea name="<%= field[:name] %>" placeholder="<%= placeholder %>" <%= 'required' if field[:required] %> rows="4" style="<%= style %>"></textarea>
+      <% when 'checkbox' %>
+        <label style="<%= style %>; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <input type="checkbox" name="<%= field[:name] %>" value="1" <%= 'required' if field[:required] %> style="margin: 0;">
+          <span><%= field[:label] %></span>
+        </label>
       <% when 'button' %>
         <button type="submit" style="<%= [style, "background: #{fs['background_color']}"].join('; ') %>"><%= field[:label] %></button>
       <% when 'image' %>
