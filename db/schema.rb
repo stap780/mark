@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_21_122613) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_22_160705) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -185,12 +185,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_21_122613) do
     t.datetime "updated_at", null: false
     t.string "number"
     t.integer "display_number"
+    t.jsonb "custom_fields", default: {}
     t.index ["account_id", "created_at"], name: "index_incases_on_account_id_and_created_at"
     t.index ["account_id", "display_number"], name: "index_incases_on_account_id_and_display_number", unique: true, where: "(display_number IS NOT NULL)"
     t.index ["account_id", "number"], name: "index_incases_on_account_id_and_number", unique: true, where: "(number IS NOT NULL)"
     t.index ["account_id", "status"], name: "index_incases_on_account_id_and_status"
     t.index ["account_id"], name: "index_incases_on_account_id"
     t.index ["client_id"], name: "index_incases_on_client_id"
+    t.index ["custom_fields"], name: "index_incases_on_custom_fields", using: :gin
     t.index ["webform_id"], name: "index_incases_on_webform_id"
   end
 

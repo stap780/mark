@@ -28,6 +28,11 @@ class Api::IncasesController < ApplicationController
       return render json: { error: 'items are required' }, status: :unprocessable_entity
     end
 
+    # Подготавливаем атрибуты для создания заявки
+    incase_attrs = { webform: webform, client: client, status: 'new' }
+    incase_attrs[:number] = params[:number] if params[:number].present?
+    incase_attrs[:custom_fields] = params[:custom_fields].to_h if params[:custom_fields].present?
+
     # Проверяем существующую заявку по number для всех типов форм
     if params[:number].present?
       incase = account.incases.find_by(number: params[:number], webform: webform)
@@ -35,14 +40,14 @@ class Api::IncasesController < ApplicationController
       if incase
         # Обновляем существующую заявку: удаляем старые items и создаем новые
         incase.items.destroy_all
-        incase.update!(client: client) if client != incase.client
+        incase.update!(client: client, custom_fields: incase_attrs[:custom_fields]) if client != incase.client || incase_attrs[:custom_fields].present?
       else
         # Создаем новую заявку с number
-        incase = account.incases.create!(webform: webform, client: client, status: 'new', number: params[:number])
+        incase = account.incases.create!(incase_attrs)
       end
     else
       # Если number не передан, создаем новую заявку без number
-      incase = account.incases.create!(webform: webform, client: client, status: 'new')
+      incase = account.incases.create!(incase_attrs)
     end
 
     items = Array(params[:items]).map do |it|

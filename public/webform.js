@@ -623,11 +623,13 @@
       });
 
       // Обработка submit формы
-      const form = overlay.querySelector('.webform-form');
+      const form = overlay.querySelector('.twc-webform-preview-form');
       if (form) {
         form.addEventListener('submit', (e) => {
           e.preventDefault();
+          e.stopPropagation();
           this.handleFormSubmit(e, webform, eventData, overlay);
+          return false;
         });
       }
     }
@@ -658,6 +660,16 @@
 
       if (yaClientId) {
         clientData.ya_client_id = yaClientId;
+      }
+
+      // Собираем все пользовательские поля (кроме служебных)
+      const customFields = {};
+      const excludedFields = ['name', 'email', 'phone', 'website']; // служебные поля
+
+      for (const [key, value] of formData.entries()) {
+        if (!excludedFields.includes(key) && value && value.trim() !== '') {
+          customFields[key] = value.trim();
+        }
       }
 
       // Валидация
@@ -741,7 +753,7 @@
       const number = this.createUniqueId();
 
       // Отправка на API
-      this.sendToAPI(webform.id, clientData, items, number).then(() => {
+      this.sendToAPI(webform.id, clientData, items, number, customFields).then(() => {
         const successMessage = overlay.querySelector('.webform-success-message');
         if (successMessage) {
           successMessage.style.display = 'block';
@@ -1044,7 +1056,7 @@
               
               ${hasLeft ? `<div class="twc-webform-preview-image" style="position: relative; z-index: 1; width: 100%; height: 100%;">${leftImagesHTML}</div>` : ''}
               
-              <form class="twc-webform-preview-form" style="position: relative;">
+              <form class="twc-webform-preview-form" style="position: relative;" onsubmit="return false;">
                 ${fieldsHTML}
                 ${honeypotField}
                 <div class="webform-error-message" style="display: none; color: red; font-size: 14px; margin-top: 10px;"></div>
@@ -1062,7 +1074,7 @@
       `;
     }
 
-    async sendToAPI(webformId, clientData, items, number = null) {
+    async sendToAPI(webformId, clientData, items, number = null, customFields = null) {
       const url = `${this.API_BASE}/accounts/${this.accountId}/incases`;
       const payload = {
         webform_id: webformId,
@@ -1071,6 +1083,9 @@
       };
       if (number) {
         payload.number = number;
+      }
+      if (customFields && Object.keys(customFields).length > 0) {
+        payload.custom_fields = customFields;
       }
 
       this.debugLog(`[sendToAPI] Sending request to: ${url}`, payload);
