@@ -7,7 +7,7 @@ class Admin::AccountsController < ApplicationController
 
   def index
     @search = Account.includes(:subscriptions).ransack(params[:q])
-    @search.sorts = "name asc" if @search.sorts.empty?
+    @search.sorts = "id desc" if @search.sorts.empty?
     @accounts = @search.result(distinct: true)
   end
 

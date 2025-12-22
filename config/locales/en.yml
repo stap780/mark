@@ -737,6 +737,12 @@ en:
 # Admin translations
   admin:
     accounts:
+      accounts: "Accounts"
+      account: "Account"
+      new_account: "New account"
+      edit_account: "Edit account"
+      update_account: "Update account"
+      create_account: "Create account"
       partner_settings: "Partner settings"
       no_partner_settings: "No settings provided for this partner."
       current_plan: "Current plan"
@@ -745,6 +751,12 @@ en:
       no_subscription_end: "No end date"
       partner_yes: "Partner"
       partner_no: "Regular"
+      user_count: "Users"
+      admin: "Admin"
+      active: "Active"
+      no_subscription: "No subscription"
+      show: "Show"
+      delete_account_confirm: "Are you sure you want to delete this account?"
     payments:
       payments: "Payments"
       status: "Status"
