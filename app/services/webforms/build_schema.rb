@@ -61,8 +61,20 @@ module Webforms
       }
       
       # Добавляем URL изображения для image полей
+      # Пытаемся сразу отдать прямой S3/Timeweb URL, чтобы не гонять лишний редирект через Rails.
       if f.field_type == 'image' && f.image.attached?
-        field_data[:image_url] = Rails.application.routes.url_helpers.rails_blob_path(f.image, only_path: true)
+        begin
+          service = f.image.service
+          if service.respond_to?(:bucket) && service.bucket.respond_to?(:name)
+            # Прямой S3/Timeweb URL (как в t2/app/models/image.rb#s3_url)
+            field_data[:image_url] = "https://s3.timeweb.cloud/#{service.bucket.name}/#{f.image.blob.key}"
+          else
+            # Фоллбэк — относительный путь через ActiveStorage
+            field_data[:image_url] = Rails.application.routes.url_helpers.rails_blob_path(f.image, only_path: true)
+          end
+        rescue
+          field_data[:image_url] = Rails.application.routes.url_helpers.rails_blob_path(f.image, only_path: true)
+        end
       end
       
       field_data

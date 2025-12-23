@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.2.0
+ * Версия: 1.2.2
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.2.0";
+      this.version = "1.2.2";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -202,16 +202,34 @@
       
       this.debugLog(`[handleAbandonedCart] Webform ${webform.id} trigger type: ${triggerType}`);
       
-      // Если мы не на странице оформления заказа (URL не содержит new_order),
-      // всегда работаем через показ формы по триггерам
+      // 1) НЕ страница оформления заказа (new_order):
+      //    показываем попап при попытке ухода со страницы,
+      //    каждый раз проверяя, есть ли товары в корзине и можно ли показывать форму.
       if (!this.isCheckoutPage()) {
-        this.handleWebformWithTrigger(webform, 'abandoned_cart');
+        document.addEventListener('mouseout', (e) => {
+          // Классический exit-intent: мышь уходит к верхней границе окна
+          if (!e.toElement && !e.relatedTarget && e.clientY < 10) {
+            const items = this.getOrderLines();
+            if (!items || items.length === 0) {
+              this.debugLog('[handleAbandonedCart] (non-checkout) No items in cart on exit-intent, popup will not be shown.');
+              return;
+            }
+
+            if (!this.shouldShowForm(webform, trigger)) {
+              this.debugLog('[handleAbandonedCart] (non-checkout) shouldShowForm returned false on exit-intent, popup will not be shown.');
+              return;
+            }
+
+            this.debugLog('[handleAbandonedCart] (non-checkout) Exit-intent detected, showing popup.');
+            this.showFormWithDelay(webform, trigger);
+          }
+        });
         return;
       }
 
-      // Страница оформления заказа (new_order)
-      if (triggerType === 'activity' && this.areCheckoutFieldsComplete()) {
-        // Существующий механизм через отслеживание активности (тихий сценарий)
+      // 2) Страница оформления заказа (new_order)
+      if (this.areCheckoutFieldsComplete()) {
+        // ТИХИЙ сценарий: отслеживаем активность и отправляем данные без попапа
         const intervalForSend = 4000;
         const userDataKey = "userData";
 
@@ -252,9 +270,19 @@
           }
         }, 2000);
       } else {
-        // Страница new_order, но обязательные поля не заполнены
-        // или тип триггера не activity → показываем форму
-        this.handleWebformWithTrigger(webform, 'abandoned_cart');
+        // Страница new_order, НО обязательные поля не заполнены → показываем попап
+        const items = this.getOrderLines();
+        if (!items || items.length === 0) {
+          this.debugLog('[handleAbandonedCart] Checkout page: no items in cart, popup will not be shown.');
+          return;
+        }
+
+        if (!this.shouldShowForm(webform, trigger)) {
+          this.debugLog('[handleAbandonedCart] Checkout page: shouldShowForm returned false, popup will not be shown.');
+          return;
+        }
+
+        this.showFormWithDelay(webform, trigger);
       }
     }
     
