@@ -61,7 +61,7 @@ class Account < ApplicationRecord
     # - "canceled" если есть подписки, но нет активной
     # - "none" если подписок нет
     quoted_statuses = active_statuses.map { |s| connection.quote(s) }.join(',')
-    quoted_now = connection.quote(now.to_s(:db))
+    quoted_now = connection.quote(now.to_fs(:db))
     
     Arel.sql(
       <<-SQL.squish

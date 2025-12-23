@@ -8,9 +8,7 @@ class Admin::AccountsController < ApplicationController
   def index
     @search = Account.ransack(params[:q])
     @search.sorts = "id desc" if @search.sorts.empty?
-    Rails.logger.info "[Admin::AccountsController#index] Applied sorts: #{@search.sorts.inspect}"
-    Rails.logger.info "[Admin::AccountsController#index] SQL query: #{@search.result(distinct: true).to_sql}"
-    @accounts = @search.result(distinct: true)
+    @accounts = @search.result
   end
 
 
