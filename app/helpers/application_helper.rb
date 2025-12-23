@@ -151,7 +151,7 @@ module ApplicationHelper
   end
 
   def link_to_clear(path, **options)
-    default_class = "px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 flex items-center"
+    default_class = "h-8 px-3 bg-gray-100 rounded hover:bg-gray-200 flex items-center text-sm leading-none"
     options[:class] ||= default_class
     options[:title] ||= t(:clear)
     

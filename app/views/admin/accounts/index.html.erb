@@ -5,8 +5,8 @@
       <%= f.select :current_subscription_state_eq,
           options_for_select(Account.current_subscription_state_options, params.dig(:q, :current_subscription_state_eq)),
           { include_blank: t('admin.accounts.subscriptions_status') },
-          { class: "px-2 py-1 border rounded" } %>
-      <%= f.submit "Search", class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
+          { class: "h-8 px-2 border rounded text-sm leading-none" } %>
+      <%= f.submit "Search", class: "h-8 px-3 bg-gray-200 rounded hover:bg-gray-300 text-sm leading-none" %>
       <%= link_to_clear admin_accounts_path %>
     <% end %>
     <%= link_to_new new_admin_account_path, text: t('admin.accounts.new_account'), data: { turbo_frame: :offcanvas } %>
