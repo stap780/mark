@@ -28,6 +28,7 @@ module Webforms
           show_delay: @webform.show_delay || 0,
           show_once_per_session: @webform.show_once_per_session != false,
           show_frequency_days: @webform.show_frequency_days,
+          max_shows: @webform.show_times,
           target_pages: @webform.target_pages_array,
           exclude_pages: @webform.exclude_pages_array,
           target_devices: @webform.target_devices_array,

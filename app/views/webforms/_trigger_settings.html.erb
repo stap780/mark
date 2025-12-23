@@ -47,6 +47,33 @@
     <% end %>
   </div>
   
+  <%# Лимит количества показов (для кастомных форм) %>
+  <% if webform.kind == 'custom' %>
+    <div>
+      <% if settings_form %>
+        <%= settings_form.label :show_times, "Количество показов", class: "block text-sm font-medium text-gray-700" %>
+        <%= settings_form.number_field :show_times,
+            value: webform.show_times,
+            min: 1,
+            placeholder: "Пусто — без ограничений",
+            class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
+        <p class="mt-1 text-xs text-gray-500">
+          Оставьте пустым, чтобы не ограничивать количество показов. Укажите 1, 2 или 3, чтобы ограничить число показов на пользователя.
+        </p>
+      <% else %>
+        <%= label_tag "webform_show_times", "Количество показов", class: "block text-sm font-medium text-gray-700" %>
+        <%= number_field_tag "webform[show_times]",
+            webform.show_times,
+            min: 1,
+            placeholder: "Пусто — без ограничений",
+            class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
+        <p class="mt-1 text-xs text-gray-500">
+          Оставьте пустым, чтобы не ограничивать количество показов.
+        </p>
+      <% end %>
+    </div>
+  <% end %>
+  
   <!-- Turbo Frame для динамического обновления поля trigger_value и информационных блоков -->
   <%= turbo_frame_tag "trigger_value_field" do %>
     <% current_trigger_type = webform.trigger_type || Webform.default_trigger_type_for_kind(webform.kind) %>

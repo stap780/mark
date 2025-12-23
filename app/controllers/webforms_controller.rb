@@ -179,6 +179,7 @@ class WebformsController < ApplicationController
       :title,
       :kind,
       :status,
+      :show_times,
       :trigger_type,
       :trigger_value,
       :show_delay,

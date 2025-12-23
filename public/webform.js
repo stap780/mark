@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.2.2
+ * Версия: 1.2.3
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.2.2";
+      this.version = "1.2.3";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -204,7 +204,8 @@
       
       // 1) НЕ страница оформления заказа (new_order):
       //    показываем попап при попытке ухода со страницы,
-      //    каждый раз проверяя, есть ли товары в корзине и можно ли показывать форму.
+      //    каждый раз проверяя, есть ли товары в корзине и подходит ли страница/устройство.
+      //    ВАЖНО: для сценария "Брошенная корзина" не используем куки/лимиты показа (можно показывать всегда).
       if (!this.isCheckoutPage()) {
         document.addEventListener('mouseout', (e) => {
           // Классический exit-intent: мышь уходит к верхней границе окна
@@ -215,13 +216,26 @@
               return;
             }
 
-            if (!this.shouldShowForm(webform, trigger)) {
-              this.debugLog('[handleAbandonedCart] (non-checkout) shouldShowForm returned false on exit-intent, popup will not be shown.');
+            // Проверяем таргетинг устройств
+            const deviceType = this.getDeviceType();
+            if (trigger.target_devices && !trigger.target_devices.includes(deviceType)) {
+              this.debugLog(`[handleAbandonedCart] (non-checkout) Device ${deviceType} not in target devices, popup will not be shown.`);
+              return;
+            }
+
+            // Проверяем таргетинг страниц, но игнорируем историю показов (isFormShown),
+            // чтобы форма могла показываться при каждом уходе.
+            if (!this.isPageTargeted(trigger)) {
+              this.debugLog('[handleAbandonedCart] (non-checkout) Current page not targeted, popup will not be shown.');
               return;
             }
 
             this.debugLog('[handleAbandonedCart] (non-checkout) Exit-intent detected, showing popup.');
-            this.showFormWithDelay(webform, trigger);
+            const delay = trigger.show_delay || 0;
+            setTimeout(() => {
+              this.showForm(webform, {});
+              // НЕ вызываем saveFormShown → нет куки/лимитов показа для abandoned_cart вне checkout
+            }, delay);
           }
         });
         return;
@@ -473,6 +487,16 @@
       return true;
     }
     
+    getShowCount(cookieValue) {
+      if (!cookieValue) return 0;
+      if (cookieValue.startsWith('count:')) {
+        const num = parseInt(cookieValue.replace('count:', ''), 10);
+        return isNaN(num) ? 1 : num;
+      }
+      // Старый формат cookie (просто "1")
+      return 1;
+    }
+    
     isFormShown(webform, trigger) {
       const cookieName = trigger.cookie_name || `webform_${webform.id}_shown`;
       
@@ -484,6 +508,18 @@
       // Проверка cookie (для show_frequency_days)
       const cookieValue = this.getCookie(cookieName);
       if (cookieValue) {
+        // Если настроен лимит показов (max_shows) и мы его не достигли,
+        // НЕ блокируем показ по одной только cookie.
+        if (trigger.max_shows) {
+          const count = this.getShowCount(cookieValue);
+          if (count >= trigger.max_shows) {
+            this.debugLog(`[shouldShowForm] Max shows reached (${count}/${trigger.max_shows}) for form ${webform.id}`);
+            return true;
+          } else {
+            // Можно показывать ещё раз
+            return false;
+          }
+        }
         return true;
       }
       
@@ -508,13 +544,19 @@
         sessionStorage.setItem(cookieName, '1');
       }
       
-      // Сохранение в cookie (для show_frequency_days)
+      // Сохранение в cookie с учётом count и show_frequency_days / max_shows
+      let currentCookie = this.getCookie(cookieName);
+      let count = this.getShowCount(currentCookie);
+      count += 1;
+      const value = `count:${count}`;
+      
       if (trigger.show_frequency_days) {
         const expires = new Date(Date.now() + trigger.show_frequency_days * 24 * 60 * 60 * 1000);
-        document.cookie = `${cookieName}=1; expires=${expires.toUTCString()}; path=/`;
-      } else if (!trigger.show_once_per_session) {
-        // Если нет ограничений, сохраняем в cookie без срока
-        document.cookie = `${cookieName}=1; path=/`;
+        document.cookie = `${cookieName}=${value}; expires=${expires.toUTCString()}; path=/`;
+      } else if (!trigger.show_once_per_session || trigger.max_shows) {
+        // Если нет ограничений по дням, но есть show_times или выключен show_once_per_session,
+        // сохраняем cookie без срока.
+        document.cookie = `${cookieName}=${value}; path=/`;
       }
     }
     
