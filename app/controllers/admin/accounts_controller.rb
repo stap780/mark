@@ -9,12 +9,6 @@ class Admin::AccountsController < ApplicationController
     @search = Account.ransack(params[:q])
     @search.sorts = "id desc" if @search.sorts.empty?
     @accounts = @search.result(distinct: true)
-
-    # Фильтр по "текущему состоянию подписки" аккаунта
-    state_param = params.dig(:q, :current_subscription_state_eq)
-    if state_param.present?
-      @accounts = @accounts.select { |account| account.current_subscription_state == state_param }
-    end
   end
 
   def show

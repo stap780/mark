@@ -43,24 +43,44 @@ class Account < ApplicationRecord
   end
 
   def self.ransackable_attributes(auth_object = nil)
-    ["name", "admin", "active", "created_at", "updated_at"]
+    ["name", "admin", "active", "created_at", "updated_at", "current_subscription_state"]
   end
 
   def self.ransackable_associations(auth_object = nil)
     ["subscriptions", "users", "account_users"]
   end
 
-  # Логическое "текущее состояние подписки" аккаунта
-  # Используется только для фильтра в админке, не влияет на бизнес-логику доступа.
-  #
-  # Варианты:
-  # - "active"   — есть активная или пробная подписка (subscription_active? == true)
-  # - "canceled" — подписки были, но сейчас ни одной активной/пробной нет
-  # - "none"     — ни одной подписки вообще не было
-  def current_subscription_state
-    return "active" if subscription_active?
-    return "canceled" if subscriptions.exists?
-    "none"
+  # Ransacker для фильтрации по текущему состоянию подписки
+  ransacker :current_subscription_state, formatter: proc { |v| v } do |parent|
+    now = Time.current
+    connection = parent.connection
+    active_statuses = ["active", "trialing"]
+    
+    # CASE WHEN для определения состояния:
+    # - "active" если есть подписка с активным периодом и статусом active/trialing
+    # - "canceled" если есть подписки, но нет активной
+    # - "none" если подписок нет
+    quoted_statuses = active_statuses.map { |s| connection.quote(s) }.join(',')
+    quoted_now = connection.quote(now.to_s(:db))
+    
+    Arel.sql(
+      <<-SQL.squish
+        CASE
+          WHEN EXISTS (
+            SELECT 1 FROM subscriptions
+            WHERE subscriptions.account_id = accounts.id
+              AND subscriptions.status IN (#{quoted_statuses})
+              AND subscriptions.current_period_start <= #{quoted_now}
+              AND subscriptions.current_period_end >= #{quoted_now}
+          ) THEN #{connection.quote('active')}
+          WHEN EXISTS (
+            SELECT 1 FROM subscriptions
+            WHERE subscriptions.account_id = accounts.id
+          ) THEN #{connection.quote('canceled')}
+          ELSE #{connection.quote('none')}
+        END
+      SQL
+    )
   end
 
   # Опции для фильтра по текущему состоянию подписки в админке
