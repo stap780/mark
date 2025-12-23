@@ -507,6 +507,10 @@ en:
       success: "Variant created successfully."
     update:
       success: "Variant updated successfully."
+    form:
+      save: "Save variant"
+    edit:
+      edit: "Edit variant"
 
   varbinds:
     success: "Saved successfully."
@@ -717,6 +721,10 @@ en:
       update_user: "Update User"
       create_user: "Create User"
       cancel: "Cancel"
+
+  insales:
+    set_product_xml:
+      success: "Products XML link saved."
 
   products:
     index:

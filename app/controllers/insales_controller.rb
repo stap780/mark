@@ -142,11 +142,13 @@ class InsalesController < ApplicationController
     rec = current_account&.insales&.first
     respond_to do |format|
       if rec.update(product_xml: params[:product_xml])
-        flash.now[:success] = t('.success', default: 'Products XML link saved')
+        flash.now[:success] = t('.success')
       else
         flash.now[:error] = rec.errors.full_messages.to_sentence
       end
-      format.turbo_stream { render turbo_stream: turbo_close_offcanvas_flash }
+      format.turbo_stream { 
+        render turbo_stream: turbo_close_offcanvas_flash 
+      }
       format.html { redirect_to account_insales_path(current_account) }
     end
   end

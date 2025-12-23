@@ -13,9 +13,10 @@
           <%= link_to t('.new_variant'), new_account_product_variant_path(current_account, product),
                 class: "inline-flex items-center px-3 py-1 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed pointer-events-none",
                 tabindex: -1, aria: { disabled: true }, 
-                data: { turbo_frame: :offcanvas }  %>
+                data: { turbo_frame: :offcanvas } unless current_account.partner? %>
         <% else %>
-          <%= link_to_new new_account_product_variant_path(current_account, product), text: t('.new_variant'), data: { turbo_frame: :offcanvas } unless current_account.partner? %>
+          <%= link_to_new new_account_product_variant_path(current_account, product), 
+          text: t('.new_variant'), data: { turbo_frame: :offcanvas } unless current_account.partner? %>
         <% end %>
       <% end %>
     </div>
@@ -24,11 +25,11 @@
       <%= turbo_frame_tag dom_id(product, :variants), class: "w-full" do %>
         <div class="grid grid-cols-7 gap-4 p-2 font-medium text-gray-700 border-b">
           <div>#</div>
-          <div><%= t('.image') %></div>
-          <div>SKU</div>
-          <div>Barcode</div>
-          <div>Quantity</div>
-          <div><%= t(:price) %></div>
+          <div><%= t('products.index.image') %></div>
+          <div><%= t('activerecord.attributes.variant.sku') %></div>
+          <div><%= t('activerecord.attributes.variant.barcode') %></div>
+          <div><%= t('activerecord.attributes.variant.quantity') %></div>
+          <div><%= t('activerecord.attributes.variant.price') %></div>
           <div></div>
         </div>
         <% product.variants.each do |variant| %>

@@ -499,6 +499,13 @@ ru:
         other: "Показано %{count} %{model}"
       multi_page_html: "Показано %{from}–%{to} из %{count} %{model}"
 
+  # Коннекторы для составных сообщений (Array#to_sentence, full_messages.to_sentence)
+  support:
+    array:
+      words_connector: ", "
+      two_words_connector: " и "
+      last_word_connector: " и "
+
   controllers:
     products:
       create:
@@ -689,6 +696,10 @@ ru:
       success: "Вариант успешно создан."
     update:
       success: "Вариант успешно обновлен."
+    edit:
+      edit: "Редактировать вариант"
+    form:
+      save: "Сохранить вариант"
 
   varbinds:
     success: "Успешно сохранено."
@@ -733,6 +744,8 @@ ru:
     generate_products_xml:
       success: "XML товаров сгенерирован."
     save_products_xml_link:
+      success: "Ссылка на XML товаров сохранена."
+    set_product_xml:
       success: "Ссылка на XML товаров сохранена."
 
   email_setups:

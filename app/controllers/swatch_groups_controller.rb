@@ -27,7 +27,12 @@ class SwatchGroupsController < ApplicationController
       SwatchJsonGeneratorJob.perform_later(current_account.id)
       redirect_to account_swatch_groups_path(current_account), notice: t("controllers.swatch_groups.create.success")
     else
-      render :new, status: :unprocessable_content
+      # render :new, status: :unprocessable_content
+      respond_to do |format|
+        flash.now[:notice] = @swatch_group.errors.full_messages.uniq.to_sentence
+        format.turbo_stream { render turbo_stream: render_turbo_flash }
+        format.html { render :new, status: :unprocessable_content }
+      end
     end
   end
 

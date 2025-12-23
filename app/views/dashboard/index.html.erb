@@ -3,38 +3,47 @@
     <%= tag.h2 t('menu.users'), class: 'text-sm font-medium text-gray-500' %>
     <%= tag.p((current_account.users.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
   <% end %>
+  
   <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
     <%= tag.h2 t('menu.status'), class: 'text-sm font-medium text-gray-500' %>
     <%= tag.p(t('dashboard.status_ok'), class: 'mt-1 text-xl font-semibold text-gray-900') %>
   <% end %>
+  
   <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
     <%= tag.h2 t('menu.products'), class: 'text-sm font-medium text-gray-500' %>
     <%= tag.p((current_account.products.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
   <% end %>
+  
   <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
     <%= tag.h2 t('menu.clients'), class: 'text-sm font-medium text-gray-500' %>
     <%= tag.p((current_account.clients.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
   <% end %>
+  
   <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
     <%= tag.h2 t('menu.incases'), class: 'text-sm font-medium text-gray-500' %>
     <%= tag.p((current_account.incases.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
-  <% end if current_account.incases.any? %>
+  <% end unless current_account.partner? %>
+  
   <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
     <%= tag.h2 t('menu.webforms'), class: 'text-sm font-medium text-gray-500' %>
     <%= tag.p((current_account.webforms.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
-  <% end if current_account.webforms.any? %>
+  <% end unless current_account.partner? %>
+  
   <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
     <%= tag.h2 t('menu.automation_rules'), class: 'text-sm font-medium text-gray-500' %>
     <%= tag.p((current_account.automation_rules.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
-  <% end if current_account.automation_rules.any? %>
+  <% end unless current_account.partner? %>
+  
   <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
     <%= tag.h2 t('menu.message_templates'), class: 'text-sm font-medium text-gray-500' %>
     <%= tag.p((current_account.message_templates.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
-  <% end if current_account.message_templates.any? %>
+  <% end unless current_account.partner? %>
+  
   <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
     <%= tag.h2 t('menu.automation_messages'), class: 'text-sm font-medium text-gray-500' %>
     <%= tag.p((current_account.automation_messages.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>
-  <% end if current_account.automation_messages.any? %>  
+  <% end unless current_account.partner? %>  
+  
   <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
     <%= tag.h2 t('menu.swatches'), class: 'text-sm font-medium text-gray-500' %>
     <%= tag.p((current_account.swatch_groups.count if current_account), class: 'mt-1 text-xl font-semibold text-gray-900') %>

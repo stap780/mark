@@ -6,7 +6,7 @@ class Admin::AccountsController < ApplicationController
   before_action :set_account, only: %i[show edit update destroy]
 
   def index
-    @search = Account.includes(:subscriptions).ransack(params[:q])
+    @search = Account.ransack(params[:q])
     @search.sorts = "id desc" if @search.sorts.empty?
     @accounts = @search.result(distinct: true)
   end
