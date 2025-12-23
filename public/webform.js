@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.2.4
+ * Версия: 1.2.5
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.2.4";
+      this.version = "1.2.5";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -835,8 +835,14 @@
       }
 
       // Формирование items
-      const items = [];
-      if (eventData.variantId) {
+      let items = [];
+
+      if (webform.kind === 'abandoned_cart') {
+        // Для сценария "Брошенная корзина" всегда берём состав корзины из getOrderLines(),
+        // как в тихом сценарии на new_order.
+        items = this.getOrderLines();
+      } else if (eventData.variantId) {
+        // Для остальных сценариев используем variantId из eventData (например, preorder / купить в 1 клик).
         items.push({
           type: "Variant",
           id: eventData.variantId,

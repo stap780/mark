@@ -783,6 +783,11 @@ en:
       no_subscription: "No subscription"
       show: "Show"
       delete_account_confirm: "Are you sure you want to delete this account?"
+      subscriptions_status: "Subscription status"
+      filter_states:
+        active: "Active"
+        canceled: "Canceled / expired"
+        none: "No subscription"
     payments:
       payments: "Payments"
       status: "Status"

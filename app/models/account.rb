@@ -17,6 +17,7 @@ class Account < ApplicationRecord
   has_one :email_setup, dependent: :destroy
   has_one :mailganer, dependent: :destroy
   has_many :stock_check_schedules, dependent: :destroy
+  
   validates :name, presence: true
 
   after_create :create_subscription
@@ -47,6 +48,28 @@ class Account < ApplicationRecord
 
   def self.ransackable_associations(auth_object = nil)
     ["subscriptions", "users", "account_users"]
+  end
+
+  # Логическое "текущее состояние подписки" аккаунта
+  # Используется только для фильтра в админке, не влияет на бизнес-логику доступа.
+  #
+  # Варианты:
+  # - "active"   — есть активная или пробная подписка (subscription_active? == true)
+  # - "canceled" — подписки были, но сейчас ни одной активной/пробной нет
+  # - "none"     — ни одной подписки вообще не было
+  def current_subscription_state
+    return "active" if subscription_active?
+    return "canceled" if subscriptions.exists?
+    "none"
+  end
+
+  # Опции для фильтра по текущему состоянию подписки в админке
+  def self.current_subscription_state_options
+    {
+      I18n.t("admin.accounts.filter_states.active") => "active",
+      I18n.t("admin.accounts.filter_states.canceled") => "canceled",
+      I18n.t("admin.accounts.filter_states.none") => "none"
+    }
   end
 
   # Returns true if the given app is present in settings["apps"]

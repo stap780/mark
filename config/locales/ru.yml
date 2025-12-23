@@ -433,6 +433,10 @@ ru:
       no_subscription_end: "Нет даты окончания"
       partner_yes: "Партнёр"
       partner_no: "Обычный"
+      filter_states:
+        active: "Активна"
+        canceled: "Подписка завершена"
+        none: "Нет подписки"
     payments:
       payments: "Платежи"
       status: "Статус"

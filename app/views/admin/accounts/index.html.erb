@@ -2,9 +2,9 @@
   <h1 class="text-xl font-semibold"><%= t('admin.accounts.accounts') %></h1>
   <div class="flex space-x-2">
     <%= search_form_for @search, url: admin_accounts_path, method: :get, html: { class: "flex items-center space-x-2" } do |f| %>
-      <%= f.select :subscriptions_status_eq, 
-          options_for_select(Subscription.statuses.map { |key, value| [key.humanize, value] }, params.dig(:q, :subscriptions_status_eq)), 
-          { include_blank: t('admin.accounts.subscriptions_status') }, 
+      <%= f.select :current_subscription_state_eq,
+          options_for_select(Account.current_subscription_state_options, params.dig(:q, :current_subscription_state_eq)),
+          { include_blank: t('admin.accounts.subscriptions_status') },
           { class: "px-2 py-1 border rounded" } %>
       <%= f.submit "Search", class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
       <%= link_to_clear admin_accounts_path %>
@@ -15,7 +15,9 @@
 
 <div class="bg-white rounded-lg shadow divide-y">
   <div class="grid grid-cols-[40px_1fr_160px_240px_140px_120px] gap-4 p-4 font-medium text-gray-700">
-    <div>#</div>
+    <div>
+      <%= sort_link(@search, :id, "#") %>
+    </div>
     <div><%= t('admin.accounts.name') %></div>
     <div><%= t('admin.accounts.subscription') %></div>
     <div><%= t('admin.accounts.current_plan') %></div>
