@@ -1,12 +1,12 @@
 <div class="flex items-center justify-between mb-4">
-  <h2 class="text-lg font-semibold">Fields</h2>
-  <%= link_to_new new_account_webform_webform_field_path(current_account, webform), text: "Add Field", data: { turbo_frame: :offcanvas } %>
+  <h2 class="text-lg font-semibold"><%= t('.fields') %></h2>
+  <%= link_to_new new_account_webform_webform_field_path(current_account, webform), text: t('.add_field'), data: { turbo_frame: :offcanvas } %>
 </div>
 <div class="bg-white rounded-lg shadow divide-y">
   <div class="grid grid-cols-[40px_1fr_70px_150px] gap-4 p-4 font-medium text-gray-700">
     <div>#</div>
-    <div>Name</div>
-    <div>Type</div>
+    <div><%= t('.name') %></div>
+    <div><%= t('.type') %></div>
     <div></div>
   </div>
   <%= turbo_frame_tag dom_id(current_account, dom_id(webform, :webform_fields)), data: { controller: "sortable" } do %>

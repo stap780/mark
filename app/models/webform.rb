@@ -41,6 +41,22 @@ class Webform < ApplicationRecord
     []
   end
 
+  # Массивы страниц и устройств для использования в BuildSchema / webform.js
+  def target_pages_array
+    return [] if target_pages.blank?
+    target_pages.to_s.split("\n").map(&:strip).reject(&:blank?)
+  end
+
+  def exclude_pages_array
+    return [] if exclude_pages.blank?
+    exclude_pages.to_s.split("\n").map(&:strip).reject(&:blank?)
+  end
+
+  def target_devices_array
+    return %w[desktop mobile tablet] if target_devices.blank?
+    target_devices.to_s.split(",").map(&:strip).reject(&:blank?)
+  end
+
   private
 
   def set_default_fields_and_settings
@@ -201,26 +217,19 @@ class Webform < ApplicationRecord
   end
 
   def validate_trigger_settings
-    return unless settings.present?
-    
-    trigger_type = settings['trigger_type']
-    return if trigger_type.blank?
-    
-    # Разрешенные типы триггеров
-    allowed_types = ['exit_intent', 'time_on_page', 'scroll_depth', 'manual', 'event', 'activity']
-    unless allowed_types.include?(trigger_type)
-      errors.add(:settings, "Неизвестный тип триггера: #{trigger_type}")
+    tt = trigger_type.presence || self.class.default_trigger_type_for_kind(kind)
+    return if tt.blank?
+
+    allowed_types = %w[exit_intent time_on_page scroll_depth manual event activity]
+    unless allowed_types.include?(tt)
+      errors.add(:trigger_type, "Неизвестный тип триггера: #{tt}")
       return
     end
-    
-    # Валидация для триггеров, требующих значения
-    case trigger_type
-    when 'exit_intent', 'manual', 'event', 'activity'
-      # Для этих типов не нужны дополнительные значения
+
+    case tt
     when 'time_on_page', 'scroll_depth'
-      trigger_value = settings['trigger_value']
       if trigger_value.blank? || trigger_value.to_i <= 0
-        errors.add(:settings, "trigger_value должен быть положительным числом для #{trigger_type}")
+        errors.add(:trigger_value, "должно быть положительным числом для #{tt}")
       end
     end
   end
@@ -252,5 +261,6 @@ class Webform < ApplicationRecord
   end
 
 end
+
 
 

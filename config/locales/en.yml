@@ -668,6 +668,18 @@ en:
       title: "New Webform"
     edit:
       title: "Edit Webform"
+    design:
+      webform_field_design_settings: "Webform design settings"
+    show:
+      webform: "Webform"
+      edit: "Edit"
+      design: "Design"
+      preview: "Preview"
+    show_fields_list:
+      fields: "Fields"
+      add_field: "Add field"
+      name: "Name"
+      type: "Type"
     _form:
       create: "Create"
       update: "Update"
@@ -693,6 +705,12 @@ en:
       success: "Webform field updated successfully."
     destroy:
       success: "Webform field deleted successfully."
+    new:
+      add_field_to_webform: "Add field to webform"
+    edit:
+      edit_field: "Edit field"
+    design:
+      field_design_settings: "Field design settings: %{name}"
 
   automation_actions:
     create:

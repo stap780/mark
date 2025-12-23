@@ -1,4 +1,4 @@
-<%= render 'shared/offcanvas_inner_left', title: "Field Design Settings - #{@webform_field.name}", width: '40rem' do %>
+<%= render 'shared/offcanvas_inner_left', title: t('.field_design_settings', name: @webform_field.name), width: '40rem' do %>
   <%= render 'webforms/settings_panel', webform: @webform, target: :field_settings, field: @webform_field %>
 <% end %>
 

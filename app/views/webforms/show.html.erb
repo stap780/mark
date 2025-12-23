@@ -9,12 +9,12 @@
 
   <div class="space-y-4 lg:col-span-2">
     <%= turbo_frame_tag dom_id(current_account, :webform_settings), class: "flex items-center justify-between gap-4 p-4 bg-white rounded-lg shadow mt-4" do %>
-      <h2 class="text-lg font-semibold mb-3">Webform</h2>
+      <h2 class="text-lg font-semibold mb-3"><%= t('.webform') %></h2>
       <div class="flex items-center justify-end gap-2">
         <%= link_to_edit edit_account_webform_path(current_account, @webform),
-        data: { turbo_frame: :offcanvas, turbo_prefetch: false }, title: "Edit" %>
+        data: { turbo_frame: :offcanvas, turbo_prefetch: false }, title: t('.edit') %>
         <%= link_to_show design_account_webform_path(current_account, @webform),
-        data: { turbo_frame: :offcanvas, turbo_prefetch: false }, title: "Design" %>
+        data: { turbo_frame: :offcanvas, turbo_prefetch: false }, title: t('.design') %>
       </div>
     <% end %>
     
@@ -22,7 +22,7 @@
   </div>
 
   <div class="bg-white rounded-lg shadow p-4 lg:col-span-3">
-    <h2 class="text-lg font-semibold mb-3">Preview</h2>
+    <h2 class="text-lg font-semibold mb-3"><%= t('.preview') %></h2>
     <%= turbo_frame_tag dom_id(current_account, dom_id(@webform, :preview)), class: "p-4" do %>
       <%= render 'preview', schema: @schema %>
     <% end %>

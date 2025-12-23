@@ -827,6 +827,18 @@ ru:
       title: "Новая веб-форма"
     edit:
       title: "Редактировать веб-форму"
+    design:
+      webform_field_design_settings: "Настройки дизайна веб-формы"
+    show:
+      webform: "Веб-форма"
+      edit: "Редактировать"
+      design: "Дизайн"
+      preview: "Предпросмотр"
+    show_fields_list:
+      fields: "Поля"
+      add_field: "Добавить поле"
+      name: "Название"
+      type: "Тип"
     _form:
       create: "Создать"
       update: "Обновить"
@@ -854,6 +866,12 @@ ru:
       success: "Поле формы успешно обновлено."
     destroy:
       success: "Поле формы успешно удалено."
+    new:
+      add_field_to_webform: "Добавить поле в веб-форму"
+    edit:
+      edit_field: "Редактировать поле"
+    design:
+      field_design_settings: "Настройки дизайна поля: %{name}"
 
   automation_actions:
     create:

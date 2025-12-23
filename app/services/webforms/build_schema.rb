@@ -21,17 +21,17 @@ module Webforms
         status: @webform.status,
         settings: normalize_settings(merged_settings),
         fields: @webform.webform_fields.order(:position).map { |f| serialize_field(f) },
-        # Добавляем настройки триггеров (для всех типов форм)
+        # Настройки триггеров теперь берём из отдельных колонок webforms
         trigger: {
-          type: merged_settings['trigger_type'] || default_trigger_type_for_kind(@webform.kind),
-          value: merged_settings['trigger_value'],
-          show_delay: merged_settings['show_delay'] || 0,
-          show_once_per_session: merged_settings['show_once_per_session'] != false,
-          show_frequency_days: merged_settings['show_frequency_days'],
-          target_pages: merged_settings['target_pages'] || [],
-          exclude_pages: merged_settings['exclude_pages'] || [],
-          target_devices: merged_settings['target_devices'] || ['desktop', 'mobile', 'tablet'],
-          cookie_name: merged_settings['cookie_name'] || "webform_#{@webform.id}_shown"
+          type: @webform.trigger_type.presence || default_trigger_type_for_kind(@webform.kind),
+          value: @webform.trigger_value,
+          show_delay: @webform.show_delay || 0,
+          show_once_per_session: @webform.show_once_per_session != false,
+          show_frequency_days: @webform.show_frequency_days,
+          target_pages: @webform.target_pages_array,
+          exclude_pages: @webform.exclude_pages_array,
+          target_devices: @webform.target_devices_array,
+          cookie_name: @webform.cookie_name.presence || "webform_#{@webform.id}_shown"
         }
       }
     end

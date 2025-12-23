@@ -10,8 +10,13 @@
       data: { controller: "auto-submit", "auto-submit-delay-value": 350, turbo_stream: true},
       local: false,
       class: "space-y-4" do |f| %>
-  
-  <% settings_hash = target == :field_settings ? (field.settings || {}) : (webform.settings || {}) %>
+
+  <% settings_hash =
+      if target == :field_settings
+        field.merge_with_defaults(field.settings)
+      else
+        webform.merge_with_defaults(webform.settings)
+      end %>
   <% settings_data = settings_hash.with_indifferent_access rescue settings_hash %>
   <%= f.fields_for :settings, settings_hash do |sf| %>
   

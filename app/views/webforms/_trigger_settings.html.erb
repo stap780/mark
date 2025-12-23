@@ -21,7 +21,7 @@
       <%= settings_form.select :trigger_type,
           options_for_select(
             trigger_options,
-            webform.settings&.dig('trigger_type') || Webform.default_trigger_type_for_kind(webform.kind)
+            webform.trigger_type || Webform.default_trigger_type_for_kind(webform.kind)
           ),
           {},
           { 
@@ -38,7 +38,7 @@
         <%= select_tag "trigger_type",
             options_for_select(
               trigger_options,
-              webform.settings&.dig('trigger_type') || Webform.default_trigger_type_for_kind(webform.kind)
+              webform.trigger_type || Webform.default_trigger_type_for_kind(webform.kind)
             ),
             name: "trigger_type",
             class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5",
@@ -49,7 +49,7 @@
   
   <!-- Turbo Frame для динамического обновления поля trigger_value и информационных блоков -->
   <%= turbo_frame_tag "trigger_value_field" do %>
-    <% current_trigger_type = webform.settings&.dig('trigger_type') || Webform.default_trigger_type_for_kind(webform.kind) %>
+    <% current_trigger_type = webform.trigger_type || Webform.default_trigger_type_for_kind(webform.kind) %>
     
     <% if current_trigger_type == 'manual' %>
       <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
@@ -73,13 +73,13 @@
         <% if settings_form %>
           <%= settings_form.label :trigger_value, "Значение", class: "block text-sm font-medium text-gray-700" %>
           <%= settings_form.number_field :trigger_value,
-              value: webform.settings&.dig('trigger_value'),
+              value: webform.trigger_value,
               placeholder: current_trigger_type == 'time_on_page' ? '30 (секунды)' : '75 (проценты)',
               class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
         <% else %>
-          <%= label_tag "webform_settings_trigger_value", "Значение", class: "block text-sm font-medium text-gray-700" %>
-          <%= number_field_tag "webform[settings][trigger_value]",
-              webform.settings&.dig('trigger_value'),
+          <%= label_tag "webform_trigger_value", "Значение", class: "block text-sm font-medium text-gray-700" %>
+          <%= number_field_tag "webform[trigger_value]",
+              webform.trigger_value,
               placeholder: current_trigger_type == 'time_on_page' ? '30 (секунды)' : '75 (проценты)',
               class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
         <% end %>
@@ -111,13 +111,13 @@
     <% if settings_form %>
       <%= settings_form.label :show_delay, "Задержка перед показом (мс)", class: "block text-sm font-medium text-gray-700" %>
       <%= settings_form.number_field :show_delay,
-          value: webform.settings&.dig('show_delay') || 0,
+          value: webform.show_delay || 0,
           min: 0,
           class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
     <% else %>
-      <%= label_tag "webform_settings_show_delay", "Задержка перед показом (мс)", class: "block text-sm font-medium text-gray-700" %>
-      <%= number_field_tag "webform[settings][show_delay]",
-          webform.settings&.dig('show_delay') || 0,
+      <%= label_tag "webform_show_delay", "Задержка перед показом (мс)", class: "block text-sm font-medium text-gray-700" %>
+      <%= number_field_tag "webform[show_delay]",
+          webform.show_delay || 0,
           min: 0,
           class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
     <% end %>
@@ -126,12 +126,12 @@
   <div>
     <% if settings_form %>
       <%= settings_form.check_box :show_once_per_session,
-          { checked: webform.settings&.dig('show_once_per_session') != false, class: "rounded border-gray-300" } %>
+          { checked: webform.show_once_per_session != false, class: "rounded border-gray-300" } %>
       <%= settings_form.label :show_once_per_session, "Показывать только раз за сессию", class: "ml-2 text-sm text-gray-700" %>
     <% else %>
-      <%= check_box_tag "webform[settings][show_once_per_session]",
+      <%= check_box_tag "webform[show_once_per_session]",
           '1',
-          webform.settings&.dig('show_once_per_session') != false,
+          webform.show_once_per_session != false,
           class: "rounded border-gray-300" %>
       <%= label_tag "webform_settings_show_once_per_session", "Показывать только раз за сессию", class: "ml-2 text-sm text-gray-700" %>
     <% end %>
@@ -146,15 +146,15 @@
         <%= settings_form.label :target_pages, "Показывать только на страницах (URL или путь)", class: "block text-sm font-medium text-gray-700 mb-2" %>
         <p class="text-xs text-gray-500 mb-2">Оставьте пустым, чтобы показывать на всех страницах. Укажите один URL или путь на строку.</p>
         <%= settings_form.text_area :target_pages,
-            value: (webform.settings&.dig('target_pages') || []).join("\n"),
+            value: webform.target_pages,
             placeholder: "/products\n/cart\n/about",
             rows: 3,
             class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5 font-mono text-sm" %>
       <% else %>
-        <%= label_tag "webform_settings_target_pages", "Показывать только на страницах (URL или путь)", class: "block text-sm font-medium text-gray-700 mb-2" %>
+        <%= label_tag "webform_target_pages", "Показывать только на страницах (URL или путь)", class: "block text-sm font-medium text-gray-700 mb-2" %>
         <p class="text-xs text-gray-500 mb-2">Оставьте пустым, чтобы показывать на всех страницах. Укажите один URL или путь на строку.</p>
-        <%= text_area_tag "webform[settings][target_pages]",
-            (webform.settings&.dig('target_pages') || []).join("\n"),
+        <%= text_area_tag "webform[target_pages]",
+            webform.target_pages,
             placeholder: "/products\n/cart\n/about",
             rows: 3,
             class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5 font-mono text-sm" %>
@@ -166,15 +166,15 @@
         <%= settings_form.label :exclude_pages, "Исключить страницы (URL или путь)", class: "block text-sm font-medium text-gray-700 mb-2" %>
         <p class="text-xs text-gray-500 mb-2">Укажите URL или путь, на которых форма НЕ будет показываться. Один URL или путь на строку.</p>
         <%= settings_form.text_area :exclude_pages,
-            value: (webform.settings&.dig('exclude_pages') || []).join("\n"),
+            value: webform.exclude_pages,
             placeholder: "/checkout\n/admin",
             rows: 3,
             class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5 font-mono text-sm" %>
       <% else %>
-        <%= label_tag "webform_settings_exclude_pages", "Исключить страницы (URL или путь)", class: "block text-sm font-medium text-gray-700 mb-2" %>
+        <%= label_tag "webform_exclude_pages", "Исключить страницы (URL или путь)", class: "block text-sm font-medium text-gray-700 mb-2" %>
         <p class="text-xs text-gray-500 mb-2">Укажите URL или путь, на которых форма НЕ будет показываться. Один URL или путь на строку.</p>
-        <%= text_area_tag "webform[settings][exclude_pages]",
-            (webform.settings&.dig('exclude_pages') || []).join("\n"),
+        <%= text_area_tag "webform[exclude_pages]",
+            webform.exclude_pages,
             placeholder: "/checkout\n/admin",
             rows: 3,
             class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5 font-mono text-sm" %>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_22_160705) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_23_142000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -442,6 +442,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_160705) do
     t.jsonb "settings"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "trigger_type"
+    t.integer "trigger_value"
+    t.integer "show_delay", default: 0, null: false
+    t.boolean "show_once_per_session", default: true, null: false
+    t.integer "show_frequency_days"
+    t.text "target_pages"
+    t.text "exclude_pages"
+    t.string "target_devices"
+    t.string "cookie_name"
     t.index ["account_id", "kind", "status"], name: "index_webforms_on_account_id_and_kind_and_status"
     t.index ["account_id", "kind"], name: "index_webforms_on_account_kind_singleton", unique: true, where: "((kind)::text = ANY ((ARRAY['order'::character varying, 'notify'::character varying, 'preorder'::character varying, 'abandoned_cart'::character varying])::text[]))"
     t.index ["account_id"], name: "index_webforms_on_account_id"
