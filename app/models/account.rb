@@ -53,7 +53,7 @@ class Account < ApplicationRecord
   # Ransacker для фильтрации по текущему состоянию подписки
   ransacker :current_subscription_state, formatter: proc { |v| v } do |parent|
     now = Time.current
-    connection = parent.connection
+    connection = Account.connection
     active_statuses = ["active", "trialing"]
     
     # CASE WHEN для определения состояния:
