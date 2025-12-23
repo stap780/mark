@@ -202,8 +202,16 @@
       
       this.debugLog(`[handleAbandonedCart] Webform ${webform.id} trigger type: ${triggerType}`);
       
-      // Существующий механизм через отслеживание активности (для совместимости)
-      if (triggerType === 'activity') {
+      // Если мы не на странице оформления заказа (URL не содержит new_order),
+      // всегда работаем через показ формы по триггерам
+      if (!this.isCheckoutPage()) {
+        this.handleWebformWithTrigger(webform, 'abandoned_cart');
+        return;
+      }
+
+      // Страница оформления заказа (new_order)
+      if (triggerType === 'activity' && this.areCheckoutFieldsComplete()) {
+        // Существующий механизм через отслеживание активности (тихий сценарий)
         const intervalForSend = 4000;
         const userDataKey = "userData";
 
@@ -219,7 +227,7 @@
           }
         });
 
-        // Сбор данных из полей формы
+        // Сбор данных из полей формы оформления заказа
         const emailInput = document.querySelector("input[name='client[email]']");
         const phoneInput = document.querySelector("input[name='client[phone]']");
         const nameInput = document.querySelector("input[name='client[name]']");
@@ -237,14 +245,15 @@
           const timeSinceLastActivity = new Date().getTime() - this.abandonedCartData.timestamp;
           if (timeSinceLastActivity >= intervalForSend) {
             if (this.isRegistered()) {
-            this.getRegisteredData(webform, userDataKey);
-          } else {
-            this.getUnregisteredData(webform, userDataKey);
+              this.getRegisteredData(webform, userDataKey);
+            } else {
+              this.getUnregisteredData(webform, userDataKey);
+            }
           }
-        }
-      }, 2000);
+        }, 2000);
       } else {
-        // Автоматические триггеры (exit_intent, time_on_page, scroll_depth) или manual
+        // Страница new_order, но обязательные поля не заполнены
+        // или тип триггера не activity → показываем форму
         this.handleWebformWithTrigger(webform, 'abandoned_cart');
       }
     }
@@ -379,6 +388,24 @@
       }
       
       return true;
+    }
+    
+    isCheckoutPage() {
+      const path = window.location.pathname || "";
+      return path.includes('new_order');
+    }
+
+    areCheckoutFieldsComplete() {
+      const emailInput = document.querySelector("input[name='client[email]']");
+      const phoneInput = document.querySelector("input[name='client[phone]']");
+      const nameInput  = document.querySelector("input[name='client[name]']");
+
+      const email = emailInput ? emailInput.value.trim() : "";
+      const phone = phoneInput ? phoneInput.value.trim() : "";
+      const name  = nameInput  ? nameInput.value.trim()  : "";
+
+      // Минимальное требование: есть имя И (email ИЛИ телефон)
+      return !!name && (!!email || !!phone);
     }
     
     getDeviceType() {
