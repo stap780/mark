@@ -122,7 +122,7 @@ class Admin::AccountsController < ApplicationController
     user_accounts = Current.session&.user&.accounts || []
     admin_account = user_accounts.find { |acc| acc.admin? }
     unless admin_account
-      flash[:error] = t('accounts.access_denied', default: 'Access denied. Admin account privileges required.')
+      flash[:error] = t('accounts.access_denied')
       if user_accounts.any?
         redirect_to account_dashboard_path(user_accounts.first)
       else
