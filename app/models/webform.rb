@@ -74,17 +74,7 @@ class Webform < ApplicationRecord
       "box_shadow_color": "#000000",
       "box_shadow_spread": "0",
       "box_shadow_offset_x": "0",
-      "box_shadow_offset_y": "2",
-      # Настройки триггеров
-      "trigger_type": default_trigger_type_for_kind,
-      "trigger_value": nil,
-      "show_delay": 0,
-      "show_once_per_session": true,
-      "show_frequency_days": nil,
-      "target_pages": [],
-      "exclude_pages": [],
-      "target_devices": ["desktop", "mobile", "tablet"],
-      "cookie_name": nil
+      "box_shadow_offset_y": "2"
     }
     w_fields_data = [
       {
@@ -189,7 +179,19 @@ class Webform < ApplicationRecord
       }
     ]
 
+    # Устанавливаем настройки дизайна в settings
     self.update(settings: w_s_data, webform_fields_attributes: w_fields_data)
+
+    # Устанавливаем настройки триггеров в отдельные колонки
+    self.update(
+      trigger_type: default_trigger_type_for_kind,
+      trigger_value: nil,
+      show_delay: 0,
+      show_once_per_session: true,
+      show_frequency_days: nil,
+      target_devices: "desktop,mobile,tablet",
+      show_times: 0
+    )
 
   end
 

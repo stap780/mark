@@ -201,7 +201,13 @@ module Automation
         webform = account.webforms.create!(
           title: title,
           kind: kind,
-          status: status
+          status: status,
+          # Настройки триггеров по умолчанию
+          trigger_type: Webform.default_trigger_type_for_kind(kind),
+          show_delay: 0,
+          show_once_per_session: true,
+          target_devices: "desktop,mobile,tablet",
+          show_times: 0
         )
       end
       
