@@ -460,6 +460,7 @@ en:
     update_status:
       success: "Incase status updated."
     destroy:
+      confirm: "Are you sure you want to delete this incase?"
       success: "Incase deleted successfully."
     webforms:
       create:
@@ -802,3 +803,16 @@ en:
       amount: "Amount"
       status_column: "Status"
       any: "Any"
+
+  mailganers:
+    new:
+      title: "Configure Mailganer"
+    edit:
+      title: "Edit Mailganer Settings"
+    show:
+      title: "Mailganer Settings"
+    test_email:
+      title: "Send Test Email via Mailganer"
+      email_label: "Recipient email"
+      description: "Mailganer will send a simple test email using current API settings."
+    test_email_label: "Send Test Email"

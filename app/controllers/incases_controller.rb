@@ -35,13 +35,25 @@ class IncasesController < ApplicationController
 
   def destroy
     @incase.destroy!
+    check_destroy = @incase.destroy ? true : false
+    if check_destroy == true
+      flash.now[:success] = t(".success")
+    else
+      flash.now[:notice] = @incase.errors.full_messages.join(" ")
+    end
+
     respond_to do |format|
       format.turbo_stream do
-        flash.now[:success] = t('.success')
-        render turbo_stream: [
-          turbo_stream.remove(dom_id(current_account, dom_id(@incase))),
-          render_turbo_flash
-        ]
+        if check_destroy == true
+          render turbo_stream: [
+            turbo_stream.remove(dom_id(current_account, dom_id(@incase))),
+            render_turbo_flash
+          ]
+        else
+          render turbo_stream: [
+            render_turbo_flash
+          ]
+        end
       end
       format.html { redirect_to account_incases_path(current_account), notice: t('.success') }
       format.json { head :no_content }

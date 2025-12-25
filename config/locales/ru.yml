@@ -670,6 +670,7 @@ ru:
     update_status:
       success: "Статус заявки обновлен."
     destroy:
+      confirm: "Вы уверены, что хотите удалить эту заявку?"
       success: "Заявка успешно удалена."
     webforms:
       create:
@@ -945,3 +946,16 @@ ru:
       success: "Шаблон сообщения успешно обновлен."
     destroy:
       success: "Шаблон сообщения успешно удален."
+
+  mailganers:
+    new:
+      title: "Настройка Mailganer"
+    edit:
+      title: "Редактировать настройки Mailganer"
+    show:
+      title: "Настройки Mailganer"
+    test_email:
+      title: "Отправить тестовое письмо через Mailganer"
+      email_label: "Email получателя"
+      description: "Mailganer отправит простое тестовое письмо, используя текущие настройки API."
+    test_email_label: "Отправить тестовое письмо"
