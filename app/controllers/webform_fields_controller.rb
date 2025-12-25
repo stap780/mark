@@ -44,27 +44,32 @@ class WebformFieldsController < ApplicationController
   def design; end
 
   def build
-    respond_to do |format|
-      if @webform_field.update(webform_field_params)
-        @schema = Webforms::BuildSchema.new(@webform).call
-        format.turbo_stream do
-          render turbo_stream: [
-            # turbo_stream.update(
-            #   dom_id(current_account, dom_id(@webform_field)),
-            #   partial: "webform_fields/webform_field",
-            #   locals: { account: current_account, webform: @webform, field: @webform_field }
-            # ),
-            turbo_stream.update(
-              dom_id(current_account, dom_id(@webform, :preview)),
-              partial: "webforms/preview",
-              locals: { schema: @schema }
-            )
-          ]
+    # Обрабатываем только settings, не затрагивая другие поля
+    if params[:webform_field][:settings].present?
+      current_settings = (@webform_field.settings || {}).with_indifferent_access
+      new_settings = params[:webform_field][:settings]
+      new_settings = new_settings.to_unsafe_h if new_settings.is_a?(ActionController::Parameters)
+      merged_settings = current_settings.merge(new_settings)
+      
+      respond_to do |format|
+        if @webform_field.update(settings: merged_settings)
+          @schema = Webforms::BuildSchema.new(@webform).call
+          format.turbo_stream do
+            render turbo_stream: [
+              turbo_stream.update(
+                dom_id(current_account, dom_id(@webform, :preview)),
+                partial: "webforms/preview",
+                locals: { schema: @schema }
+              )
+            ]
+          end
+          format.html { head :ok }
+        else
+          format.html { render :design, status: :unprocessable_entity }
         end
-        format.html { head :ok }
-      else
-        format.html { render :design, status: :unprocessable_entity }
       end
+    else
+      head :ok
     end
   end
 
