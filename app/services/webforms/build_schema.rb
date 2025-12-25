@@ -61,6 +61,11 @@ module Webforms
         settings: normalize_settings(merged_settings)
       }
       
+      # Добавляем опции для select полей
+      if f.field_type == 'select'
+        field_data[:options] = f.select_options_array
+      end
+      
       # Добавляем URL изображения для image полей
       # Пытаемся сразу отдать прямой S3/Timeweb URL, чтобы не гонять лишний редирект через Rails.
       if f.field_type == 'image' && f.image.attached?

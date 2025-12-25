@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.2.5
+ * Версия: 1.2.6
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.2.5";
+      this.version = "1.2.6";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -1039,6 +1039,24 @@
               <input type="checkbox" name="${field.name}" value="1" ${requiredAttr} style="margin: 0;">
               <span>${field.label}</span>
             </label>
+          `;
+        } else if (field.type === 'select') {
+          // Для типа 'select' используем select с опциями
+          const requiredAttr = field.required ? 'required' : '';
+          // Для required полей не используем disabled, чтобы форма могла быть отправлена
+          const placeholderOption = field.required 
+            ? `<option value="" selected>${field.label}</option>`
+            : `<option value="" disabled selected>${field.label}</option>`;
+          let optionsHTML = placeholderOption;
+          if (field.options && Array.isArray(field.options)) {
+            field.options.forEach(option => {
+              optionsHTML += `<option value="${option}">${option}</option>`;
+            });
+          }
+          fieldsHTML += `
+            <select name="${field.name}" ${requiredAttr} style="${styleString}">
+              ${optionsHTML}
+            </select>
           `;
         } else if (field.type === 'textarea') {
           const placeholder = fieldSettings.placeholder || field.label;

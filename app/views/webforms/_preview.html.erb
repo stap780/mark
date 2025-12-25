@@ -141,6 +141,19 @@
           <input type="checkbox" name="<%= field[:name] %>" value="1" <%= 'required' if field[:required] %> style="margin: 0;">
           <span><%= field[:label] %></span>
         </label>
+      <% when 'select' %>
+        <select name="<%= field[:name] %>" <%= 'required' if field[:required] %> style="<%= style %>">
+          <% if field[:required] %>
+            <option value="" selected><%= field[:label] %></option>
+          <% else %>
+            <option value="" disabled selected><%= field[:label] %></option>
+          <% end %>
+          <% if field[:options].present? %>
+            <% field[:options].each do |option| %>
+              <option value="<%= option %>"><%= option %></option>
+            <% end %>
+          <% end %>
+        </select>
       <% when 'button' %>
         <button type="submit" style="<%= [style, "background: #{fs['background_color']}"].join('; ') %>"><%= field[:label] %></button>
       <% when 'image' %>

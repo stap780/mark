@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_23_160000) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_25_115113) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -430,6 +430,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_23_160000) do
     t.integer "position"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "select_options"
     t.index ["webform_id", "name"], name: "index_webform_fields_on_webform_id_and_name", unique: true
     t.index ["webform_id"], name: "index_webform_fields_on_webform_id"
   end

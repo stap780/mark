@@ -154,7 +154,7 @@ ru:
         status: "Статус"
       webform_field:
         name: "Имя"
-        label: "Метка"
+        label: "Лэйбл"
         field_type: "Тип поля"
         required: "Обязательное"
       swatch_group:
@@ -673,6 +673,7 @@ ru:
     destroy:
       confirm: "Вы уверены, что хотите удалить эту заявку?"
       success: "Заявка успешно удалена."
+      has_automation_messages: "Не удалось удалить заявку: она связана с сообщениями автоматизации"
     webforms:
       create:
         success: "Веб-форма успешно создана."
@@ -802,7 +803,7 @@ ru:
       success: "Настройка проверки остатков успешно обновлена."
     destroy:
       success: "Настройка проверки остатков успешно удалена."
-    _form:
+    form:
       active: "Включено"
       recurrence: "Интервал"
       recurrence_daily: "Раз в день"
@@ -814,7 +815,7 @@ ru:
       time_description_hourly: "Минута (0-59, например, 30 для :30 каждого часа)"
       next_check: "Следующая проверка"
       new: "Создать настройку"
-    _stock_check_schedule:
+    stock_check_schedule:
       active: "Включено"
       recurrence: "Интервал"
       recurrence_daily: "Раз в день"
@@ -845,7 +846,7 @@ ru:
       add_field: "Добавить поле"
       name: "Название"
       type: "Тип"
-    _form:
+    form:
       create: "Создать"
       update: "Обновить"
     kinds:
@@ -878,6 +879,8 @@ ru:
       edit_field: "Редактировать поле"
     design:
       field_design_settings: "Настройки дизайна поля: %{name}"
+    form:
+      save: "Сохранить"
 
   automation_actions:
     create:
