@@ -662,6 +662,7 @@ ru:
       sum: "Сумма"
       total: "Всего"
       totalsum: "Сумма заказа"
+      custom_fields: "Дополнительные данные"
     status:
       new: "Новая"
       in_progress: "В работе"

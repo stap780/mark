@@ -452,6 +452,7 @@ en:
       webform: "Webform"
       client: "Client"
       totalsum: "Order total"
+      custom_fields: "Additional Data"
     status:
       new: "New"
       in_progress: "In progress"

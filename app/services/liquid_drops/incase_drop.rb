@@ -5,7 +5,7 @@ module LiquidDrops
     end
 
     def id
-      @incase&.id
+      @incase&.display_number
     end
 
     def status
