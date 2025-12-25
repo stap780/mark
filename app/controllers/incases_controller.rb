@@ -34,7 +34,6 @@ class IncasesController < ApplicationController
   end
 
   def destroy
-    @incase.destroy!
     check_destroy = @incase.destroy ? true : false
     if check_destroy == true
       flash.now[:success] = t(".success")
