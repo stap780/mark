@@ -358,6 +358,7 @@ en:
       destroy:
         success: "Incase deleted successfully."
         confirm: "Are you sure you want to delete this incase?"
+        has_automation_messages: "Cannot delete incase: it is referenced by automation messages"
       update_status:
         success: "Incase status updated."
     swatch_groups:

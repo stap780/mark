@@ -534,6 +534,7 @@ ru:
       destroy:
         success: "Заявка успешно удалена."
         confirm: "Вы уверены, что хотите удалить эту заявку?"
+        has_automation_messages: "Не удалось удалить заявку: она связана с сообщениями автоматизации"
       update_status:
         success: "Статус заявки обновлен."
     swatch_groups:
