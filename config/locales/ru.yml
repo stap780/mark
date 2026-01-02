@@ -656,13 +656,16 @@ ru:
       status: "Статус"
       webform: "Веб-форма"
       client: "Клиент"
-      items: "Товары"
+      items: "Позиции"
+      product: "Товар"
       quantity: "Кол-во"
       price: "Цена"
       sum: "Сумма"
       total: "Всего"
       totalsum: "Сумма заказа"
       custom_fields: "Дополнительные данные"
+    show:
+      title: "Заявка"
     status:
       new: "Новая"
       in_progress: "В работе"

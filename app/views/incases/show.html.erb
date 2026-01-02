@@ -1,7 +1,7 @@
 <div class="bg-white rounded-lg shadow p-4">
   <div class="flex items-center justify-between mb-4">
     <%= link_to t('back'), account_incases_path(current_account), class: "text-gray-600 hover:text-violet-700 text-sm" %>
-    <h1 class="text-xl font-semibold"><%= t('incases.index.incase') %> #<%= @incase.display_number %></h1>
+    <h1 class="text-xl font-semibold"><%= t('incases.show.title') %> #<%= @incase.display_number %></h1>
     <div class="flex space-x-2">
       <%= form_with url: update_status_account_incase_path(current_account, @incase), method: :patch, local: false, data: { turbo: true }, class: "inline-flex items-center" do |f| %>
         <%= f.select :status, 
@@ -19,10 +19,7 @@
 
   <div class="grid grid-cols-2 gap-4 mb-4">
     <%= turbo_frame_tag dom_id(current_account, dom_id(@incase, :status)) do %>
-      <div class="p-3 bg-gray-50 rounded">
-        <p class="text-sm text-gray-600"><%= t('incases.index.status') %></p>
-        <p class="font-medium"><%= t("incases.status.#{@incase.status}") %></p>
-      </div>
+      <%= render "incases/status", incase: @incase %>
     <% end %>
     <div class="p-3 bg-gray-50 rounded">
       <p class="text-sm text-gray-600"><%= t('incases.index.created_at') %></p>

@@ -17,6 +17,24 @@ class Incase < ApplicationRecord
 
   validates :status, presence: true
 
+  # Возвращает цвет для статуса (Tailwind CSS классы)
+  def status_color
+    case status
+    when 'new'
+      'bg-blue-100 text-blue-800'
+    when 'in_progress'
+      'bg-yellow-100 text-yellow-800'
+    when 'done'
+      'bg-green-100 text-green-800'
+    when 'canceled'
+      'bg-red-100 text-red-800'
+    when 'closed'
+      'bg-gray-100 text-gray-800'
+    else
+      'bg-gray-100 text-gray-800'
+    end
+  end
+
   # Генерируем порядковый номер для отображения пользователю
   # (number используется для номеров из API/InSales и может быть строковым)
   before_create :generate_display_number, unless: :display_number?

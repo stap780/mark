@@ -1,5 +1,5 @@
 <div class="p-3 bg-gray-50 rounded">
-  <p class="text-sm text-gray-600">Status</p>
-  <p class="font-medium"><%= incase.status.humanize %></p>
+  <p class="text-sm text-gray-600"><%= t('incases.index.status') %></p>
+  <p class="font-medium"><%= t("incases.status.#{@incase.status}") %></p>
 </div>
 
