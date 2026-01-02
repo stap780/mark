@@ -20,8 +20,9 @@ class Api::IncasesController < ApplicationController
 
     client = resolve_client!(account, client_params, from_insales: false)
 
-    # Проверяем, что items переданы
-    if params[:items].blank?
+    # Проверяем, что items переданы (для всех форм кроме custom)
+    # Для кастомных форм items не обязательны
+    if params[:items].blank? && webform.kind != 'custom'
       return render json: { error: 'items are required' }, status: :unprocessable_entity
     end
 
