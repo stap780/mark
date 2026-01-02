@@ -212,9 +212,9 @@ ru:
       discount:
         title: "Название"
         rule: "Правило"
-        move: "Перемещение"
-        shift: "Сдвиг"
-        points: "Баллы"
+        move: "Знак"
+        shift: "Значение"
+        points: "Тип"
         notice: "Уведомление"
         position: "Позиция"
       user:
@@ -722,6 +722,8 @@ ru:
       title: "Новая скидка"
     edit:
       title: "Редактировать скидку"
+    form:
+      save: "Сохранить"
     create:
       success: "Скидка успешно создана."
     update:
