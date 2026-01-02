@@ -10,6 +10,8 @@ module Automation
       case @action.kind
       when 'send_email'
         send_email
+      when 'send_email_to_users'
+        send_email_to_users
       when 'change_status'
         change_status
       else
@@ -60,6 +62,11 @@ module Automation
         content: rendered_content
       )
 
+      # Отправляем email через Mailganer
+      send_email_via_mailganer(message, recipient.email, rendered_subject, rendered_content)
+    end
+
+    def send_email_via_mailganer(message, to_email, rendered_subject, rendered_content)
       begin
         # Отправляем email через Mailganer
         # Используем настройки аккаунта, если есть, иначе глобальную конфигурацию
@@ -101,7 +108,7 @@ module Automation
 
         response = mailganer_client.send_email_smtp_v1(
           type: "body",
-          to: recipient.email,
+          to: to_email,
           from: from_email,
           subject: rendered_subject,
           body: rendered_content,
@@ -123,6 +130,54 @@ module Automation
           error_message: e.message
         )
         Rails.logger.error "Failed to send automation email: #{e.message}"
+      end
+    end
+
+    def send_email_to_users
+      template_id = @action.template_id
+      template = @account.message_templates.find_by(id: template_id)
+      return unless template
+
+      # Получаем заявку из контекста
+      incase = @context['incase'] || @context[:incase]
+      return unless incase
+
+      webform = @context['webform'] || incase&.webform
+      client = @context['client'] || @context[:client]
+
+      # Получаем всех пользователей аккаунта
+      users = @account.users.includes(:account_users)
+
+      users.each do |user|
+        next unless user.email_address.present?
+
+        # Строим контекст для Liquid
+        liquid_context = Automation::LiquidContextBuilder.build(
+          incase: incase,
+          client: client,
+          webform: webform,
+          user: user,
+          account: @account
+        )
+
+        rendered_subject = render_liquid(template.subject, liquid_context)
+        rendered_content = render_liquid(template.content, liquid_context)
+
+        # Создаем запись AutomationMessage
+        message = @account.automation_messages.create!(
+          automation_rule: @action.automation_rule,
+          automation_action: @action,
+          user: user,
+          client: nil,
+          incase: incase,
+          channel: 'email',
+          status: 'pending',
+          subject: rendered_subject,
+          content: rendered_content
+        )
+
+        # Отправляем email через Mailganer
+        send_email_via_mailganer(message, user.email_address, rendered_subject, rendered_content)
       end
     end
 

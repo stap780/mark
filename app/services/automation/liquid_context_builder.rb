@@ -12,12 +12,13 @@ module Automation
     # client.incases_for_notify возвращает заявки со статусом in_progress и типом notify
     #
     # extra – для произвольных дополнительных ключей, если они понадобятся позже.
-    def self.build(incase: nil, client: nil, webform: nil, variants: nil, extra: {})
+    def self.build(incase: nil, client: nil, webform: nil, variants: nil, user: nil, account: nil, extra: {})
       context = {}
 
       context['incase']  = LiquidDrops::IncaseDrop.new(incase)   if incase
       context['client']  = LiquidDrops::ClientDrop.new(client)   if client
       context['webform'] = LiquidDrops::WebformDrop.new(webform) if webform
+      context['user']    = LiquidDrops::UserDrop.new(user, account: account) if user
       
       # Добавляем список вариантов, если передан
       if variants.present?

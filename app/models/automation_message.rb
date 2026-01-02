@@ -3,7 +3,8 @@ class AutomationMessage < ApplicationRecord
   belongs_to :account
   belongs_to :automation_rule
   belongs_to :automation_action
-  belongs_to :client
+  belongs_to :client, optional: true
+  belongs_to :user, optional: true
   belongs_to :incase, optional: true
 
   enum :channel, { email: 'email', whatsapp: 'whatsapp', telegram: 'telegram', sms: 'sms' }
@@ -24,7 +25,7 @@ class AutomationMessage < ApplicationRecord
   end
 
   def self.ransackable_associations(auth_object = nil)
-    %w[automation_rule automation_action client incase]
+    %w[automation_rule automation_action client user incase]
   end
 
   # Маппинг статусов Mailganer → статусы AutomationMessage

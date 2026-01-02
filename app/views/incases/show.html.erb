@@ -1,7 +1,7 @@
 <div class="bg-white rounded-lg shadow p-4">
   <div class="flex items-center justify-between mb-4">
     <%= link_to t('back'), account_incases_path(current_account), class: "text-gray-600 hover:text-violet-700 text-sm" %>
-    <h1 class="text-xl font-semibold"><%= t('incases.index.incase') %> #<%= @incase.display_number || @incase.number || @incase.id %></h1>
+    <h1 class="text-xl font-semibold"><%= t('incases.index.incase') %> #<%= @incase.display_number %></h1>
     <div class="flex space-x-2">
       <%= form_with url: update_status_account_incase_path(current_account, @incase), method: :patch, local: false, data: { turbo: true }, class: "inline-flex items-center" do |f| %>
         <%= f.select :status, 

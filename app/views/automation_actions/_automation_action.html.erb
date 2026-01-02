@@ -7,7 +7,11 @@
       <div>
         <% current_kind = automation_action.kind.presence || 'send_email' %>
         <%= ff.select :kind,
-            [["Отправить email", "send_email"], ["Изменить статус", "change_status"]],
+            [
+              ["Отправить email клиенту", "send_email"],
+              ["Отправить email пользователям", "send_email_to_users"],
+              ["Изменить статус", "change_status"]
+            ],
             { selected: current_kind, include_blank: false },
             { 
               class: "w-full px-2 py-1 border rounded-md text-sm"
@@ -16,7 +20,7 @@
 
       <!-- Conditional fields based on kind -->
       <div>
-        <% if current_kind == 'send_email' %>
+        <% if current_kind.in?(['send_email', 'send_email_to_users']) %>
           <%= ff.select :value,
               options_for_select(
                 current_account.message_templates.email.pluck(:title, :id),

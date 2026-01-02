@@ -41,10 +41,31 @@
 <div class="mt-4 text-xs text-gray-500">
   <div class="font-semibold mb-2">Тестовые данные:</div>
   <div class="space-y-1">
-    <div>incase.id = <%= preview_context['incase']['id'] %></div>
-    <div>client.name = <%= preview_context['client']['name'] %></div>
-    <div>client.email = <%= preview_context['client']['email'] %></div>
-    <div>webform.title = <%= preview_context['webform']['title'] %></div>
+    <% if preview_context['incase'] %>
+      <div>incase.id = <%= preview_context['incase'].id %></div>
+      <div>incase.status = <%= preview_context['incase'].status %></div>
+      <div>incase.items = 
+        <% items = preview_context['incase'].items %>
+        <% if items.any? %>
+          <% items.each_with_index do |item, index| %>
+            <%= index > 0 ? ', ' : '' %><%= item.product_title %> (×<%= item.quantity %>)
+          <% end %>
+        <% else %>
+          нет позиций
+        <% end %>
+      </div>
+    <% end %>
+    <% if preview_context['client'] %>
+      <div>client.name = <%= preview_context['client'].name %></div>
+      <div>client.email = <%= preview_context['client'].email %></div>
+    <% end %>
+    <% if preview_context['webform'] %>
+      <div>webform.title = <%= preview_context['webform'].title %></div>
+    <% end %>
+    <% if preview_context['user'] %>
+      <div>user.email_address = <%= preview_context['user'].email_address %></div>
+      <div>user.role_in_account = <%= preview_context['user'].role_in_account %></div>
+    <% end %>
   </div>
 </div>
 

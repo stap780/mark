@@ -3,7 +3,15 @@
       <div class="text-sm"><%= automation_message.id %></div>
       <div class="text-sm"><%= automation_message.created_at.strftime("%d.%m.%Y %H:%M") %></div>
       <div class="text-sm"><%= automation_message.automation_rule.title %></div>
-      <div class="text-sm"><%= automation_message.client.email || automation_message.client.name %></div>
+      <div class="text-sm">
+        <% if automation_message.client.present? %>
+          <%= automation_message.client.email || automation_message.client.name %>
+        <% elsif automation_message.user.present? %>
+          <%= automation_message.user.email_address %> (пользователь)
+        <% else %>
+          —
+        <% end %>
+      </div>
       <div class="text-sm flex items-center justify-between">
         <div><%= automation_message.channel.humanize %></div>
         <div class="mt-1">

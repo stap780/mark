@@ -29,8 +29,8 @@ module Automation
       template = find_or_create_template(
         title: "Сценарий 1: Подтверждение заказа",
         channel: "email",
-        subject: 'Ваш заказ #{{incase.id}} принят',
-        content: 'Здравствуйте, {{client.name}}! Ваш заказ #{{incase.id}} принят в обработку.'
+        subject: 'Ваш заказ #{{incase.display_number}} принят',
+        content: 'Здравствуйте, {{client.name}}! Ваш заказ #{{incase.display_number}} принят в обработку.'
       )
 
       rule = find_or_create_rule(
@@ -63,8 +63,8 @@ module Automation
       template = find_or_create_template(
         title: "Сценарий 2: Подтверждение предзаказа",
         channel: "email",
-        subject: 'Ваш предзаказ #{{incase.id}} принят',
-        content: 'Здравствуйте, {{client.name}}! Ваш предзаказ #{{incase.id}} принят. Мы уведомим вас, когда товар появится в наличии.'
+        subject: 'Ваш предзаказ #{{incase.display_number}} принят',
+        content: 'Здравствуйте, {{client.name}}! Ваш предзаказ #{{incase.display_number}} принят. Мы уведомим вас, когда товар появится в наличии.'
       )
 
       rule = find_or_create_rule(

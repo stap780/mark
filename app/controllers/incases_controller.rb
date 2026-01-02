@@ -64,6 +64,10 @@ class IncasesController < ApplicationController
   def set_incase
     @incase = current_account.incases.find(params[:id])
   end
+
+  def incase_params
+    params.require(:incase).permit(:status, :webform_id, :client_id, :number, :display_number, custom_fields: {})
+  end
   
 end
 

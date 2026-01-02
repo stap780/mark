@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_25_115113) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_02_100702) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -93,7 +93,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_25_115113) do
     t.bigint "account_id", null: false
     t.bigint "automation_rule_id", null: false
     t.bigint "automation_action_id", null: false
-    t.bigint "client_id", null: false
+    t.bigint "client_id"
     t.bigint "incase_id"
     t.string "channel", null: false
     t.string "status", default: "pending"
@@ -106,6 +106,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_25_115113) do
     t.datetime "updated_at", null: false
     t.string "message_id"
     t.string "x_track_id"
+    t.bigint "user_id"
     t.index ["account_id", "channel", "status"], name: "index_automation_messages_on_account_id_and_channel_and_status"
     t.index ["account_id"], name: "index_automation_messages_on_account_id"
     t.index ["automation_action_id"], name: "index_automation_messages_on_automation_action_id"
@@ -114,6 +115,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_25_115113) do
     t.index ["client_id"], name: "index_automation_messages_on_client_id"
     t.index ["incase_id"], name: "index_automation_messages_on_incase_id"
     t.index ["message_id"], name: "index_automation_messages_on_message_id"
+    t.index ["user_id"], name: "index_automation_messages_on_user_id"
     t.index ["x_track_id"], name: "index_automation_messages_on_x_track_id"
   end
 
@@ -469,6 +471,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_25_115113) do
   add_foreign_key "automation_messages", "automation_rules"
   add_foreign_key "automation_messages", "clients"
   add_foreign_key "automation_messages", "incases"
+  add_foreign_key "automation_messages", "users"
   add_foreign_key "automation_rules", "accounts"
   add_foreign_key "clients", "accounts"
   add_foreign_key "discounts", "accounts"

@@ -20,17 +20,14 @@
         } %>
   </div>
 
-  <%# Поле для опций select (показывается только для типа select) %>
-  <% if @webform_field.field_type == 'select' || params[:webform_field]&.dig(:field_type) == 'select' %>
-    <div>
-      <%= f.label :select_options, "Опции выбора (по одной на строку)", class: "block text-sm font-medium text-gray-700" %>
-      <%= f.text_area :select_options, 
-          rows: 5,
-          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5",
-          placeholder: "Опция 1\nОпция 2\nОпция 3" %>
-      <p class="mt-1 text-sm text-gray-500">Введите каждую опцию на новой строке</p>
-    </div>
-  <% end %>
+  <div>
+    <%= f.label :select_options, "Опции выбора (по одной на строку)", class: "block text-sm font-medium text-gray-700" %>
+    <%= f.text_area :select_options, 
+        rows: 5,
+        class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5",
+        placeholder: "Опция 1\nОпция 2\nОпция 3" %>
+    <p class="mt-1 text-sm text-gray-500">Введите каждую опцию на новой строке</p>
+  </div>
 
   <div>
     <%= f.label :required, class: "block text-sm font-medium text-gray-700" %>
