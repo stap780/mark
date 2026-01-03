@@ -17,6 +17,7 @@ class AutomationMessagesController < ApplicationController
 
   def check_status
     success, payload = @automation_message.check_delivery_status
+    puts "check_status payload: #{payload}"
 
     text =
       if payload.is_a?(Hash)
