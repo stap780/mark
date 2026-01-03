@@ -35,7 +35,12 @@
           <% end %>
         <% end %>
       </div>
-      <div class="text-sm truncate"><%= automation_message.subject %></div>
+      <div class="text-sm">
+        <%= automation_message.subject %>
+        <% if automation_message.error_message.present? %>
+          <div class="text-xs text-red-600 mt-1"><strong>Ошибка:</strong> <%= automation_message.error_message %></div>
+        <% end %>
+      </div>
     </div>
 
 <% end %>
