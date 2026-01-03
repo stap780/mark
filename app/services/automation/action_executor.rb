@@ -127,7 +127,7 @@ module Automation
       rescue => e
         message.update!(
           status: 'failed',
-          error_message: e.message
+          error_message: e.message + " " + e.ttl_date
         )
         Rails.logger.error "Failed to send automation email: #{e.message}"
       end
