@@ -129,7 +129,7 @@ module Automation
           status: 'failed',
           error_message: e.message
         )
-        Rails.logger.error "Failed to send automation email: #{e.message.to_s} #{e.ttl_date.to_s}"
+        Rails.logger.error "Failed to send automation email: #{e.message.to_s}"
       end
     end
 
