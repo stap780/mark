@@ -1,13 +1,16 @@
+<% app_type = current_account.settings.dig("apps")&.find { |app| app.start_with?('ins') } %>
 <div class="flex items-center justify-between mb-4">
   <h1 class="text-xl font-semibold">Правила автоматизации</h1>
   <div class="flex space-x-2">
-    <%= link_to t('automation_rules.index.add_standard_scenarios'),
-        create_standard_scenarios_form_account_automation_rules_path(current_account),
-        data: { turbo_frame: :offcanvas },
-        class: "px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
-    <%= link_to "Новое правило", new_account_automation_rule_path(current_account),
-        data: { turbo_frame: :offcanvas },
-        class: "px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    <% unless app_type == 'insnotify' %>
+      <%= link_to t('automation_rules.index.add_standard_scenarios'),
+          create_standard_scenarios_form_account_automation_rules_path(current_account),
+          data: { turbo_frame: :offcanvas },
+          class: "px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+      <%= link_to "Новое правило", new_account_automation_rule_path(current_account),
+          data: { turbo_frame: :offcanvas },
+          class: "px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    <% end %>
   </div>
 </div>
 

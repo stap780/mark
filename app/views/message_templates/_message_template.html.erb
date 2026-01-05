@@ -2,10 +2,13 @@
   <div><%= message_template.title %></div>
   <div><%= message_template.channel.humanize %></div>
   <div><%= message_template.context || '-' %></div>
+  <% app_type = current_account.settings.dig("apps")&.find { |app| app.start_with?('ins') } %>
   <div class="flex space-x-2 items-center justify-end">
     <%= link_to_edit account_message_template_path(current_account, message_template), data: { turbo: false } %>
-    <%= link_to_delete account_message_template_path(current_account, message_template),
-        method: :delete, data: { turbo_confirm: "Вы уверены?", turbo_method: :delete }%> 
+    <% unless app_type == 'insnotify' %>
+      <%= link_to_delete account_message_template_path(current_account, message_template),
+          method: :delete, data: { turbo_confirm: "Вы уверены?", turbo_method: :delete }%>
+    <% end %>
   </div>
 <% end %>
 

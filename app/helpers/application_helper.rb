@@ -46,8 +46,12 @@ module ApplicationHelper
   end
 
   def link_to_sidebar(text, path, active_if: nil, **options)
-    base_classes = "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white hover:bg-violet-500 hover:bg-opacity-75 truncate"
+    app_type = current_account.settings.dig("apps")&.find { |app| app.start_with?('ins') }
+    base_classes = "group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-white truncate"
+    hover_class = "hover:bg-violet-500 hover:bg-opacity-75"
+    hover_class = app_type == 'insnotify' ? "hover:bg-green-500 hover:bg-opacity-75" : hover_class
     active_class = "bg-violet-500 bg-opacity-75"
+    active_class = app_type == 'insnotify' ? "bg-green-500 bg-opacity-75" : active_class
     
     active = if active_if.nil?
       request.path.include?(path.to_s)
@@ -59,7 +63,7 @@ module ApplicationHelper
       active_if
     end
     
-    classes = "#{base_classes} #{active_class if active}"
+    classes = "#{base_classes} #{hover_class} #{active_class if active}"
     options[:class] = classes
     
     link_to text, path, options

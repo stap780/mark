@@ -92,21 +92,40 @@ class Account < ApplicationRecord
     }
   end
 
+  # Константа с конфигурацией доступных разделов для каждого типа приложения
+  PARTNER_APP_SECTIONS = {
+    'inswatch' => [
+      'incases', 'clients', 'products', 'swatches'
+    ],
+    'insnotify' => [
+      'incases', 'clients', 'products', 'webforms', 'mailganer',
+      'automation_rules', 'stock_check_schedule'
+    ],
+    'inssearch' => [
+      'products', 'clients', 'webforms', 'automation_rules'
+    ],
+    'insabandoned' => [
+      'incases', 'clients', 'products', 'webforms', 'mailganer',
+      'automation_rules'
+    ]
+  }.freeze
+
   # Returns true if the given app is present in settings["apps"]
-  # but remaps 'swatch' (menu) to 'inswatch' (settings).
+  # Автоматически определяет доступные разделы по типу партнерского приложения
   def partner_and_app_enabled?(app_key)
     return false unless partner?
     return false unless settings.is_a?(Hash) && settings["apps"].is_a?(Array)
 
-    key =
-      case app_key
-      when "swatches"
-        "inswatch"
-      else
-        app_key
-      end
+    # Находим тип партнерского приложения (ключ, начинающийся с 'ins')
+    app_type = settings["apps"].find { |app| app.start_with?('ins') }
+    return false unless app_type
 
-    settings["apps"].include?(key)
+    # Получаем список доступных разделов для данного типа приложения
+    available_sections = PARTNER_APP_SECTIONS[app_type]
+    return false unless available_sections
+
+    # Проверяем доступность раздела
+    available_sections.include?(app_key)
   end
 
   private
@@ -144,9 +163,9 @@ class Account < ApplicationRecord
     end
 
     if partner? && settings["apps"].include?("inswatch")
-      # Находим или создаем план "Basic" с пробным периодом 10 дней
+      # Находим или создаем план "inswatch 799" с пробным периодом 10 дней
       trial_plan = Plan.find_or_create_by!(name: "inswatch 799") do |plan|
-        plan.price = 1000
+        plan.price = 799
         plan.interval = "monthly"
         plan.active = true
         plan.trial_days = 10
@@ -160,6 +179,26 @@ class Account < ApplicationRecord
       # Создаем подписку со статусом trialing
       # set_period_dates установит даты на основе интервала плана (1 месяц),
       # но мы переопределим их на trial_days из плана
+      subscription = subscriptions.create!(
+        plan: trial_plan,
+        status: :trialing,
+        current_period_start: period_start,
+        current_period_end: period_end
+      )
+    end
+
+    if partner? && settings["apps"].include?("insnotify")
+      # Находим или создаем план "insnotify 799" с пробным периодом 10 дней
+      trial_plan = Plan.find_or_create_by!(name: "insnotify 799") do |plan|
+        plan.price = 799
+        plan.interval = "monthly"
+        plan.active = true
+        plan.trial_days = 10
+      end
+      
+      period_start = Time.current
+      period_end = period_start + trial_plan.trial_days.days
+      
       subscription = subscriptions.create!(
         plan: trial_plan,
         status: :trialing,

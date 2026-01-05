@@ -1,3 +1,186 @@
+<% app_type = current_account.settings.dig("apps")&.find { |app| app.start_with?('ins') } %>
+<% if app_type == 'insnotify' %>
+  <% rule = current_account.automation_rules.for_event('variant.back_in_stock').first %>
+  <% webform = current_account.webforms.find_by(kind: 'notify') %>
+  <% webform_json_exists = current_account.insales.first&.webform_file&.attached? %>
+  
+  <div class="mb-6 space-y-4">
+    <!-- Инструкция по активации правила -->
+    <% if rule && !rule.active? %>
+      <div class="rounded-lg border border-blue-200 bg-blue-50 p-6">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="ml-3 flex-1">
+            <h3 class="text-lg font-semibold text-blue-900 mb-2">Шаг 1: Активируйте правило автоматизации</h3>
+            <p class="text-sm text-blue-800 mb-4">
+              Для начала работы сервиса необходимо активировать правило автоматизации "Уведомление о поступлении товара".
+            </p>
+            <div class="space-y-2 text-sm text-blue-800">
+              <ol class="list-decimal list-inside space-y-1 ml-2">
+                <li>Перейдите в раздел <strong>Автоматизация → Правила автоматизации</strong></li>
+                <li>Найдите правило <strong>"Уведомление о поступлении товара"</strong></li>
+                <li>Нажмите кнопку <strong>"Редактировать"</strong></li>
+                <li>Включите переключатель <strong>"Активно"</strong></li>
+                <li>Сохраните изменения</li>
+              </ol>
+            </div>
+            <%= link_to "Перейти к правилам автоматизации", account_automation_rules_path(current_account),
+                class: "mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Инструкция по установке скрипта на сайт -->
+    <% if webform %>
+      <% is_manual_trigger = webform.trigger_type == 'manual' %>
+      <div class="rounded-lg border border-green-200 bg-green-50 p-6">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+          </div>
+          <div class="ml-3 flex-1">
+            <h3 class="text-lg font-semibold text-green-900 mb-2">Шаг 2: Установите скрипт на ваш сайт</h3>
+            <p class="text-sm text-green-800 mb-4">
+              Добавьте следующий скрипт в раздел <code class="bg-green-100 px-1 rounded">&lt;head&gt;</code> вашего сайта:
+            </p>
+            <div class="bg-green-100 rounded p-3 mb-4">
+              <pre class="text-xs overflow-x-auto"><code>&lt;script type="text/javascript"&gt;
+(function() {
+    var scr = document.createElement('script');
+    scr.setAttribute("type","text/javascript");
+    scr.setAttribute("src", 'https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23/scripts/webform.js?id=<%= current_account.id %>');
+    document.getElementsByTagName("head")[0].appendChild(scr);
+})();
+&lt;/script&gt;</code></pre>
+            </div>
+            <% if is_manual_trigger %>
+              <p class="text-sm text-green-800 mb-2">
+                <strong>Как это работает:</strong> Форма будет показываться только при клике на элементы с атрибутом <code class="bg-green-100 px-1 rounded">data-twc-webform-id="<%= webform.id %>"</code>.
+              </p>
+              <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p class="text-sm text-blue-700 mt-2 mb-2">
+                  <strong>Пример использования:</strong>
+                </p>
+                <pre class="text-xs bg-blue-100 p-2 rounded mt-1 overflow-x-auto"><code>&lt;!-- С дополнительными параметрами --&gt;
+&lt;a href="#" data-twc-webform-id="<%= webform.id %>" 
+   data-product-id="123" 
+   data-variant-id="456"&gt;
+  Уведомить о поступлении
+&lt;/a&gt;</code></pre>
+              </div>
+            <% end %>
+            <% unless webform_json_exists %>
+              <p class="text-sm text-yellow-800 mb-2 mt-4">
+                ⚠️ Сначала необходимо сгенерировать JSON файл для вебформ.
+              </p>
+              <%= link_to "Сгенерировать JSON", regenerate_json_account_webforms_path(current_account),
+                  method: :post,
+                  class: "mt-2 inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Инструкция по редактированию шаблона письма -->
+    <% template = current_account.message_templates.find_by(title: "Товар появился в наличии", channel: "email") %>
+    <% if template %>
+      <div class="rounded-lg border border-orange-200 bg-orange-50 p-6">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </div>
+          <div class="ml-3 flex-1">
+            <h3 class="text-lg font-semibold text-orange-900 mb-2">Шаг 3: Настройте шаблон письма</h3>
+            <p class="text-sm text-orange-800 mb-4">
+              Вы можете редактировать текст и оформление email-уведомления, которое будет отправляться клиентам при поступлении товара в наличии.
+            </p>
+            <div class="space-y-2 text-sm text-orange-800">
+              <p><strong>Как редактировать:</strong></p>
+              <ol class="list-decimal list-inside space-y-1 ml-2">
+                <li>Перейдите в раздел <strong>Автоматизация → Шаблоны сообщений</strong></li>
+                <li>Найдите шаблон <strong>"Товар появился в наличии"</strong></li>
+                <li>Нажмите кнопку <strong>"Редактировать"</strong></li>
+                <li>Измените тему письма или содержимое (поддерживается HTML и Liquid-шаблоны)</li>
+                <li>Сохраните изменения</li>
+              </ol>
+              <p class="mt-2 text-xs text-orange-700">
+                💡 В шаблоне можно использовать переменные: <code class="bg-orange-100 px-1 rounded">{{ client.name }}</code>, <code class="bg-orange-100 px-1 rounded">{{ item.product_title }}</code>, <code class="bg-orange-100 px-1 rounded">{{ item.product_link }}</code> и другие.
+              </p>
+            </div>
+            <%= link_to "Перейти к шаблонам сообщений", account_message_templates_path(current_account),
+                class: "mt-4 inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 text-sm font-medium" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Инструкция по проверке сообщений -->
+    <div class="rounded-lg border border-purple-200 bg-purple-50 p-6">
+      <div class="flex items-start">
+        <div class="flex-shrink-0">
+          <svg class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div class="ml-3 flex-1">
+          <h3 class="text-lg font-semibold text-purple-900 mb-2">Шаг 4: Проверка отправки сообщений</h3>
+          <p class="text-sm text-purple-800 mb-4">
+            После активации сервиса вы можете отслеживать отправленные уведомления в разделе:
+          </p>
+          <div class="space-y-2 text-sm text-purple-800">
+            <p><strong>Автоматизация → Сообщения</strong></p>
+            <p>В этом разделе отображаются все отправленные email-уведомления клиентам о поступлении товаров в наличии.</p>
+          </div>
+          <%= link_to "Перейти к сообщениям", account_automation_messages_path(current_account),
+              class: "mt-4 inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm font-medium" %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Инструкция по отслеживанию состояния заявок -->
+    <div class="rounded-lg border border-indigo-200 bg-indigo-50 p-6">
+      <div class="flex items-start">
+        <div class="flex-shrink-0">
+          <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+        </div>
+        <div class="ml-3 flex-1">
+          <h3 class="text-lg font-semibold text-indigo-900 mb-2">Шаг 5: Отслеживание состояния заявок</h3>
+          <p class="text-sm text-indigo-800 mb-4">
+            Все заявки от клиентов на уведомление о поступлении товара отображаются в разделе:
+          </p>
+          <div class="space-y-2 text-sm text-indigo-800">
+            <p><strong>Заявки</strong></p>
+            <p>В этом разделе вы можете:</p>
+            <ul class="list-disc list-inside space-y-1 ml-2">
+              <li>Просматривать все заявки с информацией о клиенте и товаре</li>
+              <li>Отслеживать статус каждой заявки (новый, в работе, выполнено, отменено)</li>
+              <li>Фильтровать заявки по статусу, форме или клиенту</li>
+              <li>Просматривать детальную информацию о каждой заявке</li>
+            </ul>
+            <p class="mt-2 text-xs text-indigo-700">
+              💡 Статус заявки автоматически меняется на "Выполнено" после отправки уведомления клиенту.
+            </p>
+          </div>
+          <%= link_to "Перейти к заявкам", account_incases_path(current_account),
+              class: "mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm font-medium" %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
   <%= tag.div(class: 'rounded-lg border bg-white p-4 shadow-sm') do %>
     <%= tag.h2 t('menu.users'), class: 'text-sm font-medium text-gray-500' %>

@@ -43,8 +43,10 @@ class IncaseNotifyGroupByClient
 
       # Формируем контекст
       # incases доступны через client.incases_for_notify в Liquid шаблоне
+      # Передаем все заявки клиента в ClientDrop
       context = {
         'client' => client,
+        'incases' => client_incases, # Все заявки клиента для передачи в ClientDrop
         'variants' => client_variants,
         'webform' => webform
       }

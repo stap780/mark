@@ -54,6 +54,11 @@
           нет позиций
         <% end %>
       </div>
+      <% if items&.any? %>
+        <% items.each_with_index do |item, index| %>
+          <div>item.product_link = <%= item.product_link %></div>
+        <% end %>
+      <% end %>
     <% end %>
     <% if preview_context['client'] %>
       <div>client.name = <%= preview_context['client'].name %></div>

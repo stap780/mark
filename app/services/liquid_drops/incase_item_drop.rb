@@ -32,6 +32,16 @@ module LiquidDrops
       end
     end
     
+    # Доступ к variant и product для использования в шаблонах
+    def variant
+      return nil unless @item.respond_to?(:variant) && @item.variant
+      LiquidDrops::VariantDrop.new(@item.variant)
+    end
+    
+    def product
+      return nil unless @item.respond_to?(:product) && @item.product
+      LiquidDrops::ProductDrop.new(@item.product)
+    end
   end
 end
 

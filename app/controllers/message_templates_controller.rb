@@ -94,16 +94,34 @@ class MessageTemplatesController < ApplicationController
     # Фейковые товары (нужны title и product_link через IncaseItemDrop#product_link)
     fake_product1 = OpenStruct.new(
       title: 'Тестовый товар 1',
-      insales_link: 'https://example.com/products/test-1'
+      insales_link: '/product_by_id/12345'
     )
     fake_product2 = OpenStruct.new(
       title: 'Тестовый товар 2',
-      insales_link: 'https://example.com/products/test-2'
+      insales_link: '/product_by_id/67890'
+    )
+
+    # Фейковые варианты (нужны для variant.quantity)
+    fake_variant1 = OpenStruct.new(
+      id: 1,
+      quantity: 5,
+      price: 100,
+      sku: 'TEST-1',
+      barcode: '1234567890123',
+      product: fake_product1
+    )
+    fake_variant2 = OpenStruct.new(
+      id: 2,
+      quantity: 3,
+      price: 300,
+      sku: 'TEST-2',
+      barcode: '1234567890124',
+      product: fake_product2
     )
 
     # Фейковые позиции заявки (item)
-    fake_item1 = OpenStruct.new(product: fake_product1, quantity: 2, price: 100, sum: 200)
-    fake_item2 = OpenStruct.new(product: fake_product2, quantity: 1, price: 300, sum: 300)
+    fake_item1 = OpenStruct.new(product: fake_product1, variant: fake_variant1, quantity: 2, price: 100, sum: 200)
+    fake_item2 = OpenStruct.new(product: fake_product2, variant: fake_variant2, quantity: 1, price: 300, sum: 300)
 
     # Фейковая заявка
     fake_incase = OpenStruct.new(
@@ -136,9 +154,19 @@ class MessageTemplatesController < ApplicationController
       kind: 'notify'
     )
 
+    # Создаем вторую фейковую заявку для демонстрации нескольких заявок
+    fake_incase2 = OpenStruct.new(
+      id: 12346,
+      display_number: 12346,
+      status: 'in_progress',
+      created_at: Time.current,
+      items: [fake_item2]
+    )
+
     Automation::LiquidContextBuilder.build(
       incase: fake_incase,
       client: fake_client,
+      client_incases: [fake_incase, fake_incase2], # Передаем все заявки клиента
       webform: fake_webform
     )
   end

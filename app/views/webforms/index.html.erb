@@ -11,6 +11,7 @@
       </svg>
     <% end %>
   </div>
+  <% app_type = current_account.settings.dig("apps")&.find { |app| app.start_with?('ins') } %>
   <div class="flex space-x-2">
     <% if current_account.webforms.exists? %>
       <%= link_to t('.regenerate_json'), regenerate_json_account_webforms_path(current_account), 
@@ -21,7 +22,9 @@
       <%= link_to t('.webform_file'), current_account.insales.first.webform_s3_url, target: "_blank", 
         class: "inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700" unless Rails.env.development?%>
     <% end %>
-    <%= link_to_new new_account_webform_path(current_account), data: { turbo_frame: :offcanvas } %>
+    <% unless app_type == 'insnotify' %>
+      <%= link_to_new new_account_webform_path(current_account), data: { turbo_frame: :offcanvas } %>
+    <% end %>
   </div>
 </div>
 

@@ -8,6 +8,10 @@ module LiquidDrops
       @variant.id
     end
 
+    def title
+      @variant.product.title
+    end
+
     def product_title
       @variant.product.title
     end

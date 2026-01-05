@@ -30,7 +30,39 @@ module Automation
         title: "Сценарий 1: Подтверждение заказа",
         channel: "email",
         subject: 'Ваш заказ #{{incase.display_number}} принят',
-        content: 'Здравствуйте, {{client.name}}! Ваш заказ #{{incase.display_number}} принят в обработку.'
+        content: '<!DOCTYPE html>
+<html>
+  <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif; font-size: 14px; color: #111827; margin: 0; padding: 0;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 24px; background-color: #ffffff;">
+      <h1 style="font-size: 20px; margin: 0 0 16px; color: #111827;">Спасибо за ваш заказ</h1>
+
+      <p style="margin: 0 0 12px;">Здравствуйте, {{ client.name }}!</p>
+      <p style="margin: 0 0 16px;">Ваш заказ №{{ incase.display_number }} принят в обработку. Ниже список товаров:</p>
+
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+        <thead>
+          <tr>
+            <th align="left" style="padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">Товар</th>
+            <th align="left" style="padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">Кол-во</th>
+            <th align="left" style="padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">Сумма</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in incase.items %}
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #111827;">{{ item.product_title }}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #111827;">{{ item.quantity }}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #111827;">{{ item.sum }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <p style="margin: 0 0 4px; font-size: 12px; color: #6b7280;">Мы свяжемся с вами для уточнения деталей заказа.</p>
+      <p style="margin: 16px 0 0; font-size: 12px; color: #9ca3af;">С уважением,<br/>команда магазина.</p>
+    </div>
+  </body>
+</html>'
       )
 
       rule = find_or_create_rule(
@@ -64,7 +96,39 @@ module Automation
         title: "Сценарий 2: Подтверждение предзаказа",
         channel: "email",
         subject: 'Ваш предзаказ #{{incase.display_number}} принят',
-        content: 'Здравствуйте, {{client.name}}! Ваш предзаказ #{{incase.display_number}} принят. Мы уведомим вас, когда товар появится в наличии.'
+        content: '<!DOCTYPE html>
+<html>
+  <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif; font-size: 14px; color: #111827; margin: 0; padding: 0;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 24px; background-color: #ffffff;">
+      <h1 style="font-size: 20px; margin: 0 0 16px; color: #111827;">Спасибо за ваш предзаказ</h1>
+
+      <p style="margin: 0 0 12px;">Здравствуйте, {{ client.name }}!</p>
+      <p style="margin: 0 0 16px;">Ваш предзаказ №{{ incase.display_number }} принят. Мы уведомим вас, когда товар появится в наличии. Ниже список товаров:</p>
+
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+        <thead>
+          <tr>
+            <th align="left" style="padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">Товар</th>
+            <th align="left" style="padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">Кол-во</th>
+            <th align="left" style="padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">Сумма</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in incase.items %}
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #111827;">{{ item.product_title }}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #111827;">{{ item.quantity }}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #111827;">{{ item.sum }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <p style="margin: 0 0 4px; font-size: 12px; color: #6b7280;">Мы свяжемся с вами для уточнения деталей заказа.</p>
+      <p style="margin: 16px 0 0; font-size: 12px; color: #9ca3af;">С уважением,<br/>команда магазина.</p>
+    </div>
+  </body>
+</html>'
       )
 
       rule = find_or_create_rule(
@@ -97,8 +161,39 @@ module Automation
       template = find_or_create_template(
         title: "Сценарий 3: Товар появился в наличии",
         channel: "email",
-        subject: 'Товар {{product.title}} появился в наличии!',
-        content: 'Здравствуйте, {{client.name}}! Товар {{product.title}} ({{variant.title}}), на который вы подписались, появился в наличии. Количество: {{variant.quantity}} шт.'
+        subject: 'Товары появились в наличии!',
+        content: '<!DOCTYPE html>
+<html>
+  <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif; font-size: 14px; color: #111827; margin: 0; padding: 0;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 24px; background-color: #ffffff;">
+      <h1 style="font-size: 20px; margin: 0 0 16px; color: #111827;">Товары появились в наличии</h1>
+
+      <p style="margin: 0 0 12px;">Здравствуйте, {{ client.name }}!</p>
+      <p style="margin: 0 0 16px;">Товары, на которые вы подписались, появились в наличии:</p>
+
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+        <thead>
+          <tr>
+            <th align="left" style="padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">Товар</th>
+            <th align="left" style="padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for incase in client.incases_for_notify %}
+            {% for item in incase.items %}
+              <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #111827;">{{ item.product_title }}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #111827;"><a href="{{ item.product_link }}" style="color: #2563eb; text-decoration: none;">подробнее</a></td>
+              </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <p style="margin: 16px 0 0; font-size: 12px; color: #9ca3af;">С уважением,<br/>команда магазина.</p>
+    </div>
+  </body>
+</html>'
       )
 
       rule = find_or_create_rule(
@@ -132,7 +227,39 @@ module Automation
         title: "Сценарий 4: Напоминание о брошенной корзине",
         channel: "email",
         subject: "Вы забыли о товарах в корзине",
-        content: 'Здравствуйте, {{client.name}}! Вы оставили товары в корзине. Вернитесь и завершите покупку!'
+        content: '<!DOCTYPE html>
+<html>
+  <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif; font-size: 14px; color: #111827; margin: 0; padding: 0;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 24px; background-color: #ffffff;">
+      <h1 style="font-size: 20px; margin: 0 0 16px; color: #111827;">Вы забыли о товарах в корзине</h1>
+
+      <p style="margin: 0 0 12px;">Здравствуйте, {{ client.name }}!</p>
+      <p style="margin: 0 0 16px;">Вы оставили товары в корзине. Вернитесь и завершите покупку! Ниже список товаров:</p>
+
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+        <thead>
+          <tr>
+            <th align="left" style="padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">Товар</th>
+            <th align="left" style="padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">Кол-во</th>
+            <th align="left" style="padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">Сумма</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in incase.items %}
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #111827;">{{ item.product_title }}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #111827;">{{ item.quantity }}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #111827;">{{ item.sum }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <p style="margin: 0 0 4px; font-size: 12px; color: #6b7280;">Мы свяжемся с вами для уточнения деталей заказа.</p>
+      <p style="margin: 16px 0 0; font-size: 12px; color: #9ca3af;">С уважением,<br/>команда магазина.</p>
+    </div>
+  </body>
+</html>'
       )
 
       rule = find_or_create_rule(
@@ -166,7 +293,20 @@ module Automation
         title: "Сценарий 5: Уведомление о скидке",
         channel: "email",
         subject: "Специальное предложение для вас!",
-        content: 'Здравствуйте, {{client.name}}! У нас действует скидка на товары. Не упустите возможность!'
+        content: '<!DOCTYPE html>
+<html>
+  <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif; font-size: 14px; color: #111827; margin: 0; padding: 0;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 24px; background-color: #ffffff;">
+      <h1 style="font-size: 20px; margin: 0 0 16px; color: #111827;">Специальное предложение для вас!</h1>
+
+      <p style="margin: 0 0 12px;">Здравствуйте, {{ client.name }}!</p>
+      <p style="margin: 0 0 16px;">У нас действует скидка на товары. Не упустите возможность!</p>
+
+      <p style="margin: 0 0 4px; font-size: 12px; color: #6b7280;">Мы свяжемся с вами для уточнения деталей заказа.</p>
+      <p style="margin: 16px 0 0; font-size: 12px; color: #9ca3af;">С уважением,<br/>команда магазина.</p>
+    </div>
+  </body>
+</html>'
       )
 
       rule = find_or_create_rule(

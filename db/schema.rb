@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_02_100702) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_04_114232) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -207,6 +207,19 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_02_100702) do
     t.datetime "updated_at", null: false
     t.string "product_xml"
     t.index ["account_id"], name: "index_insales_on_account_id", unique: true
+  end
+
+  create_table "insnotifies", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "uid", null: false
+    t.string "shop"
+    t.boolean "installed", default: false, null: false
+    t.datetime "last_login_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["shop"], name: "index_insnotifies_on_shop"
+    t.index ["uid"], name: "index_insnotifies_on_uid", unique: true
+    t.index ["user_id"], name: "index_insnotifies_on_user_id"
   end
 
   create_table "inswatches", force: :cascade do |t|
@@ -480,6 +493,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_02_100702) do
   add_foreign_key "incases", "clients"
   add_foreign_key "incases", "webforms"
   add_foreign_key "insales", "accounts"
+  add_foreign_key "insnotifies", "users"
   add_foreign_key "inswatches", "users"
   add_foreign_key "items", "incases"
   add_foreign_key "items", "products"

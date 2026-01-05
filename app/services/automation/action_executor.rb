@@ -35,16 +35,27 @@ module Automation
       
       # variants передаются из контекста (из IncaseNotifyGroupByClient)
       variants = @context['variants'] || []
+      
+      # variant и product передаются из контекста (для события variant.back_in_stock)
+      variant = @context['variant'] || @context[:variant]
+      product = @context['product'] || @context[:product]
+      
+      # Все заявки клиента (для IncaseNotifyGroupByClient)
+      client_incases = @context['incases'] || @context[:incases]
 
       webform = @context['webform'] || incase&.webform
 
       # Строим контекст для Liquid через Drops
       # incases доступны через client.incases_for_notify в Liquid шаблоне
+      # Передаем все заявки клиента в ClientDrop для доступа через client.incases_for_notify
       liquid_context = Automation::LiquidContextBuilder.build(
         incase: incase,
         client: recipient,
+        client_incases: client_incases,
         webform: webform,
-        variants: variants
+        variants: variants,
+        variant: variant,
+        product: product
       )
 
       rendered_subject = render_liquid(template.subject, liquid_context)
@@ -125,10 +136,7 @@ module Automation
           x_track_id: x_track_id
         )
       rescue => e
-        message.update!(
-          status: 'failed',
-          error_message: e.message
-        )
+        message.update!(status: 'failed',error_message: e.message)
         Rails.logger.error "Failed to send automation email: #{e.message.to_s}"
       end
     end
@@ -144,6 +152,10 @@ module Automation
 
       webform = @context['webform'] || incase&.webform
       client = @context['client'] || @context[:client]
+      
+      # variant и product передаются из контекста (для события variant.back_in_stock)
+      variant = @context['variant'] || @context[:variant]
+      product = @context['product'] || @context[:product]
 
       # Получаем всех пользователей аккаунта
       users = @account.users.includes(:account_users)
@@ -156,6 +168,8 @@ module Automation
           incase: incase,
           client: client,
           webform: webform,
+          variant: variant,
+          product: product,
           user: user,
           account: @account
         )

@@ -8,7 +8,10 @@
   <%= render "mailganer", mailganer: mailganer, current_account: current_account %>
 <% else %>
   <div class="text-sm text-gray-500 border rounded p-3">
-    Настройки Mailganer не настроены. Добавьте настройки для интеграции с Mailganer.
+  Добавьте настройки для интеграции с Mailganer. <br>Это позволит вам организовать полноценную рассылку триггерных сообщений на своём домене.
+    <%= link_to info_account_mailganers_path(current_account),
+    data: { turbo_frame: :offcanvas },
+    class: "inline-flex items-center justify-center px-2 py-1 text-violet-600 hover:text-violet-800" do %>Подробнее<% end %>
   </div>
 <% end %>
 

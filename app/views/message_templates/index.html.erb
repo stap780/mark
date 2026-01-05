@@ -1,7 +1,10 @@
+<% app_type = current_account.settings.dig("apps")&.find { |app| app.start_with?('ins') } %>
 <div class="flex items-center justify-between mb-4">
   <h1 class="text-xl font-semibold">Шаблоны сообщений</h1>
-  <%= link_to "Новый шаблон", new_account_message_template_path(current_account),
-      class: "px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700", data: { turbo_frame: :offcanvas } %>
+  <% unless app_type == 'insnotify' %>
+    <%= link_to "Новый шаблон", new_account_message_template_path(current_account),
+        class: "px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700", data: { turbo_frame: :offcanvas } %>
+  <% end %>
 </div>
 
 <%= turbo_stream_from dom_id(current_account, :message_templates) %>

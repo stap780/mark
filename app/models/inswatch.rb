@@ -17,7 +17,7 @@ class Inswatch < ApplicationRecord
     account = Account.find_or_create_by!(name: "Inswatch #{uid} Account") do |acc|
       acc.partner = true
       logo = "https://insales-static.obs.ru-moscow-1.hc.sbercloud.ru/images/applications/4141349/1762959273-ChatGPT_Image_Nov_10__2025__07_14_15_PM.normal.png"
-      acc.settings = { apps: ['inswatch'] , logo: logo }
+      acc.settings = { apps: ['inswatch'], logo: logo }
     end
     
     # 2. Создаём или находим пользователя

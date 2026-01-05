@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.2.6
+ * Версия: 1.2.8
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.2.6";
+      this.version = "1.2.8";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -167,25 +167,12 @@
       
       this.debugLog(`[handlePreorder] Webform ${webform.id} trigger type: ${triggerType}`);
       
-      // Существующий механизм через клики (для совместимости)
-      if (triggerType === 'event' || triggerType === 'manual') {
-        const preorderTriggers = document.querySelectorAll('[data-product-card-preorder]');
-        this.debugLog(`[handlePreorder] Found ${preorderTriggers.length} preorder triggers for webform ${webform.id}`);
-        
-        preorderTriggers.forEach(trigger => {
-          trigger.addEventListener('click', (e) => {
-            e.preventDefault();
-            const productId = trigger.getAttribute('data-product-id') || trigger.closest('[data-product-id]')?.getAttribute('data-product-id');
-            const variantId = trigger.getAttribute('data-variant-id') || trigger.closest('[data-variant-id]')?.getAttribute('data-variant-id');
-            this.debugLog(`[handlePreorder] Trigger clicked - ProductId: ${productId}, VariantId: ${variantId}`);
-            this.showForm(webform, { productId, variantId });
-          });
-        });
-        
-        // Ручной показ через data-twc-webform-id (новый функционал)
-        if (triggerType === 'manual') {
-          this.setupManualTrigger(webform);
-        }
+      // Ручной показ через data-twc-webform-id
+      if (triggerType === 'manual') {
+        this.setupManualTrigger(webform);
+      } else if (triggerType === 'event') {
+        // Для event триггера также используем новый механизм
+        this.setupManualTrigger(webform);
       } else {
         // Автоматические триггеры (exit_intent, time_on_page, scroll_depth)
         this.handleWebformWithTrigger(webform, 'preorder');
@@ -343,8 +330,21 @@
       manualTriggers.forEach(trigger => {
         trigger.addEventListener('click', (e) => {
           e.preventDefault();
-          const productId = trigger.getAttribute('data-product-id');
-          const variantId = trigger.getAttribute('data-variant-id');
+          // Извлекаем данные: сначала с самого элемента, затем ищем вверх по DOM дереву
+          let productId = trigger.getAttribute('data-product-id');
+          let variantId = trigger.getAttribute('data-variant-id');
+          
+          // Если не найдено на элементе, ищем в родителях (closest ищет вверх до корня документа)
+          if (!productId) {
+            const productParent = trigger.closest('[data-product-id]');
+            productId = productParent?.getAttribute('data-product-id') || null;
+          }
+          
+          if (!variantId) {
+            const variantParent = trigger.closest('[data-variant-id]');
+            variantId = variantParent?.getAttribute('data-variant-id') || null;
+          }
+          
           this.debugLog(`[setupManualTrigger] Manual trigger clicked - ProductId: ${productId}, VariantId: ${variantId}`);
           this.showForm(webform, { productId, variantId });
         });
