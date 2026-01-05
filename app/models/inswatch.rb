@@ -105,13 +105,21 @@ class Inswatch < ApplicationRecord
       inswatch, account = install_or_update(uid: uid, email: email, shop: shop)
       user = inswatch.user
     else
-      # Получаем аккаунт пользователя (должен быть создан при install)
-      account = user.accounts.first
-      return nil unless account
+      # Ищем аккаунт с inswatch в настройках
+      account = user.accounts.find { |acc| acc.settings.dig("apps")&.include?('inswatch') }
       
-      # Обновляем связь с Inswatch (обновляем last_login_at)
-      inswatch = user.inswatch || user.create_inswatch(uid: uid, shop: shop)
-      inswatch.update!(last_login_at: Time.current)
+      # Если аккаунт не найден, создаём через install_or_update
+      if account.nil?
+        inswatch, account = install_or_update(uid: uid, email: email, shop: shop)
+      else
+        # Обновляем связь с Inswatch (обновляем last_login_at)
+        inswatch = user.inswatch || user.create_inswatch(uid: uid, shop: shop)
+        inswatch.update!(
+          uid: uid,
+          shop: shop,
+          last_login_at: Time.current
+        )
+      end
     end
     
     [user, account]

@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.2.8
+ * Версия: 1.2.9
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.2.8";
+      this.version = "1.2.9";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -713,8 +713,10 @@
       if (closeBtn) {
         closeBtn.addEventListener('click', () => overlay.remove());
       }
+      const wrapper = overlay.querySelector('.webform-wrapper');
       overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
+        // Закрываем модальное окно, если клик был вне webform-wrapper
+        if (e.target === overlay || (wrapper && !wrapper.contains(e.target))) {
           overlay.remove();
         }
       });
