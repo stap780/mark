@@ -1,5 +1,5 @@
 <%= form_with(model: [current_account, client], class: "contents") do |form| %>
-<%= render "shared/errors", object: client %>
+  <%= render "shared/errors", object: client %>
 
   <div class="my-5">
     <%= form.label :name %>
@@ -27,6 +27,6 @@
   </div>
 
   <div class="inline">
-    <%= form.submit class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
+    <%= form.submit t(:save), class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
   </div>
 <% end %>

@@ -3,9 +3,22 @@ class StockCheckSchedule < ApplicationRecord
   include AccountScoped
   belongs_to :account
 
-  after_create_commit { broadcast_append_to dom_id(account, :stock_check_schedules), target: dom_id(account, :stock_check_schedules), partial: "stock_check_schedules/stock_check_schedule", locals: { current_account: account, stock_check_schedule: self } }
-  after_update_commit { broadcast_replace_to dom_id(account, :stock_check_schedules), target: dom_id(account, dom_id(self)), partial: "stock_check_schedules/stock_check_schedule", locals: { current_account: account, stock_check_schedule: self } }
-  after_destroy_commit { broadcast_remove_to dom_id(account, :stock_check_schedules), target: dom_id(account, dom_id(self)}
+  after_create_commit { 
+    broadcast_append_to dom_id(account, :stock_check_schedules), 
+    target: dom_id(account, :stock_check_schedules), 
+    partial: "stock_check_schedules/stock_check_schedule", 
+    locals: { current_account: account, stock_check_schedule: self } 
+  }
+  after_update_commit { 
+    broadcast_replace_to dom_id(account, :stock_check_schedules),
+    target: dom_id(account, dom_id(self)),
+    partial: "stock_check_schedules/stock_check_schedule",
+    locals: { current_account: account, stock_check_schedule: self } 
+  }
+  after_destroy_commit { 
+    broadcast_remove_to dom_id(account, :stock_check_schedules), 
+    target: dom_id(account, dom_id(self))
+  }
 
   RECURRENCES = %w[daily].freeze
 
