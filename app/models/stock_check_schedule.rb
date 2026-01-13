@@ -1,11 +1,11 @@
 class StockCheckSchedule < ApplicationRecord
+  include ActionView::RecordIdentifier
   include AccountScoped
   belongs_to :account
 
-  include ActionView::RecordIdentifier
-  after_update_commit { broadcast_replace_to [account, "stock_check_schedules"], target: dom_id(self), partial: "stock_check_schedules/stock_check_schedule", locals: { stock_check_schedule: self } }
-  after_create_commit { broadcast_append_to [account, "stock_check_schedules"], target: "stock_check_schedules", partial: "stock_check_schedules/stock_check_schedule", locals: { stock_check_schedule: self } }
-  after_destroy_commit { broadcast_remove_to [account, "stock_check_schedules"], target: dom_id(self) }
+  after_create_commit { broadcast_append_to dom_id(account, :stock_check_schedules), target: dom_id(account, :stock_check_schedules), partial: "stock_check_schedules/stock_check_schedule", locals: { current_account: account, stock_check_schedule: self } }
+  after_update_commit { broadcast_replace_to dom_id(account, :stock_check_schedules), target: dom_id(account, dom_id(self)), partial: "stock_check_schedules/stock_check_schedule", locals: { current_account: account, stock_check_schedule: self } }
+  after_destroy_commit { broadcast_remove_to dom_id(account, :stock_check_schedules), target: dom_id(account, dom_id(self)}
 
   RECURRENCES = %w[daily].freeze
 
@@ -81,6 +81,6 @@ class StockCheckSchedule < ApplicationRecord
   rescue => e
     Rails.logger.warn("StockCheckSchedule##{id}: failed to cancel pending job #{active_job_id}: #{e.message}")
   end
-  
+
 end
 

@@ -8,9 +8,9 @@
   <% end %>
 </div>
 
-<%= turbo_stream_from [current_account, "stock_check_schedules"] %>
+<%= turbo_stream_from dom_id(current_account, :stock_check_schedules) %>
 
-<%= turbo_frame_tag "stock_check_schedules", class: "bg-white rounded-lg shadow divide-y" do %>
+<%= turbo_frame_tag dom_id(current_account, :stock_check_schedules), class: "bg-white rounded-lg shadow divide-y" do %>
   <div class="grid grid-cols-[1fr_1fr_1fr_200px_150px] gap-4 p-4 font-medium text-gray-700">
     <div><%= t('.active') %></div>
     <div><%= t('.recurrence') %></div>
