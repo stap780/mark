@@ -64,7 +64,19 @@ class AutomationMessage < ApplicationRecord
       new_status = MAILGANER_STATUS_MAPPING[mailganer_status]
       
       if new_status && status != new_status
-        update_column(:status, new_status)
+        update_attrs = { status: new_status }
+        
+        # Устанавливаем sent_at при изменении статуса на 'sent'
+        if new_status == 'sent' && sent_at.nil?
+          update_attrs[:sent_at] = result[:created_at] || Time.current
+        end
+        
+        # Устанавливаем delivered_at при изменении статуса на 'delivered'
+        if new_status == 'delivered' && delivered_at.nil?
+          update_attrs[:delivered_at] = result[:created_at] || Time.current
+        end
+        
+        update_columns(update_attrs)
       end
     end
 
