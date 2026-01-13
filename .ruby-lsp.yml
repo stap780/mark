@@ -1,0 +1,19 @@
+# Ruby LSP configuration
+# Documentation: https://shopify.github.io/ruby-lsp/ruby_lsp/configuration/
+
+# Disable rubocop addon to avoid LoadError with rainbow gem
+# The addon tries to load rubocop before bundle context is fully initialized
+features:
+  rubocop: false
+
+# Exclude patterns from indexing (to speed up indexing)
+# These directories are typically not needed for LSP features
+exclude:
+  - "**/vendor/**"
+  - "**/node_modules/**"
+  - "**/.git/**"
+  - "**/tmp/**"
+  - "**/log/**"
+  - "**/storage/**"
+  - "**/coverage/**"
+

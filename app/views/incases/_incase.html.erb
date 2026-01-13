@@ -7,7 +7,7 @@
     </span>
   </div>
   <div><%= incase.webform&.title %> (<%= incase.webform&.kind %>)</div>
-  <div><%= incase.client.name %> <%= incase.client.email %></div>
+  <div><%= incase.client&.name %> <%= incase.client&.email %></div>
   <div>
     <%= number_to_currency(incase.items.map(&:sum).sum, unit: '₽', separator: ",", delimiter: " ", format: "%n %u") if incase.items.any? %>
   </div>

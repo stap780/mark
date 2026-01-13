@@ -1,0 +1,11 @@
+#!/bin/bash
+# Disable rubocop addon for Ruby LSP to avoid LoadError with rainbow gem
+# This script should be run after bundle install/update
+
+find vendor/bundle/ruby/*/gems/rubocop-*/lib/ruby_lsp/rubocop/addon.rb -type f 2>/dev/null | while read f; do
+  if [ -f "$f" ] && [ ! -f "${f}.disabled" ]; then
+    mv "$f" "${f}.disabled"
+    echo "Disabled: $f"
+  fi
+done
+

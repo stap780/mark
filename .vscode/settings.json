@@ -1,0 +1,44 @@
+{
+  "rubyLsp.rubyVersionManager": {
+    "identifier": "mise"
+  },
+  "rubyLsp.bundleGemfile": "${workspaceFolder}/Gemfile",
+  "rubyLsp.customCommand": {
+    "command": "bundle",
+    "args": ["exec", "ruby-lsp"],
+    "env": {
+      "BUNDLE_GEMFILE": "${workspaceFolder}/Gemfile",
+      "RUBY_LSP_DISABLE_ADDONS": "rubocop"
+    }
+  },
+  "rubyLsp.enabledFeatures": {
+    "inlayHint": true,
+    "codeActions": true,
+    "diagnostics": true,
+    "documentHighlight": true,
+    "documentLink": true,
+    "documentSymbol": true,
+    "foldingRange": true,
+    "formatting": true,
+    "hover": true,
+    "selectionRange": true,
+    "semanticHighlighting": true,
+    "codeLens": true,
+    "completion": true,
+    "definition": true,
+    "workspaceSymbol": true
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/vendor": true,
+    "**/node_modules": true
+  },
+  "files.watcherExclude": {
+    "**/vendor/**": true,
+    "**/node_modules/**": true,
+    "**/.git/**": true,
+    "**/tmp/**": true,
+    "**/log/**": true
+  }
+}
+

@@ -12,7 +12,6 @@ class InswatchController < ApplicationController
     timestamp = params[:timestamp].to_i
     signature = params[:signature]
     shop = params[:shop]
-    insales_secret_key = params[:insales_secret_key]
     insales_api_password = params[:insales_api_password]
     insales_app_identifier = params[:insales_app_identifier]
 

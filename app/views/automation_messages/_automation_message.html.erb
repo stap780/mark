@@ -2,7 +2,13 @@
     <div class="grid grid-cols-[50_150px_200px_200px_200px_200px_1fr] gap-4 p-4 items-center hover:bg-gray-50">
       <div class="text-sm"><%= automation_message.id %></div>
       <div class="text-sm"><%= automation_message.created_at.strftime("%d.%m.%Y %H:%M") %></div>
-      <div class="text-sm"><%= automation_message.automation_rule.title %></div>
+      <div class="text-sm">
+        <% if automation_message.automation_rule.present? %>
+          <%= automation_message.automation_rule&.title %>
+        <% else %>
+          —
+        <% end %>
+      </div>
       <div class="text-sm">
         <% if automation_message.client.present? %>
           <%= automation_message.client.email || automation_message.client.name %>
