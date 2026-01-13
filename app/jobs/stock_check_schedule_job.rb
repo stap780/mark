@@ -1,5 +1,5 @@
 class StockCheckScheduleJob < ApplicationJob
-  queue_as :default
+  queue_as :stock_check_schedule
   # If the StockCheckSchedule record was deleted before the job runs,
   # Active Job will raise ActiveJob::DeserializationError. Discard it.
   discard_on ActiveJob::DeserializationError

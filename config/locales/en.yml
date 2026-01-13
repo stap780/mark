@@ -302,6 +302,11 @@ en:
             image:
               invalid_type: "must be an image"
               invalid_dimensions: "must be at most 300x300px"
+        product:
+          attributes:
+            base:
+              cannot_delete_assigned_to_swatch_group: "Cannot delete product while assigned to a swatch group"
+              cannot_delete_has_list_items: "Cannot delete product while it has items in lists"
     columns:
       number: "#"
       name: "Name"

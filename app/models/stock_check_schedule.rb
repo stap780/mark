@@ -81,5 +81,6 @@ class StockCheckSchedule < ApplicationRecord
   rescue => e
     Rails.logger.warn("StockCheckSchedule##{id}: failed to cancel pending job #{active_job_id}: #{e.message}")
   end
+  
 end
 

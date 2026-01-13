@@ -121,14 +121,14 @@ class Product < ApplicationRecord
   def ensure_not_used_in_swatch_groups
     return unless swatch_group_products.exists?
 
-    errors.add(:base, "Cannot delete product while assigned to a swatch group")
+    errors.add(:base, I18n.t('activerecord.errors.models.product.attributes.base.cannot_delete_assigned_to_swatch_group'))
     throw(:abort)
   end
 
   def check_list_items_dependency
     return unless list_items.exists?
 
-    errors.add(:base, "Cannot delete product while it has items in lists")
+    errors.add(:base, I18n.t('activerecord.errors.models.product.attributes.base.cannot_delete_has_list_items'))
     throw(:abort)
   end
 

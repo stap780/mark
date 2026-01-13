@@ -275,6 +275,11 @@ ru:
             image:
               invalid_type: "должно быть изображением"
               invalid_dimensions: "размер не должен превышать 300x300px"
+        product:
+          attributes:
+            base:
+              cannot_delete_assigned_to_swatch_group: "Невозможно удалить товар, пока он назначен в группу"
+              cannot_delete_has_list_items: "Невозможно удалить товар, пока у него есть позиции в списках"
       messages:
         accepted: нужно подтвердить
         blank: не может быть пустым
@@ -599,6 +604,8 @@ ru:
       heading: "Редактировать товар"
     update:
       success: "Товар успешно обновлен."
+    insales_info:
+      success: "Товар обновлен из InSales."
     form:
       save_to_manage_variants: "Сохраните товар для управления вариантами."
       variants: "Варианты"

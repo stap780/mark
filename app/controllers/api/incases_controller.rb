@@ -267,6 +267,12 @@ class Api::IncasesController < ApplicationController
       end
     end
 
+    # Для заявок типа "notify" устанавливаем quantity = 0 у варианта
+    # Это нужно для того, чтобы StockCheck мог определить, что товар появился в наличии
+    if incase.webform.kind == 'notify'
+      variant.update_column(:quantity, 0)
+    end
+
     # Создаем Item напрямую для incase
     incase.items.create!(
       product_id: variant.product_id,
