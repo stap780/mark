@@ -449,7 +449,8 @@ ru:
       lists_count: "Листов"
       list_items_count: "Записей по листам"
       incases_count: "Заявок"
-      incase_types_count: "Типов заявок"
+      incases_by_type: "Заявок по типам"
+      no_incases: "Нет заявок"
     payments:
       payments: "Платежи"
       status: "Статус"

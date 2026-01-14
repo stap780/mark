@@ -63,9 +63,21 @@
       <dt class="text-sm font-medium text-gray-600"><%= t('admin.accounts.incases_count') %></dt>
       <dd class="text-sm text-gray-900"><%= @account_stats[:incases_count] %></dd>
     </div>
-    <div class="grid grid-cols-[200px_1fr] gap-4 px-4 py-3 items-center">
-      <dt class="text-sm font-medium text-gray-600"><%= t('admin.accounts.incase_types_count') %></dt>
-      <dd class="text-sm text-gray-900"><%= @account_stats[:incase_types_count] %></dd>
+    <div class="grid grid-cols-[200px_1fr] gap-4 px-4 py-3 items-start">
+      <dt class="text-sm font-medium text-gray-600"><%= t('admin.accounts.incases_by_type') %></dt>
+      <dd class="text-sm text-gray-900">
+        <% if @account_stats[:incases_by_type].any? %>
+          <ul class="space-y-1">
+            <% @account_stats[:incases_by_type].each do |kind, count| %>
+              <li>
+                <%= t("webforms.kinds.#{kind}") %>: <span class="font-medium"><%= count %></span>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <span class="text-gray-500"><%= t('admin.accounts.no_incases') %></span>
+        <% end %>
+      </dd>
     </div>
   </dl>
 </div>

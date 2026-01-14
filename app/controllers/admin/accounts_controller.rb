@@ -23,7 +23,7 @@ class Admin::AccountsController < ApplicationController
       lists_count: @account.lists.count,
       list_items_count: ListItem.joins(:list).where(lists: { account_id: @account.id }).count,
       incases_count: @account.incases.count,
-      incase_types_count: @account.incases.joins(:webform).distinct.count('webforms.kind')
+      incases_by_type: @account.incases.joins(:webform).group('webforms.kind').count
     }
   end
 

@@ -806,7 +806,8 @@ en:
       lists_count: "Lists"
       list_items_count: "List Items"
       incases_count: "Incases"
-      incase_types_count: "Incase Types"
+      incases_by_type: "Incases by Type"
+      no_incases: "No incases"
     payments:
       payments: "Payments"
       status: "Status"
