@@ -1,3 +1,4 @@
+<%= turbo_stream_from dom_id(@account, :users) %>
 <div class="inline-flex items-center gap-4 mb-4">
   <%= link_to t(:back), admin_accounts_path,
       class: "inline-flex items-center px-3 py-1 bg-white text-violet-600 border border-violet-500 rounded-md hover:bg-violet-50" %>
@@ -32,7 +33,42 @@
   </div>
 <% end %>
 
-<%= turbo_stream_from dom_id(@account, :users) %>
+<%# Account Statistics Section %>
+<div class="bg-white rounded-lg shadow divide-y mb-4">
+  <div class="px-4 py-3 border-b">
+    <h3 class="text-base font-semibold text-gray-700"><%= t('admin.accounts.statistics') %></h3>
+  </div>
+  <dl class="divide-y">
+    <div class="grid grid-cols-[200px_1fr] gap-4 px-4 py-3 items-center">
+      <dt class="text-sm font-medium text-gray-600"><%= t('admin.accounts.products_count') %></dt>
+      <dd class="text-sm text-gray-900"><%= @account_stats[:products_count] %></dd>
+    </div>
+    <div class="grid grid-cols-[200px_1fr] gap-4 px-4 py-3 items-center">
+      <dt class="text-sm font-medium text-gray-600"><%= t('admin.accounts.clients_count') %></dt>
+      <dd class="text-sm text-gray-900"><%= @account_stats[:clients_count] %></dd>
+    </div>
+    <div class="grid grid-cols-[200px_1fr] gap-4 px-4 py-3 items-center">
+      <dt class="text-sm font-medium text-gray-600"><%= t('admin.accounts.swatch_groups_count') %></dt>
+      <dd class="text-sm text-gray-900"><%= @account_stats[:swatch_groups_count] %></dd>
+    </div>
+    <div class="grid grid-cols-[200px_1fr] gap-4 px-4 py-3 items-center">
+      <dt class="text-sm font-medium text-gray-600"><%= t('admin.accounts.lists_count') %></dt>
+      <dd class="text-sm text-gray-900"><%= @account_stats[:lists_count] %></dd>
+    </div>
+    <div class="grid grid-cols-[200px_1fr] gap-4 px-4 py-3 items-center">
+      <dt class="text-sm font-medium text-gray-600"><%= t('admin.accounts.list_items_count') %></dt>
+      <dd class="text-sm text-gray-900"><%= @account_stats[:list_items_count] %></dd>
+    </div>
+    <div class="grid grid-cols-[200px_1fr] gap-4 px-4 py-3 items-center">
+      <dt class="text-sm font-medium text-gray-600"><%= t('admin.accounts.incases_count') %></dt>
+      <dd class="text-sm text-gray-900"><%= @account_stats[:incases_count] %></dd>
+    </div>
+    <div class="grid grid-cols-[200px_1fr] gap-4 px-4 py-3 items-center">
+      <dt class="text-sm font-medium text-gray-600"><%= t('admin.accounts.incase_types_count') %></dt>
+      <dd class="text-sm text-gray-900"><%= @account_stats[:incase_types_count] %></dd>
+    </div>
+  </dl>
+</div>
 
 <div class="p-0">
   <div class="flex items-center justify-between mb-4">

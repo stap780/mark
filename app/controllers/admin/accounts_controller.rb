@@ -14,6 +14,17 @@ class Admin::AccountsController < ApplicationController
 
   def show
     @account_users = @account.account_users.includes(:user).order('users.email_address')
+    
+    # Статистика аккаунта
+    @account_stats = {
+      products_count: @account.products.count,
+      clients_count: @account.clients.count,
+      swatch_groups_count: @account.swatch_groups.count,
+      lists_count: @account.lists.count,
+      list_items_count: ListItem.joins(:list).where(lists: { account_id: @account.id }).count,
+      incases_count: @account.incases.count,
+      incase_types_count: @account.incases.joins(:webform).distinct.count('webforms.kind')
+    }
   end
 
   def new

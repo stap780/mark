@@ -1,9 +1,0 @@
-{
-  "recommendations": [
-    "Shopify.ruby-lsp"
-  ],
-  "unwantedRecommendations": [
-    "rebornix.ruby"
-  ]
-}
-
