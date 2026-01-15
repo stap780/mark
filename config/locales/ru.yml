@@ -78,10 +78,16 @@ ru:
     new:
       title: "Настройка i-dgtl"
       already_exists: "Настройки i-dgtl уже существуют"
+    create:
+      success: "Настройки i-dgtl успешно сохранены"
     edit:
       title: "Редактировать настройки i-dgtl"
+    update:
+      success: "Настройки i-dgtl успешно обновлены"
     show:
       title: "Настройки i-dgtl"
+    destroy:
+      success: "Настройки i-dgtl успешно удалены"
     test_sms:
       label: "Тест SMS"
       title: "Отправить тестовое SMS через i-dgtl"
@@ -95,10 +101,16 @@ ru:
     new:
       title: "Настройка Moizvonki"
       already_exists: "Настройки Moizvonki уже существуют"
+    create:
+      success: "Настройки Moizvonki успешно сохранены"
     edit:
       title: "Редактировать настройки Moizvonki"
+    update:
+      success: "Настройки Moizvonki успешно обновлены"
     show:
       title: "Настройки Moizvonki"
+    destroy:
+      success: "Настройки Moizvonki успешно удалены"
     test_sms:
       label: "Тест SMS"
       title: "Отправить тестовое SMS через Moizvonki"

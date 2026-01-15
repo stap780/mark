@@ -9,7 +9,7 @@ module SmsProviders
     end
 
     def send_sms!(to:, text:)
-      uri = URI.parse("https://#{@domain}.moizvonki.ru/api/v1")
+      uri = URI.parse("https://#{@domain}/api/v1")
 
       # По доке REST требуется Content-Type: application/json, но пример отправляет
       # параметр request_data, содержащий JSON-строку.

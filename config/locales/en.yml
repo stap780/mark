@@ -78,10 +78,16 @@ en:
     new:
       title: "Configure i-dgtl"
       already_exists: "i-dgtl settings already exist"
+    create:
+      success: "i-dgtl settings saved"
     edit:
       title: "Edit i-dgtl Settings"
+    update:
+      success: "i-dgtl settings updated"
     show:
       title: "i-dgtl Settings"
+    destroy:
+      success: "i-dgtl settings removed"
     test_sms:
       label: "Test SMS"
       title: "Send Test SMS via i-dgtl"
@@ -95,10 +101,16 @@ en:
     new:
       title: "Configure Moizvonki"
       already_exists: "Moizvonki settings already exist"
+    create:
+      success: "Moizvonki settings saved"
     edit:
       title: "Edit Moizvonki Settings"
+    update:
+      success: "Moizvonki settings updated"
     show:
       title: "Moizvonki Settings"
+    destroy:
+      success: "Moizvonki settings removed"
     test_sms:
       label: "Test SMS"
       title: "Send Test SMS via Moizvonki"
