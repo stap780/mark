@@ -19,8 +19,6 @@ class Client < ApplicationRecord
       .where(webforms: { kind: 'notify' })
   end
 
-  # Use Varbindable defaults
-
   def broadcast_target_for_varbinds
     [account, [self, :varbinds]]
   end
@@ -32,14 +30,6 @@ class Client < ApplicationRecord
   def broadcast_locals_for_varbind(varbind)
     { client: self, varbind: varbind }
   end
-
-  # Hotwire broadcasts
-  # after_create_commit do
-  #   broadcast_prepend_to [dom_id(account), :clients],
-  #                       target: [dom_id(account), :clients],
-  #                       partial: "clients/client",
-  #                       locals: { client: self, current_account: account }
-  # end
 
   after_update_commit do
     broadcast_replace_to [dom_id(account), :clients],
@@ -54,7 +44,7 @@ class Client < ApplicationRecord
 
 
   def self.ransackable_attributes(auth_object = nil)
-    Client.attribute_names
+    attribute_names
   end
 
 
@@ -111,6 +101,10 @@ class Client < ApplicationRecord
     )
     
     list_item
+  end
+
+  def full_name
+    [name, surname, email].join(' ')
   end
 
 end

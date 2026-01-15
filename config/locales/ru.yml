@@ -73,6 +73,23 @@ ru:
   automation_messages:
     global_mailganer_limit_exceeded: "Достигнут лимит отправки писем (%{limit} писем в месяц). Отправлено: %{count}. Лимит сбросится %{reset_date}. Настройте свой Mailganer в разделе настроек для снятия ограничения."
     global_limit_warning: "Осталось %{remaining} из %{limit} писем через глобальную конфигурацию Mailganer в этом месяце. Лимит сбросится %{reset_date}. Настройте свой Mailganer для снятия ограничения."
+    all_statuses: "Все статусы"
+    all_channels: "Все каналы"
+    all_rules: "Все правила"
+    statuses:
+      pending: "Ожидает"
+      sent: "Отправлено"
+      failed: "Ошибка"
+      delivered: "Доставлено"
+      email_fbl: "Жалоба"
+      email_unsubscribe: "Отписка"
+      email_open: "Открыто"
+      email_click: "Переход"
+    channels:
+      email: "Email"
+      sms: "SMS"
+      whatsapp: "WhatsApp"
+      telegram: "Telegram"
 
   idgtls:
     new:

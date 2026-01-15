@@ -171,6 +171,7 @@ module Automation
         product: product
       )
 
+      rendered_subject = template.subject.present? ? render_liquid(template.subject, liquid_context) : nil
       rendered_content = render_liquid(template.content, liquid_context)
 
       message = @account.automation_messages.create!(
@@ -180,7 +181,7 @@ module Automation
         incase: incase,
         channel: 'sms',
         status: 'pending',
-        subject: nil,
+        subject: rendered_subject,
         content: rendered_content
       )
 
@@ -238,6 +239,7 @@ module Automation
         product: product
       )
 
+      rendered_subject = template.subject.present? ? render_liquid(template.subject, liquid_context) : nil
       rendered_content = render_liquid(template.content, liquid_context)
 
       message = @account.automation_messages.create!(
@@ -247,7 +249,7 @@ module Automation
         incase: incase,
         channel: 'sms',
         status: 'pending',
-        subject: nil,
+        subject: rendered_subject,
         content: rendered_content
       )
 

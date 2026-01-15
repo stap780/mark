@@ -11,7 +11,7 @@
       </div>
       <div class="text-sm">
         <% if automation_message.client.present? %>
-          <%= automation_message.client.email || automation_message.client.name %>
+          <%= automation_message.client.full_name %>
         <% elsif automation_message.user.present? %>
           <%= automation_message.user.email_address %> (пользователь)
         <% else %>

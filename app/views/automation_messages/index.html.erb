@@ -39,9 +39,9 @@
 
   <!-- Фильтры -->
   <%= search_form_for @search, url: account_automation_messages_path(current_account), method: :get, html: { class: "flex items-center space-x-2 mb-4" } do |f| %>
-    <%= f.select :automation_rule_id_eq, current_account.automation_rules.pluck(:title, :id), { prompt: "Все правила" }, class: "px-2 py-1 border rounded" %>
-    <%= f.select :channel_eq, AutomationMessage.channels.keys.map { |k| [k.humanize, k] }, { prompt: "Все каналы" }, class: "px-2 py-1 border rounded" %>
-    <%= f.select :status_eq, AutomationMessage.statuses.keys.map { |k| [k.humanize, k] }, { prompt: "Все статусы" }, class: "px-2 py-1 border rounded" %>
+    <%= f.select :automation_rule_id_eq, current_account.automation_rules.pluck(:title, :id), { prompt: t("automation_messages.all_rules") }, class: "px-2 py-1 border rounded" %>
+    <%= f.select :channel_eq, AutomationMessage.channels.keys.map { |k| [t("automation_messages.channels.#{k}"), k] }, { prompt: t("automation_messages.all_channels") }, class: "px-2 py-1 border rounded" %>
+    <%= f.select :status_eq, AutomationMessage.statuses.keys.map { |k| [t("automation_messages.statuses.#{k}"), k] }, { prompt: t("automation_messages.all_statuses") }, class: "px-2 py-1 border rounded" %>
     <%= f.submit "Фильтровать", class: "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" %>
     <%= link_to_clear account_automation_messages_path(current_account),
     class: "h-8 px-3 bg-gray-100 rounded hover:bg-gray-200 flex items-center text-sm leading-none" %>

@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.3.0
+ * Версия: 1.3.2
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.3.0";
+      this.version = "1.3.2";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -835,23 +835,42 @@
       let phoneValue = '';
       const phoneInputs = form.querySelectorAll('input[type="tel"]');
       
-      // Сначала проверяем стандартное поле phone
-      let phoneField = formData.get('phone');
-      if (phoneField && phoneField.trim()) {
-        phoneValue = phoneField;
+      // Сначала проверяем стандартное поле phone через DOM
+      const standardPhoneInput = form.querySelector('input[name="phone"][type="tel"]');
+      if (standardPhoneInput && standardPhoneInput.value.trim()) {
+        phoneValue = standardPhoneInput.value.trim();
       } else {
         // Если phone пустое, ищем другие поля типа tel
-        for (const [key, value] of formData.entries()) {
-          const input = form.querySelector(`input[name="${key}"]`);
-          if (input && input.type === 'tel' && value && value.trim()) {
+        // Ищем напрямую по DOM элементам, чтобы получить актуальное значение (после применения маски)
+        for (const phoneInput of phoneInputs) {
+          const value = phoneInput.value.trim();
+          if (value) {
             phoneValue = value;
+            this.debugLog(`[handleFormSubmit] Found phone in field "${phoneInput.name}": ${value}`);
             break; // Используем первое найденное заполненное поле
+          }
+        }
+        
+        // Если не нашли через DOM, пробуем через formData (fallback)
+        if (!phoneValue) {
+          for (const [key, value] of formData.entries()) {
+            const input = form.querySelector(`input[name="${key}"]`);
+            if (input && input.type === 'tel' && value && value.trim()) {
+              phoneValue = value.trim();
+              this.debugLog(`[handleFormSubmit] Found phone via FormData in field "${key}": ${value}`);
+              break;
+            }
           }
         }
       }
       
+      if (!phoneValue) {
+        this.debugLog('[handleFormSubmit] No phone value found. Phone inputs count:', phoneInputs.length);
+      }
+      
       // Очищаем телефон от маски и форматируем
       if (phoneValue) {
+        const originalPhoneValue = phoneValue;
         const digitsOnly = phoneValue.replace(/\D/g, '');
         if (digitsOnly.length === 11 && digitsOnly[0] === '7') {
           phoneValue = '+7' + digitsOnly.substring(1);
@@ -869,6 +888,7 @@
         } else {
           phoneValue = '';
         }
+        this.debugLog(`[handleFormSubmit] Phone formatted: "${originalPhoneValue}" -> "${phoneValue}"`);
       }
       
       // Обрабатываем email: ищем все поля типа email и используем первое заполненное
@@ -894,6 +914,12 @@
         email: emailValue,
         phone: phoneValue
       };
+      
+      this.debugLog('[handleFormSubmit] clientData prepared:', {
+        name: clientData.name,
+        email: clientData.email ? '[FILTERED]' : '',
+        phone: clientData.phone
+      });
 
       // Передаём honeypot-поле на сервер (для дополнительной серверной проверки).
       // Для нормальных пользователей поле всегда пустое.
@@ -983,8 +1009,7 @@
       // Находим поля email и phone по их name атрибутам и типу
       const emailInput = form.querySelector('input[name="email"]') || form.querySelector('input[type="email"]');
       const phoneInput = form.querySelector('input[name="phone"]');
-      // Также находим все поля типа tel и email (могут иметь разные имена)
-      const phoneInputs = form.querySelectorAll('input[type="tel"]');
+      // Также находим все поля типа email (phoneInputs уже объявлен выше)
       const emailInputs = form.querySelectorAll('input[type="email"]');
 
       // Очищаем предыдущие ошибки
