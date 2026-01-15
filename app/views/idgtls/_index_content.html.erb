@@ -1,0 +1,13 @@
+<% if idgtl %>
+  <div class="grid grid-cols-[1fr_1fr_150px] gap-4 p-4 font-medium text-gray-700">
+    <div>Token (TOKEN_1)</div>
+    <div>Sender name</div>
+    <div></div>
+  </div>
+  <%= render "idgtl", idgtl: idgtl, current_account: current_account %>
+<% else %>
+  <div class="text-sm text-gray-500 border rounded p-3">
+    Добавьте настройки для интеграции с i-dgtl (Direct API), чтобы отправлять SMS из автоматизаций.
+  </div>
+<% end %>
+

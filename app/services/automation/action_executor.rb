@@ -12,6 +12,10 @@ module Automation
         send_email
       when 'send_email_to_users'
         send_email_to_users
+      when 'send_sms_idgtl'
+        send_sms_idgtl
+      when 'send_sms_moizvonki'
+        send_sms_moizvonki
       when 'change_status'
         change_status
       else
@@ -139,6 +143,138 @@ module Automation
         message.update!(status: 'failed',error_message: e.message)
         Rails.logger.error "Failed to send automation email: #{e.message.to_s}"
       end
+    end
+
+    def send_sms_idgtl
+      template_id = @action.template_id
+      template = @account.message_templates.find_by(id: template_id)
+      return unless template
+
+      recipient = @context['client'] || @context[:client]
+      return unless recipient&.phone.present?
+
+      incase = @context['incase'] || @context[:incase]
+      variants = @context['variants'] || []
+      variant = @context['variant'] || @context[:variant]
+      product = @context['product'] || @context[:product]
+      client_incases = @context['incases'] || @context[:incases]
+
+      webform = @context['webform'] || incase&.webform
+
+      liquid_context = Automation::LiquidContextBuilder.build(
+        incase: incase,
+        client: recipient,
+        client_incases: client_incases,
+        webform: webform,
+        variants: variants,
+        variant: variant,
+        product: product
+      )
+
+      rendered_content = render_liquid(template.content, liquid_context)
+
+      message = @account.automation_messages.create!(
+        automation_rule: @action.automation_rule,
+        automation_action: @action,
+        client: recipient,
+        incase: incase,
+        channel: 'sms',
+        status: 'pending',
+        subject: nil,
+        content: rendered_content
+      )
+
+      idgtl_settings = @account.idgtl
+      unless idgtl_settings
+        message.update!(status: 'failed', error_message: 'i-dgtl is not configured for this account')
+        return
+      end
+
+      client = SmsProviders::IdgtlClient.new(token_1: idgtl_settings.token_1)
+      result = client.send_sms!(
+        sender_name: idgtl_settings.sender_name,
+        destination: recipient.phone,
+        content: rendered_content,
+        external_message_id: message.id.to_s
+      )
+
+      message.update!(
+        status: 'sent',
+        sent_at: Time.current,
+        provider: 'idgtl',
+        message_id: result[:message_uuid].presence,
+        x_track_id: result[:external_message_id].presence || message.id.to_s
+      )
+    rescue SmsProviders::IdgtlClient::ApiError => e
+      message.update!(status: 'failed', error_message: "i-dgtl error (#{e.http_status}): #{e.raw}")
+    rescue => e
+      message.update!(status: 'failed', error_message: e.message.to_s)
+      Rails.logger.error "Failed to send automation sms via i-dgtl: #{e.message}"
+    end
+
+    def send_sms_moizvonki
+      template_id = @action.template_id
+      template = @account.message_templates.find_by(id: template_id)
+      return unless template
+
+      recipient = @context['client'] || @context[:client]
+      return unless recipient&.phone.present?
+
+      incase = @context['incase'] || @context[:incase]
+      variants = @context['variants'] || []
+      variant = @context['variant'] || @context[:variant]
+      product = @context['product'] || @context[:product]
+      client_incases = @context['incases'] || @context[:incases]
+
+      webform = @context['webform'] || incase&.webform
+
+      liquid_context = Automation::LiquidContextBuilder.build(
+        incase: incase,
+        client: recipient,
+        client_incases: client_incases,
+        webform: webform,
+        variants: variants,
+        variant: variant,
+        product: product
+      )
+
+      rendered_content = render_liquid(template.content, liquid_context)
+
+      message = @account.automation_messages.create!(
+        automation_rule: @action.automation_rule,
+        automation_action: @action,
+        client: recipient,
+        incase: incase,
+        channel: 'sms',
+        status: 'pending',
+        subject: nil,
+        content: rendered_content
+      )
+
+      moizvonki_settings = @account.moizvonki
+      unless moizvonki_settings
+        message.update!(status: 'failed', error_message: 'Moizvonki is not configured for this account')
+        return
+      end
+
+      client = SmsProviders::MoizvonkiClient.new(
+        domain: moizvonki_settings.domain,
+        user_name: moizvonki_settings.user_name,
+        api_key: moizvonki_settings.api_key
+      )
+      client.send_sms!(to: recipient.phone, text: rendered_content)
+
+      message.update!(
+        status: 'sent',
+        sent_at: Time.current,
+        provider: 'moizvonki',
+        x_track_id: message.id.to_s
+      )
+    rescue SmsProviders::MoizvonkiClient::ApiError => e
+      message.update!(status: 'failed', error_message: "Moizvonki error (#{e.http_status}): #{e.raw}")
+    rescue => e
+      message.update!(status: 'failed', error_message: e.message.to_s)
+      Rails.logger.error "Failed to send automation sms via Moizvonki: #{e.message}"
     end
 
     def send_email_to_users

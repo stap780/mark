@@ -1,0 +1,33 @@
+<%= render 'shared/offcanvas_inner', title: 'Moizvonki API', width: '40rem' do %>
+  <div class="p-4 space-y-4 text-sm text-gray-800">
+    <p>
+      <strong>Moizvonki</strong> — сервис для звонков и SMS. Мы используем их REST API для отправки SMS и Webhook для подтверждения события <code>sms.message</code>.
+      Официальная документация: <a href="https://www.moizvonki.ru/guide/api/" target="_blank" rel="noopener"><strong>moizvonki.ru/guide/api</strong></a>.
+    </p>
+
+    <p><strong>REST отправка SMS</strong></p>
+    <ul class="list-disc pl-5 space-y-1">
+      <li><strong>Base URL</strong>: <code>https://&lt;domain&gt;.moizvonki.ru/api/v1</code> (например <code>test</code>).</li>
+      <li><strong>Auth</strong>: <code>user_name</code> (email) + <code>api_key</code> + <code>action</code>.</li>
+      <li><strong>Send</strong>: <code>action: "calls.send_sms"</code>, параметры <code>to</code> и <code>text</code>.</li>
+      <li><strong>Важно</strong>: в приложении на телефоне должен быть включён режим отправки SMS <em>без подтверждения</em>.</li>
+    </ul>
+
+    <p><strong>Webhook подтверждение события SMS</strong></p>
+    <ul class="list-disc pl-5 space-y-1">
+      <li>Подписка делается через REST методом <code>webhook.subscribe</code> на событие <code>sms.message</code>.</li>
+      <% moizvonki = current_account.moizvonki %>
+      <% webhook_url =
+          if moizvonki&.webhook_secret.present?
+            "#{request.base_url}/api/webhooks/moizvonki/#{current_account.id}/#{moizvonki.webhook_secret}"
+          else
+            "#{request.base_url}/api/webhooks/moizvonki/<account_id>/<webhook_secret>"
+          end %>
+      <li>Webhook URL для этого аккаунта: <%= webhook_url %></li>
+    </ul>
+
+    <p class="text-xs text-gray-500">
+      Примечание: Moizvonki присылает событие <code>sms.message</code> с <code>client_number</code> и <code>text</code>, поэтому сопоставление выполняется по телефону+тексту+времени.
+    </p>
+  </div>
+<% end %>

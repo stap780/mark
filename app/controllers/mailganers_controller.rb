@@ -118,8 +118,7 @@ class MailganersController < ApplicationController
     end
   end
 
-  def info
-  end
+  def info; end
 
   private
 

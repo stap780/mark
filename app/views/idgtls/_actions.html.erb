@@ -1,0 +1,11 @@
+<div class="space-x-1">
+  <% idgtl = current_account.idgtl %>
+  <% if idgtl.present? %>
+    <%= link_to t('idgtls.test_sms.label'),
+          test_sms_form_account_idgtl_path(current_account, idgtl),
+          data: { turbo_frame: 'offcanvas' },
+          class: "inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm" %>
+  <% end %>
+  <%= link_to_new new_account_idgtl_path(current_account), data: { turbo_frame: :offcanvas, turbo_prefetch: false } unless idgtl.present? %>
+</div>
+

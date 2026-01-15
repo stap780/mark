@@ -1,6 +1,8 @@
 class AutomationRule < ApplicationRecord
   include AccountScoped
   belongs_to :account
+  acts_as_list scope: :account_id, column: :position
+
   has_many :automation_actions, dependent: :destroy
   has_many :automation_conditions, dependent: :destroy
   accepts_nested_attributes_for :automation_actions, allow_destroy: true
@@ -22,7 +24,10 @@ class AutomationRule < ApplicationRecord
   validates :title, :event, presence: true
   validates :event, inclusion: { in: EVENTS.keys }
   validates :delay_seconds, numericality: { greater_than_or_equal_to: 0 }
+  validates :position, numericality: { only_integer: true, greater_than_or_equal_to: 1 }, allow_nil: true
   validate :validate_condition_format
+
+  before_validation :ensure_position, if: -> { position.blank? && account_id.present? }
 
   before_save :build_condition_json
   after_update :handle_delay_change, if: :saved_change_to_delay_seconds?
@@ -77,6 +82,11 @@ class AutomationRule < ApplicationRecord
   end
 
   private
+
+  def ensure_position
+    max_position = account.automation_rules.maximum(:position) || 0
+    self.position = max_position + 1
+  end
 
   def handle_delay_change
     cancel_pending_job

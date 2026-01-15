@@ -1,4 +1,7 @@
-<%= turbo_frame_tag dom_id(automation_rule, dom_id(current_account)), class: "grid grid-cols-[1fr_200px_150px_100px_150px] gap-4 p-4 items-center hover:bg-gray-50" do %>
+<%= turbo_frame_tag dom_id(automation_rule, dom_id(current_account)),
+      class: "grid grid-cols-[50px_1fr_200px_150px_100px_150px] gap-4 p-4 items-center hover:bg-gray-50",
+      data: { sort_url: sort_account_automation_rule_path(current_account, automation_rule), sort_item_id: automation_rule.id } do %>
+  <%= sortable_with_badge(automation_rule.position) %>
   <div><%= automation_rule.title %></div>
   <div class="text-sm text-gray-600"><%= AutomationRule::EVENTS[automation_rule.event] || automation_rule.event %></div>
   <div>

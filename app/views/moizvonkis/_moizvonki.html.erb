@@ -1,0 +1,15 @@
+<%= turbo_frame_tag dom_id(moizvonki) do %>
+  <div class="grid grid-cols-[1fr_1fr_1fr_150px] gap-4 p-4 items-center border-b">
+    <div class="text-sm text-gray-900"><%= moizvonki.domain %></div>
+    <div class="text-sm text-gray-900"><%= moizvonki.user_name %></div>
+    <div class="text-sm text-gray-900">
+      <% api_key = moizvonki.api_key.to_s %>
+      <%= api_key.length > 8 ? "#{api_key[0,4]}•••#{api_key[-4,4]}" : api_key %>
+    </div>
+    <div class="flex justify-end items-center space-x-2">
+      <%= link_to_edit edit_account_moizvonki_path(account_id: current_account, id: moizvonki), data: { turbo_frame: :offcanvas } %>
+      <%= link_to_show account_moizvonki_path(current_account, moizvonki), data: { turbo_frame: :offcanvas } %>
+    </div>
+  </div>
+<% end %>
+

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_04_114232) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_15_094200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -107,6 +107,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_04_114232) do
     t.string "message_id"
     t.string "x_track_id"
     t.bigint "user_id"
+    t.string "provider"
+    t.jsonb "provider_payload"
     t.index ["account_id", "channel", "status"], name: "index_automation_messages_on_account_id_and_channel_and_status"
     t.index ["account_id"], name: "index_automation_messages_on_account_id"
     t.index ["automation_action_id"], name: "index_automation_messages_on_automation_action_id"
@@ -115,6 +117,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_04_114232) do
     t.index ["client_id"], name: "index_automation_messages_on_client_id"
     t.index ["incase_id"], name: "index_automation_messages_on_incase_id"
     t.index ["message_id"], name: "index_automation_messages_on_message_id"
+    t.index ["provider"], name: "index_automation_messages_on_provider"
     t.index ["user_id"], name: "index_automation_messages_on_user_id"
     t.index ["x_track_id"], name: "index_automation_messages_on_x_track_id"
   end
@@ -176,6 +179,15 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_04_114232) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_email_setups_on_account_id"
+  end
+
+  create_table "idgtls", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "token_1", null: false
+    t.string "sender_name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_idgtls_on_account_id"
   end
 
   create_table "incases", force: :cascade do |t|
@@ -280,8 +292,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_04_114232) do
     t.string "api_key_web_portal", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "from_email"
-    t.string "test_subject"
     t.index ["account_id"], name: "index_mailganers_on_account_id"
   end
 
@@ -295,6 +305,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_04_114232) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_message_templates_on_account_id"
+  end
+
+  create_table "moizvonkis", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "domain", null: false
+    t.string "user_name", null: false
+    t.string "api_key", null: false
+    t.string "webhook_secret", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_moizvonkis_on_account_id"
   end
 
   create_table "payments", force: :cascade do |t|
@@ -469,7 +490,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_04_114232) do
     t.string "cookie_name"
     t.integer "show_times"
     t.index ["account_id", "kind", "status"], name: "index_webforms_on_account_id_and_kind_and_status"
-    t.index ["account_id", "kind"], name: "index_webforms_on_account_kind_singleton", unique: true, where: "((kind)::text = ANY ((ARRAY['order'::character varying, 'notify'::character varying, 'preorder'::character varying, 'abandoned_cart'::character varying])::text[]))"
+    t.index ["account_id", "kind"], name: "index_webforms_on_account_kind_singleton", unique: true, where: "((kind)::text = ANY (ARRAY[('order'::character varying)::text, ('notify'::character varying)::text, ('preorder'::character varying)::text, ('abandoned_cart'::character varying)::text]))"
     t.index ["account_id"], name: "index_webforms_on_account_id"
   end
 
@@ -489,6 +510,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_04_114232) do
   add_foreign_key "clients", "accounts"
   add_foreign_key "discounts", "accounts"
   add_foreign_key "email_setups", "accounts"
+  add_foreign_key "idgtls", "accounts"
   add_foreign_key "incases", "accounts"
   add_foreign_key "incases", "clients"
   add_foreign_key "incases", "webforms"
@@ -503,6 +525,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_04_114232) do
   add_foreign_key "lists", "accounts"
   add_foreign_key "mailganers", "accounts"
   add_foreign_key "message_templates", "accounts"
+  add_foreign_key "moizvonkis", "accounts"
   add_foreign_key "payments", "subscriptions"
   add_foreign_key "products", "accounts"
   add_foreign_key "sessions", "users"

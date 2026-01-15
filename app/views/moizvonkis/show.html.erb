@@ -1,0 +1,9 @@
+<%= render 'shared/offcanvas_inner', title: t('moizvonkis.show.title'), width: '40rem' do %>
+  <div class="p-4 space-y-2 text-sm">
+    <p><strong><%= t('activerecord.attributes.moizvonki.domain') %>:</strong> <%= @moizvonki.domain %></p>
+    <p><strong><%= t('activerecord.attributes.moizvonki.user_name') %>:</strong> <%= @moizvonki.user_name %></p>
+    <p><strong><%= t('activerecord.attributes.moizvonki.api_key') %>:</strong> <%= @moizvonki.api_key %></p>
+    <p><strong><%= t('activerecord.attributes.moizvonki.webhook_secret') %>:</strong> <%= @moizvonki.webhook_secret %></p>
+  </div>
+<% end %>
+

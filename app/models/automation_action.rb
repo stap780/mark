@@ -4,6 +4,8 @@ class AutomationAction < ApplicationRecord
   enum :kind, {
     send_email: 'send_email',
     send_email_to_users: 'send_email_to_users',
+    send_sms_idgtl: 'send_sms_idgtl',
+    send_sms_moizvonki: 'send_sms_moizvonki',
     change_status: 'change_status'
   }
 
@@ -23,6 +25,16 @@ class AutomationAction < ApplicationRecord
       label: 'ID шаблона сообщения',
       validation: ->(value) { value.present? && value.to_i > 0 }
     },
+    'send_sms_idgtl' => {
+      type: 'integer',
+      label: 'ID шаблона сообщения',
+      validation: ->(value) { value.present? && value.to_i > 0 }
+    },
+    'send_sms_moizvonki' => {
+      type: 'integer',
+      label: 'ID шаблона сообщения',
+      validation: ->(value) { value.present? && value.to_i > 0 }
+    },
     'change_status' => {
       type: 'string',
       label: 'Статус заявки',
@@ -32,7 +44,7 @@ class AutomationAction < ApplicationRecord
 
   # Методы для удобного доступа к значению
   def template_id
-    return nil unless kind.in?(['send_email', 'send_email_to_users'])
+    return nil unless kind.in?(['send_email', 'send_email_to_users', 'send_sms_idgtl', 'send_sms_moizvonki'])
     value.to_i if value.present?
   end
 

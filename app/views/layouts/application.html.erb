@@ -89,7 +89,7 @@
                 </div>
               <% end %>
 
-              <% active_settings = ['/insales', '/stock_check_schedules', '/users', '/subscription', '/payments', '/email_setups', '/mailganers'].any? { |path| request.path.include?(path) } %>
+              <% active_settings = ['/insales', '/stock_check_schedules', '/users', '/subscription', '/payments', '/email_setups', '/mailganers', '/idgtls', '/moizvonkis'].any? { |path| request.path.include?(path) } %>
               <div data-controller="accordion"
                   data-accordion-open-value="<%= active_settings %>">
                 <button type="button" data-action="click->accordion#toggle"
@@ -102,8 +102,10 @@
                 
                 <div data-accordion-target="content" class="hidden ml-4 space-y-1">
                   <%= link_to_sidebar t('menu.insales'), account_insales_path(current_account), active_if: '/insales' %>
-                  <%= link_to_sidebar t('menu.stock_check_schedule', default: 'Проверка остатков'), account_stock_check_schedules_path(current_account), active_if: '/stock_check_schedules' if show_link?('stock_check_schedule') %>
-                  <%= link_to_sidebar t('menu.mailganer', default: 'Mailganer'), account_mailganers_path(current_account), active_if: '/mailganers' if show_link?('mailganer') %>
+                  <%= link_to_sidebar t('menu.stock_check_schedule'), account_stock_check_schedules_path(current_account), active_if: '/stock_check_schedules' if show_link?('stock_check_schedule') %>
+                  <%= link_to_sidebar t('menu.mailganer'), account_mailganers_path(current_account), active_if: '/mailganers' if show_link?('mailganer') %>
+                  <%= link_to_sidebar t('menu.idgtl'), account_idgtls_path(current_account), active_if: '/idgtls' if show_link?('idgtl') %>
+                  <%= link_to_sidebar t('menu.moizvonki'), account_moizvonkis_path(current_account), active_if: '/moizvonkis' if show_link?('moizvonki') %>
                   <%= link_to_sidebar t('menu.users'), account_users_path(current_account), active_if: '/users' %>
                   <%= link_to_sidebar t('subscriptions.subscriptions'), account_subscriptions_path(current_account), active_if: '/subscriptions' unless current_account.partner? %>
                   <%= link_to_sidebar t('payments.payments'), account_payments_path(current_account), active_if: '/payments' unless current_account.partner? %>

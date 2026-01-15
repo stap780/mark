@@ -2,7 +2,7 @@ class AutomationRulesController < ApplicationController
   include OffcanvasResponder
   include ActionView::RecordIdentifier
 
-  before_action :set_automation_rule, only: [:edit, :update, :destroy]
+  before_action :set_automation_rule, only: [:edit, :update, :destroy, :sort]
 
   def index
     @automation_rules = current_account.automation_rules.order(:position, :created_at)
@@ -66,6 +66,11 @@ class AutomationRulesController < ApplicationController
       end
       format.html { redirect_to account_automation_rules_path(current_account), notice: t('.success') }
     end
+  end
+
+  def sort
+    @automation_rule.insert_at(params[:position].to_i)
+    head :ok
   end
 
   def create_standard_scenarios_form

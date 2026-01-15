@@ -61,6 +61,8 @@ ru:
     insales: "InSales"
     stock_check_schedule: "Проверка остатков"
     email_settings: "Настройки Email"
+    idgtl: "I-dgtl"
+    moizvonki: "Moizvonki"
     users: "Пользователи"
     status: "Статус"
     automation: "Автоматизация"
@@ -71,6 +73,40 @@ ru:
   automation_messages:
     global_mailganer_limit_exceeded: "Достигнут лимит отправки писем (%{limit} писем в месяц). Отправлено: %{count}. Лимит сбросится %{reset_date}. Настройте свой Mailganer в разделе настроек для снятия ограничения."
     global_limit_warning: "Осталось %{remaining} из %{limit} писем через глобальную конфигурацию Mailganer в этом месяце. Лимит сбросится %{reset_date}. Настройте свой Mailganer для снятия ограничения."
+
+  idgtls:
+    new:
+      title: "Настройка i-dgtl"
+      already_exists: "Настройки i-dgtl уже существуют"
+    edit:
+      title: "Редактировать настройки i-dgtl"
+    show:
+      title: "Настройки i-dgtl"
+    test_sms:
+      label: "Тест SMS"
+      title: "Отправить тестовое SMS через i-dgtl"
+      phone_label: "Телефон получателя"
+      text_label: "Сообщение"
+      error: "Ошибка при отправке тестового SMS"
+      success: "Тестовое SMS отправлено"
+      no_settings: "Настройки i-dgtl не настроены для этого аккаунта"
+
+  moizvonkis:
+    new:
+      title: "Настройка Moizvonki"
+      already_exists: "Настройки Moizvonki уже существуют"
+    edit:
+      title: "Редактировать настройки Moizvonki"
+    show:
+      title: "Настройки Moizvonki"
+    test_sms:
+      label: "Тест SMS"
+      title: "Отправить тестовое SMS через Moizvonki"
+      phone_label: "Телефон получателя"
+      text_label: "Сообщение"
+      error: "Ошибка при отправке тестового SMS"
+      success: "Тестовое SMS отправлено"
+      no_settings: "Настройки Moizvonki не настроены для этого аккаунта"
   
   dashboard:
     status_ok: "OK"
@@ -234,6 +270,14 @@ ru:
         user_name: "Имя пользователя"
         user_password: "Пароль"
         tls: "Включить TLS"
+      idgtl:
+        token_1: "TOKEN_1"
+        sender_name: "Имя отправителя"
+      moizvonki:
+        domain: "Домен"
+        user_name: "Пользователь (email)"
+        api_key: "API ключ"
+        webhook_secret: "Webhook секрет"
       stock_check_schedule:
         recurrence: "Интервал"
         time: "Время"
@@ -581,6 +625,24 @@ ru:
     automation_conditions:
       destroy:
         success: "Условие удалено"
+    idgtls:
+      new:
+        already_exists: "Настройки i-dgtl уже существуют"
+      create:
+        success: "Настройки i-dgtl успешно созданы"
+      update:
+        success: "Настройки i-dgtl успешно обновлены"
+      destroy:
+        success: "Настройки i-dgtl успешно удалены"
+    moizvonkis:
+      new:
+        already_exists: "Настройки Moizvonki уже существуют"
+      create:
+        success: "Настройки Moizvonki успешно созданы"
+      update:
+        success: "Настройки Moizvonki успешно обновлены"
+      destroy:
+        success: "Настройки Moizvonki успешно удалены"
 
   automation_rules:
     edit:
@@ -914,6 +976,12 @@ ru:
       success: "Действие успешно добавлено."
     destroy:
       success: "Действие успешно удалено."
+    kinds:
+      send_email: "Отправить email клиенту"
+      send_email_to_users: "Отправить email пользователям"
+      send_sms_idgtl: "Отправить SMS (i-dgtl)"
+      send_sms_moizvonki: "Отправить SMS (Moizvonki)"
+      change_status: "Изменить статус"
   automation_conditions:
     select_field: "Выберите поле"
     select_operator: "Выберите оператор"

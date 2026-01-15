@@ -1,0 +1,24 @@
+<%= render 'shared/offcanvas_inner', title: 'i-dgtl API', width: '40rem' do %>
+  <div class="p-4 space-y-4 text-sm text-gray-800">
+    <p>
+      <strong>i-dgtl (Direct API)</strong> — сервис для отправки SMS. Мы используем их REST API для отправки SMS и получения статусов доставки.
+      Официальная документация: <a href="https://api.docs.direct.i-dgtl.ru/" target="_blank" rel="noopener"><strong>api.docs.direct.i-dgtl.ru</strong></a>.
+    </p>
+
+    <p><strong>REST отправка SMS</strong></p>
+    <ul class="list-disc pl-5 space-y-1">
+      <li><strong>Base URL</strong>: <code>https://direct.i-dgtl.ru/api/v1</code>.</li>
+      <li><strong>Auth</strong>: Basic <code>Authorization: Basic {TOKEN_1}</code>.</li>
+      <li><strong>Send</strong>: <code>POST /message</code>, массив сообщений (1-1000), параметры <code>channelType: "SMS"</code>, <code>senderName</code>, <code>destination</code>, <code>content</code>, <code>externalMessageId</code>.</li>
+      <li><strong>Sender name</strong>: берётся из личного кабинета на странице <a href="https://direct.i-dgtl.ru/sender-names/sms" target="_blank" rel="noopener"><strong>direct.i-dgtl.ru/sender-names/sms</strong></a>.</li>
+    </ul>
+
+    <p><strong>Проверка статуса доставки</strong></p>
+    <ul class="list-disc pl-5 space-y-1">
+      <li>Статус проверяется через <code>GET /message/{message_uuid}</code> или по <code>externalMessageId</code>.</li>
+      <li>Возможные статусы: <code>sent</code>, <code>delivered</code>, <code>undelivered</code>.</li>
+    </ul>
+  </div>
+<% end %>
+
+

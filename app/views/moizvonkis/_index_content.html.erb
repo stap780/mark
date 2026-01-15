@@ -1,0 +1,14 @@
+<% if moizvonki %>
+  <div class="grid grid-cols-[1fr_1fr_1fr_150px] gap-4 p-4 font-medium text-gray-700">
+    <div>Domain</div>
+    <div>User (email)</div>
+    <div>API key</div>
+    <div></div>
+  </div>
+  <%= render "moizvonki", moizvonki: moizvonki, current_account: current_account %>
+<% else %>
+  <div class="text-sm text-gray-500 border rounded p-3">
+    Добавьте настройки для интеграции с Moizvonki, чтобы отправлять SMS из автоматизаций.
+  </div>
+<% end %>
+

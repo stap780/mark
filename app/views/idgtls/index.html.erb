@@ -1,7 +1,7 @@
 <div class="flex items-center justify-between mb-4">
   <div class="flex space-x-2 items-center">
-    <h1 class="text-xl font-semibold"><%= t('menu.mailganer') %></h1>
-    <%= link_to info_account_mailganers_path(current_account),
+    <h1 class="text-xl font-semibold"><%= t('menu.idgtl') %></h1>
+    <%= link_to info_account_idgtls_path(current_account),
           data: { turbo_frame: :offcanvas },
           class: "inline-flex items-center justify-center px-2 py-1 text-violet-600 hover:text-violet-800" do %>
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -11,15 +11,14 @@
       </svg>
     <% end %>
   </div>
-  <%= turbo_frame_tag :mailganers_actions do %>
-    <%= render "actions", mailganer: @mailganer %>
+  <%= turbo_frame_tag :idgtls_actions do %>
+    <%= render "actions", idgtl: @idgtl %>
   <% end %>
 </div>
 
-<%= turbo_stream_from [current_account, "mailganers"] %>
+<%= turbo_stream_from [current_account, "idgtls"] %>
 
-<%= turbo_frame_tag "mailganers", class: "bg-white rounded-lg shadow divide-y" do %>
-  <%= render "index_content", mailganer: @mailganer, current_account: current_account %>
+<%= turbo_frame_tag "idgtls", class: "bg-white rounded-lg shadow divide-y" do %>
+  <%= render "index_content", idgtl: @idgtl, current_account: current_account %>
 <% end %>
-
 

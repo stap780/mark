@@ -95,6 +95,24 @@ Rails.application.routes.draw do
         post :test_email
       end
     end
+    resources :idgtls do
+      collection do
+        get :info
+      end
+      member do
+        get :test_sms_form
+        post :test_sms
+      end
+    end
+    resources :moizvonkis do
+      collection do
+        get :info
+      end
+      member do
+        get :test_sms_form
+        post :test_sms
+      end
+    end
     resources :swatch_groups do
       member do
         get :preview
@@ -170,6 +188,9 @@ Rails.application.routes.draw do
         get :create_standard_scenarios_form
         post :create_standard_scenarios
       end
+      member do
+        patch :sort
+      end
       resources :automation_conditions, only: [:new, :create, :destroy]
       resources :automation_actions, only: [:new, :create, :destroy]
     end
@@ -197,6 +218,10 @@ Rails.application.routes.draw do
 
   # API routes for storefront (outside account scope)
   namespace :api do
+    namespace :webhooks do
+      post "moizvonki/:account_id/:secret", to: "moizvonkis#sms_message"
+    end
+
     scope "/accounts/:account_id" do
       resources :incases, only: [:create] do
         collection do

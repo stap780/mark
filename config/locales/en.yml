@@ -61,6 +61,8 @@ en:
     insales: "InSales"
     stock_check_schedule: "Stock Check"
     email_settings: "Email Settings"
+    idgtl: "i-dgtl"
+    moizvonki: "Moizvonki"
     users: "Users"
     status: "Status"
     automation: "Automation"
@@ -71,6 +73,40 @@ en:
   automation_messages:
     global_mailganer_limit_exceeded: "Global Mailganer configuration limit reached (%{limit} emails per month). Sent: %{count}. Limit will reset on %{reset_date}. Configure your own Mailganer in settings to remove this limitation."
     global_limit_warning: "%{remaining} of %{limit} emails remaining through global Mailganer configuration this month. Limit will reset on %{reset_date}. Configure your own Mailganer to remove this limitation."
+
+  idgtls:
+    new:
+      title: "Configure i-dgtl"
+      already_exists: "i-dgtl settings already exist"
+    edit:
+      title: "Edit i-dgtl Settings"
+    show:
+      title: "i-dgtl Settings"
+    test_sms:
+      label: "Test SMS"
+      title: "Send Test SMS via i-dgtl"
+      phone_label: "Recipient phone"
+      text_label: "Message"
+      error: "Failed to send test SMS"
+      success: "Test SMS sent"
+      no_settings: "i-dgtl settings are not configured for this account"
+
+  moizvonkis:
+    new:
+      title: "Configure Moizvonki"
+      already_exists: "Moizvonki settings already exist"
+    edit:
+      title: "Edit Moizvonki Settings"
+    show:
+      title: "Moizvonki Settings"
+    test_sms:
+      label: "Test SMS"
+      title: "Send Test SMS via Moizvonki"
+      phone_label: "Recipient phone"
+      text_label: "Message"
+      error: "Failed to send test SMS"
+      success: "Test SMS sent"
+      no_settings: "Moizvonki settings are not configured for this account"
   
   dashboard:
     status_ok: "OK"
@@ -225,6 +261,14 @@ en:
         user_name: "Username"
         user_password: "Password"
         tls: "Enable TLS"
+      idgtl:
+        token_1: "TOKEN_1"
+        sender_name: "Sender name"
+      moizvonki:
+        domain: "Domain"
+        user_name: "User (email)"
+        api_key: "API key"
+        webhook_secret: "Webhook secret"
       stock_check_schedule:
         recurrence: "Interval"
         time: "Time"
@@ -728,9 +772,33 @@ en:
       success: "Action added successfully."
     destroy:
       success: "Action deleted successfully."
-  automation_conditions:
-    destroy:
-      success: "Condition deleted"
+    kinds:
+      send_email: "Send email to client"
+      send_email_to_users: "Send email to users"
+      send_sms_idgtl: "Send SMS (i-dgtl)"
+      send_sms_moizvonki: "Send SMS (Moizvonki)"
+      change_status: "Change status"
+    automation_conditions:
+      destroy:
+        success: "Condition deleted"
+    idgtls:
+      new:
+        already_exists: "i-dgtl settings already exist"
+      create:
+        success: "i-dgtl settings created successfully"
+      update:
+        success: "i-dgtl settings updated successfully"
+      destroy:
+        success: "i-dgtl settings removed successfully"
+    moizvonkis:
+      new:
+        already_exists: "Moizvonki settings already exist"
+      create:
+        success: "Moizvonki settings created successfully"
+      update:
+        success: "Moizvonki settings updated successfully"
+      destroy:
+        success: "Moizvonki settings removed successfully"
 
   users:
     index:

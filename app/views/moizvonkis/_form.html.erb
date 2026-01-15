@@ -1,0 +1,19 @@
+<%= form_with(model: [current_account, moizvonki], class: "p-4") do |f| %>
+  <%= render "shared/errors", object: f.object %>
+  <div>
+    <%= f.label :domain, class: "block text-sm font-medium text-gray-700" %>
+    <%= f.text_field :domain, placeholder: "test (for https://test.moizvonki.ru)", class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-2 py-2" %>
+  </div>
+  <div>
+    <%= f.label :user_name, class: "block text-sm font-medium text-gray-700" %>
+    <%= f.text_field :user_name, placeholder: "user@mail.ru", class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-2 py-2" %>
+  </div>
+  <div>
+    <%= f.label :api_key, class: "block text-sm font-medium text-gray-700" %>
+    <%= f.text_field :api_key, placeholder: "api key", class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-2 py-2" %>
+  </div>
+  <div class="pt-2">
+    <%= f.submit t('save'), class: "inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+  </div>
+<% end %>
+
