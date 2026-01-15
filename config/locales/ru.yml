@@ -237,6 +237,7 @@ ru:
         logic_operator: "Логический оператор"
       automation_action:
         kind: "Тип"
+        value: "Параметры"
         settings: "Настройки"
         position: "Позиция"
       automation_condition:

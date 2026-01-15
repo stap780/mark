@@ -184,11 +184,14 @@ class AutomationRulesController < ApplicationController
     actions_attrs = params.dig(:automation_rule, :automation_actions_attributes)
     return unless actions_attrs.present?
 
+    Rails.logger.debug "process_actions_attributes: #{actions_attrs.inspect}"
+
     # Собираем все позиции существующих действий
     existing_positions = @automation_rule.automation_actions.pluck(:position).compact.map(&:to_i)
     max_position = existing_positions.any? ? existing_positions.max : 0
 
     actions_attrs.each do |key, attrs|
+      Rails.logger.debug "Processing action: key=#{key}, attrs=#{attrs.inspect}"
       next if attrs[:_destroy] == '1' || attrs[:kind].blank?
       
       kind = attrs[:kind]
@@ -213,11 +216,12 @@ class AutomationRulesController < ApplicationController
           default_value = default_value_for_action_kind(kind)
           attrs[:value] = default_value if default_value.present?
         end
-      else
-        # Если value пустое, устанавливаем первое допустимое значение
+      elsif attrs[:id].blank?
+        # Для новых действий устанавливаем первое допустимое значение, если value пустое
         default_value = default_value_for_action_kind(kind)
         attrs[:value] = default_value if default_value.present?
       end
+      # Для существующих действий с пустым value оставляем как есть - значение должно прийти из формы
     end
   end
 
@@ -229,6 +233,9 @@ class AutomationRulesController < ApplicationController
     when 'send_email', 'send_email_to_users'
       # Первый доступный шаблон email
       @automation_rule.account.message_templates.email.first&.id&.to_s
+    when 'send_sms_idgtl', 'send_sms_moizvonki'
+      # Первый доступный шаблон SMS
+      @automation_rule.account.message_templates.sms.first&.id&.to_s
     else
       nil
     end

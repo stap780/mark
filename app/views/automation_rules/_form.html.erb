@@ -51,7 +51,7 @@
         <div class="flex items-center justify-between">
           <label class="block text-sm font-medium text-gray-700">Условия:</label>
           <% path = automation_rule.new_record? ? new_account_automation_rule_automation_condition_path(current_account, automation_rule) : new_account_automation_rule_automation_condition_path(current_account, automation_rule) %>
-          <%= link_to "+ Добавить условие", path,data: { turbo_stream: true },class: "text-sm text-violet-600 hover:text-violet-800" %>
+          <%= link_to "+ Добавить условие", path,data: { turbo_stream: true }, class: "text-sm text-violet-600 hover:text-violet-800" %>
         </div>
         
         <%= turbo_frame_tag dom_id(current_account, dom_id(automation_rule, :automation_conditions)), class: "space-y-2" do %>
@@ -67,11 +67,9 @@
             <%= render "automation_conditions/automation_condition", automation_rule: automation_rule, automation_condition: condition, current_account: current_account %>
           <% end %>
           
-          <% if automation_rule.automation_conditions.empty? %>
-            <%= turbo_frame_tag dom_id(current_account, dom_id(@automation_rule, :automation_conditions_empty)) do %>
-              <div class="text-sm text-gray-500 border rounded p-3">Нет условий. Добавьте первое условие.</div>
-            <% end %>
-          <% end %>
+          <%= turbo_frame_tag dom_id(current_account, dom_id(@automation_rule, :automation_conditions_empty)) do %>
+            <div class="text-sm text-gray-500 border rounded p-3">Нет условий. Добавьте первое условие.</div>
+          <% end if automation_rule.automation_conditions.empty? %>
         <% end %>
         
       </div>
@@ -92,13 +90,11 @@
           <%= link_to "+ Добавить действие", path,data: { turbo_stream: true },class: "text-sm text-violet-600 hover:text-violet-800" %>
         </div>
 
-        <%= turbo_frame_tag dom_id(current_account, dom_id(automation_rule, :automation_actions)),
-              class: "space-y-2",
-              data: { controller: "nested-form" } do %>
+        <%= turbo_frame_tag dom_id(current_account, dom_id(automation_rule, :automation_actions)), class: "space-y-2" do %>
           <!-- Header row -->
           <div class="grid grid-cols-[2fr_2fr_50px] gap-4 p-2 border-b font-medium text-sm text-gray-700">
-            <div>Тип действия</div>
-            <div>Параметры</div>
+            <div>Тип</div>
+            <div>Значение</div>
             <div></div>
           </div>
           
@@ -106,11 +102,10 @@
             <%= render "automation_actions/automation_action", automation_rule: automation_rule, automation_action: action, current_account: current_account %>
           <% end %>
           
-          <% if automation_rule.automation_actions.empty? %>
-            <%= turbo_frame_tag dom_id(current_account, dom_id(@automation_rule, :automation_actions_empty)) do %>
-              <div class="text-sm text-gray-500 border rounded p-3">Нет действий. Добавьте первое действие.</div>
-            <% end %>
-          <% end %>
+          <%= turbo_frame_tag dom_id(current_account, dom_id(@automation_rule, :automation_actions_empty)) do %>
+            <div class="text-sm text-gray-500 border rounded p-3">Нет действий. Добавьте первое действие.</div>
+          <% end if automation_rule.automation_actions.empty? %>
+
         <% end %>
       </div>
     </div>

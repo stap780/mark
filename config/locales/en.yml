@@ -228,6 +228,7 @@ en:
         logic_operator: "Logic Operator"
       automation_action:
         kind: "Kind"
+        value: "Parameters"
         settings: "Settings"
         position: "Position"
       automation_condition:

@@ -6,7 +6,6 @@
     <% end %>
 
     <div class="grid grid-cols-[2fr_2fr_50px] gap-4 p-3 border rounded mb-2 bg-gray-50"
-         data-nested-form-item
          id="automation_action_<%= automation_action.persisted? ? automation_action.id : turbo_id_for(automation_action) %>">
       
       <!-- Kind select -->
@@ -15,14 +14,14 @@
             kind_options,
             { selected: current_kind, include_blank: false },
             { 
-              class: "w-full px-2 py-1 border rounded-md text-sm",
-              data: { action: "change->nested-form#updateActionKind" }
+              class: "w-full px-2 py-1 border rounded-md text-sm"
             } %>
       </div>
 
-      <!-- Conditional fields based on kind -->
+      <!-- Value field based on kind -->
       <div>
-        <div data-action-kind="send_email" style="<%= 'display:none' unless current_kind == 'send_email' %>">
+        <% case current_kind
+           when 'send_email', 'send_email_to_users' %>
           <%= ff.select :value,
               options_for_select(
                 current_account.message_templates.email.pluck(:title, :id),
@@ -32,21 +31,7 @@
               { 
                 class: "w-full px-2 py-1 border rounded-md text-sm"
               } %>
-        </div>
-
-        <div data-action-kind="send_email_to_users" style="<%= 'display:none' unless current_kind == 'send_email_to_users' %>">
-          <%= ff.select :value,
-              options_for_select(
-                current_account.message_templates.email.pluck(:title, :id),
-                automation_action.value
-              ),
-              { include_blank: "Выберите шаблон" },
-              {
-                class: "w-full px-2 py-1 border rounded-md text-sm"
-              } %>
-        </div>
-
-        <div data-action-kind="send_sms_idgtl" style="<%= 'display:none' unless current_kind == 'send_sms_idgtl' %>">
+        <% when 'send_sms_idgtl', 'send_sms_moizvonki' %>
           <%= ff.select :value,
               options_for_select(
                 current_account.message_templates.sms.pluck(:title, :id),
@@ -56,21 +41,7 @@
               {
                 class: "w-full px-2 py-1 border rounded-md text-sm"
               } %>
-        </div>
-
-        <div data-action-kind="send_sms_moizvonki" style="<%= 'display:none' unless current_kind == 'send_sms_moizvonki' %>">
-          <%= ff.select :value,
-              options_for_select(
-                current_account.message_templates.sms.pluck(:title, :id),
-                automation_action.value
-              ),
-              { include_blank: "Выберите шаблон SMS" },
-              {
-                class: "w-full px-2 py-1 border rounded-md text-sm"
-              } %>
-        </div>
-
-        <div data-action-kind="change_status" style="<%= 'display:none' unless current_kind == 'change_status' %>">
+        <% when 'change_status' %>
           <%= ff.select :value,
               options_for_select(
                 Incase.statuses.keys.map { |k| [t("automation_conditions.values.incase_status.#{k}", default: k.humanize), k] },
@@ -80,7 +51,7 @@
               { 
                 class: "w-full px-2 py-1 border rounded-md text-sm"
               } %>
-        </div>
+        <% end %>
         
         <%= ff.hidden_field :position, value: automation_action.position || automation_rule.automation_actions.count %>
       </div>
@@ -89,7 +60,7 @@
       <div class="flex items-center">
         <% path = automation_action.new_record? ? account_automation_action_path(current_account, id: turbo_id_for(automation_action)) : account_automation_rule_automation_action_path(current_account, automation_rule, automation_action) %>
         <%= link_to_delete path, data: { turbo_method: :delete, turbo_confirm: 'Удалить действие?' } %>
-        <%= ff.hidden_field :id if automation_action.persisted? %>
+        <%= ff.hidden_field :id %>
       </div>
     </div>
   <% end %>
