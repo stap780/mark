@@ -11,10 +11,8 @@ module SmsProviders
     def send_sms!(to:, text:)
       uri = URI.parse("https://#{@domain}/api/v1")
 
-      # По доке REST требуется Content-Type: application/json, но пример отправляет
-      # параметр request_data, содержащий JSON-строку.
-      # Делаем совместимый вариант: JSON body с request_data (string).
-      request_data = {
+      # По документации Moizvonki все поля должны быть на верхнем уровне JSON body
+      payload = {
         user_name: @user_name,
         api_key: @api_key,
         action: "calls.send_sms",
@@ -24,7 +22,7 @@ module SmsProviders
 
       req = Net::HTTP::Post.new(uri)
       req["Content-Type"] = "application/json"
-      req.body = { request_data: request_data.to_json }.to_json
+      req.body = payload.to_json
 
       res = http_for(uri).request(req)
       body = parse_json(res.body)
