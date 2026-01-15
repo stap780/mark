@@ -147,9 +147,24 @@ class Api::IncasesController < ApplicationController
       end
     end
     
-    # Если не найден, ищем по email/phone
+    # Если не найден, ищем по email/phone (только если значения не пустые)
     unless client
-      client = account.clients.where('email = ? OR phone = ?', email, phone).first
+      conditions = []
+      conditions_params = []
+      
+      if email.present?
+        conditions << 'email = ?'
+        conditions_params << email
+      end
+      
+      if phone.present?
+        conditions << 'phone = ?'
+        conditions_params << phone
+      end
+      
+      if conditions.any?
+        client = account.clients.where(conditions.join(' OR '), *conditions_params).first
+      end
     end
     
     # Если клиент не найден, создаем нового
@@ -159,6 +174,34 @@ class Api::IncasesController < ApplicationController
       client_attrs = { name: name, surname: client_params[:surname], email: email, phone: phone }
       client_attrs[:ya_client] = client_params[:ya_client_id] if client_params[:ya_client_id].present?
       client = account.clients.create!(client_attrs)
+    else
+      # Обновляем данные существующего клиента, если они отсутствуют или изменились
+      update_attrs = {}
+      
+      # Обновляем имя, если оно пустое или не задано
+      if client.name.blank? && client_params[:name].present?
+        update_attrs[:name] = client_params[:name]
+      end
+      
+      # Обновляем фамилию, если она пустая или не задана
+      if client.surname.blank? && client_params[:surname].present?
+        update_attrs[:surname] = client_params[:surname]
+      end
+      
+      # Обновляем email, если он пустой или не задан
+      if client.email.blank? && email.present?
+        update_attrs[:email] = email
+      end
+      
+      # Обновляем телефон, если он пустой или не задан
+      if client.phone.blank? && phone.present?
+        update_attrs[:phone] = phone
+      end
+      
+      # Обновляем клиента, если есть изменения
+      if update_attrs.any?
+        client.update!(update_attrs)
+      end
     end
     
     # Создаем varbind для связи с InSales, если его еще нет (для webhook InSales)

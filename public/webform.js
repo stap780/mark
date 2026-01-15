@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.2.9
+ * Версия: 1.3.0
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.2.9";
+      this.version = "1.3.0";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -721,6 +721,9 @@
         }
       });
 
+      // Применяем маску для полей телефона
+      this.applyPhoneMasks(overlay);
+
       // Обработка submit формы
       const form = overlay.querySelector('.twc-webform-preview-form');
       if (form) {
@@ -731,6 +734,86 @@
           return false;
         });
       }
+    }
+
+    /**
+     * Применяет маску ввода для полей телефона в формате +7 (___) ___-__-__
+     */
+    applyPhoneMasks(container) {
+      const phoneInputs = container.querySelectorAll('input[data-phone-mask]');
+      phoneInputs.forEach(input => {
+        // Устанавливаем начальное значение, если поле пустое
+        if (!input.value) {
+          input.value = '+7 (';
+        }
+
+        // Обработчик ввода
+        input.addEventListener('input', (e) => {
+          let value = e.target.value.replace(/\D/g, ''); // Удаляем все нецифровые символы
+          
+          // Если начинается не с 7 или 8, добавляем 7
+          if (value.length > 0 && value[0] !== '7' && value[0] !== '8') {
+            value = '7' + value;
+          }
+          
+          // Ограничиваем до 11 цифр (7 + 10 цифр номера)
+          if (value.length > 11) {
+            value = value.substring(0, 11);
+          }
+          
+          // Форматируем в маску +7 (___) ___-__-__
+          let formatted = '+7';
+          if (value.length > 1) {
+            formatted += ' (' + value.substring(1, 4);
+            if (value.length > 4) {
+              formatted += ') ' + value.substring(4, 7);
+              if (value.length > 7) {
+                formatted += '-' + value.substring(7, 9);
+                if (value.length > 9) {
+                  formatted += '-' + value.substring(9, 11);
+                }
+              }
+            } else if (value.length > 1) {
+              formatted += ')';
+            }
+          }
+          
+          e.target.value = formatted;
+        });
+
+        // Обработчик удаления (backspace)
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && e.target.value.length <= 4) {
+            e.preventDefault();
+            e.target.value = '+7 (';
+          }
+        });
+
+        // Обработчик фокуса
+        input.addEventListener('focus', (e) => {
+          if (e.target.value === '' || e.target.value === '+7 (') {
+            e.target.value = '+7 (';
+            // Устанавливаем курсор в конец
+            setTimeout(() => {
+              e.target.setSelectionRange(e.target.value.length, e.target.value.length);
+            }, 0);
+          }
+        });
+
+        // Обработчик потери фокуса - валидация
+        input.addEventListener('blur', (e) => {
+          const value = e.target.value.replace(/\D/g, '');
+          // Если поле не заполнено полностью и не обязательное, очищаем
+          if (value.length < 11 && !e.target.hasAttribute('required')) {
+            e.target.value = '';
+          } else if (value.length < 11 && e.target.hasAttribute('required')) {
+            // Если обязательное поле не заполнено, оставляем маску
+            if (e.target.value.length < 4) {
+              e.target.value = '+7 (';
+            }
+          }
+        });
+      });
     }
 
     handleFormSubmit(e, webform, eventData, overlay) {
@@ -747,10 +830,69 @@
       }
 
       const yaClientId = this.getYandexClientId();
+      
+      // Обрабатываем телефон: ищем все поля типа tel и используем первое заполненное
+      let phoneValue = '';
+      const phoneInputs = form.querySelectorAll('input[type="tel"]');
+      
+      // Сначала проверяем стандартное поле phone
+      let phoneField = formData.get('phone');
+      if (phoneField && phoneField.trim()) {
+        phoneValue = phoneField;
+      } else {
+        // Если phone пустое, ищем другие поля типа tel
+        for (const [key, value] of formData.entries()) {
+          const input = form.querySelector(`input[name="${key}"]`);
+          if (input && input.type === 'tel' && value && value.trim()) {
+            phoneValue = value;
+            break; // Используем первое найденное заполненное поле
+          }
+        }
+      }
+      
+      // Очищаем телефон от маски и форматируем
+      if (phoneValue) {
+        const digitsOnly = phoneValue.replace(/\D/g, '');
+        if (digitsOnly.length === 11 && digitsOnly[0] === '7') {
+          phoneValue = '+7' + digitsOnly.substring(1);
+        } else if (digitsOnly.length === 11 && digitsOnly[0] === '8') {
+          // Если номер начинается с 8, заменяем на +7
+          phoneValue = '+7' + digitsOnly.substring(1);
+        } else if (digitsOnly.length === 10) {
+          phoneValue = '+7' + digitsOnly;
+        } else if (digitsOnly.length > 0) {
+          // Для других случаев оставляем как есть, но добавляем + если его нет
+          phoneValue = phoneValue.trim();
+          if (!phoneValue.startsWith('+')) {
+            phoneValue = '+' + digitsOnly;
+          }
+        } else {
+          phoneValue = '';
+        }
+      }
+      
+      // Обрабатываем email: ищем все поля типа email и используем первое заполненное
+      let emailValue = '';
+      // Сначала проверяем стандартное поле email
+      let emailField = formData.get('email');
+      if (emailField && emailField.trim()) {
+        emailValue = emailField.trim();
+      } else {
+        // Если email пустое, ищем другие поля типа email
+        const emailInputs = form.querySelectorAll('input[type="email"]');
+        for (const input of emailInputs) {
+          const value = formData.get(input.name);
+          if (value && value.trim()) {
+            emailValue = value.trim();
+            break; // Используем первое найденное заполненное поле
+          }
+        }
+      }
+      
       const clientData = {
         name: formData.get('name') || '',
-        email: formData.get('email') || '',
-        phone: formData.get('phone') || ''
+        email: emailValue,
+        phone: phoneValue
       };
 
       // Передаём honeypot-поле на сервер (для дополнительной серверной проверки).
@@ -764,23 +906,86 @@
       // Собираем все пользовательские поля (кроме служебных)
       const customFields = {};
       const excludedFields = ['name', 'email', 'phone', 'website']; // служебные поля
+      
+      // Исключаем поле email из customFields, если оно было использовано для clientData.email
+      if (emailValue && emailValue.trim()) {
+        // Находим, какое поле было использовано для email
+        for (const [key, value] of formData.entries()) {
+          const input = form.querySelector(`input[name="${key}"]`);
+          if (input && input.type === 'email' && value && value.trim() === emailValue) {
+            excludedFields.push(key); // Исключаем это поле из customFields
+            break;
+          }
+        }
+      }
+      
+      // Исключаем поле телефона из customFields, если оно было использовано для clientData.phone
+      if (phoneValue && phoneValue.trim()) {
+        // Находим, какое поле было использовано для phone
+        const phoneDigitsOnly = phoneValue.replace(/\D/g, '');
+        for (const [key, value] of formData.entries()) {
+          const input = form.querySelector(`input[name="${key}"]`);
+          if (input && input.type === 'tel' && value && value.trim()) {
+            const digitsOnly = value.replace(/\D/g, '');
+            // Сравниваем номера: учитываем, что номер может начинаться с 7 или 8
+            const normalizedDigits = digitsOnly.length === 11 && digitsOnly[0] === '8' 
+              ? '7' + digitsOnly.substring(1) 
+              : digitsOnly;
+            const normalizedPhoneDigits = phoneDigitsOnly.length === 11 && phoneDigitsOnly[0] === '8'
+              ? '7' + phoneDigitsOnly.substring(1)
+              : phoneDigitsOnly;
+            
+            // Сравниваем последние 10 цифр (без кода страны)
+            const last10Digits = normalizedDigits.length >= 10 ? normalizedDigits.slice(-10) : normalizedDigits;
+            const last10PhoneDigits = normalizedPhoneDigits.length >= 10 ? normalizedPhoneDigits.slice(-10) : normalizedPhoneDigits;
+            
+            if (normalizedDigits === normalizedPhoneDigits || last10Digits === last10PhoneDigits) {
+              excludedFields.push(key); // Исключаем это поле из customFields
+              break;
+            }
+          }
+        }
+      }
 
       for (const [key, value] of formData.entries()) {
         if (!excludedFields.includes(key) && value && value.trim() !== '') {
-          customFields[key] = value.trim();
+          // Если это поле телефона (type="tel"), очищаем от маски перед сохранением
+          const input = form.querySelector(`input[name="${key}"]`);
+          if (input && input.type === 'tel') {
+            // Оставляем только цифры и добавляем +7 если нужно
+            let cleanValue = value.replace(/\D/g, '');
+            if (cleanValue.length === 11 && cleanValue[0] === '7') {
+              customFields[key] = '+7' + cleanValue.substring(1);
+            } else if (cleanValue.length === 10) {
+              customFields[key] = '+7' + cleanValue;
+            } else if (cleanValue.length === 11 && cleanValue[0] === '8') {
+              // Если номер начинается с 8, заменяем на +7
+              customFields[key] = '+7' + cleanValue.substring(1);
+            } else {
+              customFields[key] = cleanValue ? '+' + cleanValue : value.trim();
+            }
+          } else {
+            customFields[key] = value.trim();
+          }
         }
       }
 
       // Валидация
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const phonePattern = /^\+?[1-9]\d{1,11}$/;
+      // Паттерн для телефона: +7 (___) ___-__-__ или +7 (XXX) XXX-XX-XX где X - цифра
+      const phonePattern = /^\+7\s?\(\d{3}\)\s?\d{3}-\d{2}-\d{2}$/;
+      // Альтернативный паттерн для телефонов без маски (старые формы)
+      const phonePatternSimple = /^\+?[1-9]\d{10,11}$/;
 
       // Находим общее поле для ошибок
       const errorMessage = overlay.querySelector('.webform-error-message');
 
-      // Находим поля email и phone по их name атрибутам
-      const emailInput = form.querySelector('input[name="email"]');
+      // Находим поля email и phone по их name атрибутам и типу
+      const emailInput = form.querySelector('input[name="email"]') || form.querySelector('input[type="email"]');
       const phoneInput = form.querySelector('input[name="phone"]');
+      // Также находим все поля типа tel и email (могут иметь разные имена)
+      const phoneInputs = form.querySelectorAll('input[type="tel"]');
+      const emailInputs = form.querySelectorAll('input[type="email"]');
 
       // Очищаем предыдущие ошибки
       if (errorMessage) {
@@ -788,52 +993,84 @@
         errorMessage.style.display = 'none';
       }
 
-      // Валидация email
-      if (emailInput) {
+      // Валидация email (проверяем все поля типа email)
+      let emailValidationError = false;
+      emailInputs.forEach(emailInput => {
         const isRequired = emailInput.hasAttribute('required');
-        const emailValue = clientData.email.trim();
+        const emailFieldValue = emailInput.value.trim();
         
         // Проверка обязательности
-        if (isRequired && !emailValue) {
-          if (errorMessage) {
-            errorMessage.textContent = "Поле email обязательно для заполнения";
+        if (isRequired && !emailFieldValue) {
+          if (errorMessage && !emailValidationError) {
+            errorMessage.textContent = `Поле "${emailInput.placeholder || emailInput.name}" обязательно для заполнения`;
             errorMessage.style.display = 'block';
           }
-          return false;
+          emailInput.style.borderColor = 'red';
+          emailValidationError = true;
+          return;
         }
         
         // Проверка формата (только если поле заполнено)
-        if (emailValue && !emailPattern.test(emailValue)) {
-          if (errorMessage) {
-            errorMessage.textContent = "Некорректный формат адреса электронной почты";
+        if (emailFieldValue && !emailPattern.test(emailFieldValue)) {
+          if (errorMessage && !emailValidationError) {
+            errorMessage.textContent = `Некорректный формат адреса электронной почты`;
             errorMessage.style.display = 'block';
           }
-          return false;
+          emailInput.style.borderColor = 'red';
+          emailValidationError = true;
+          return;
+        } else {
+          // Убираем красную рамку, если валидация прошла
+          emailInput.style.borderColor = '';
         }
+      });
+      
+      if (emailValidationError) {
+        return false;
       }
 
-      // Валидация phone
-      if (phoneInput) {
+      // Валидация phone (проверяем все поля типа tel)
+      let phoneValidationError = false;
+      phoneInputs.forEach(phoneInput => {
         const isRequired = phoneInput.hasAttribute('required');
-        const phoneValue = clientData.phone.trim();
+        const phoneValue = phoneInput.value.trim();
+        const phoneName = phoneInput.name;
         
         // Проверка обязательности
         if (isRequired && !phoneValue) {
-          if (errorMessage) {
-            errorMessage.textContent = "Поле телефона обязательно для заполнения";
+          if (errorMessage && !phoneValidationError) {
+            errorMessage.textContent = `Поле "${phoneInput.placeholder || phoneName}" обязательно для заполнения`;
             errorMessage.style.display = 'block';
           }
-          return false;
+          phoneInput.style.borderColor = 'red';
+          phoneValidationError = true;
+          return;
         }
         
         // Проверка формата (только если поле заполнено)
-        if (phoneValue && !phonePattern.test(phoneValue)) {
-          if (errorMessage) {
-            errorMessage.textContent = "Некорректный формат телефона";
-            errorMessage.style.display = 'block';
+        if (phoneValue) {
+          // Проверяем формат с маской +7 (___) ___-__-__
+          const digitsOnly = phoneValue.replace(/\D/g, '');
+          const isValidFormat = phonePattern.test(phoneValue) || phonePatternSimple.test(digitsOnly);
+          const isValidLength = digitsOnly.length === 11 && digitsOnly[0] === '7';
+          
+          if (!isValidFormat && !isValidLength) {
+            if (errorMessage && !phoneValidationError) {
+              errorMessage.textContent = `Некорректный формат телефона. Ожидается формат: +7 (___) ___-__-__`;
+              errorMessage.style.display = 'block';
+            }
+            phoneInput.style.borderColor = 'red';
+            phoneValidationError = true;
+            return;
+          } else {
+            // Убираем красную рамку, если валидация прошла
+            phoneInput.style.borderColor = '';
           }
-          return false;
         }
+      });
+      
+      if (phoneValidationError) {
+        return false;
       }
 
       // Формирование items
@@ -1022,11 +1259,12 @@
             <input type="number" name="${field.name}" placeholder="${placeholder}" ${requiredAttr} style="${styleString}" />
           `;
         } else if (field.type === 'phone') {
-          // Для типа 'phone' используем input type="tel"
-          const placeholder = fieldSettings.placeholder || field.label;
+          // Для типа 'phone' используем input type="tel" с маской ввода
+          const placeholder = fieldSettings.placeholder || field.label || '+7 (___) ___-__-__';
           const requiredAttr = field.required ? 'required' : '';
+          const fieldId = `phone_${field.name}_${Date.now()}`;
           fieldsHTML += `
-            <input type="tel" name="${field.name}" placeholder="${placeholder}" ${requiredAttr} style="${styleString}" />
+            <input type="tel" id="${fieldId}" name="${field.name}" placeholder="${placeholder}" ${requiredAttr} style="${styleString}" data-phone-mask />
           `;
         } else if (field.type === 'paragraph') {
           // Для типа 'paragraph' используем div, а не input
