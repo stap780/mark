@@ -76,7 +76,7 @@ module TelegramProviders
       if Rails.env.development?
         'http://localhost:8000'
       else
-        'http://mark-telegram-service:8000'
+        'http://mark-telegram_service:8000'
       end
     end
 
