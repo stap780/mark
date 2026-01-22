@@ -1,9 +1,9 @@
 require "mailganer_client"
 
 MailganerClient.configure do |config|
-    # config.api_key = Rails.application.credentials.dig(:mailganer, :api_key)
-    # config.smtp_login = Rails.application.credentials.dig(:mailganer, :smtp_login)
-    # config.api_key_web_portal = Rails.application.credentials.dig(:mailganer, :api_key_web_portal)
+    config.api_key = Rails.application.credentials.dig(:mailganer, :api_key)
+    config.smtp_login = Rails.application.credentials.dig(:mailganer, :smtp_login)
+    config.api_key_web_portal = Rails.application.credentials.dig(:mailganer, :api_key_web_portal)
 end
 
 # Патч для отключения проверки SSL (только для development)
