@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_15_094200) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_16_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -150,6 +150,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_15_094200) do
     t.string "ya_client"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "telegram_chat_id"
+    t.string "telegram_username"
     t.index ["account_id"], name: "index_clients_on_account_id"
   end
 
@@ -292,6 +294,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_15_094200) do
     t.string "api_key_web_portal", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "from_email"
+    t.string "test_subject"
     t.index ["account_id"], name: "index_mailganers_on_account_id"
   end
 
@@ -421,6 +425,18 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_15_094200) do
     t.index ["status"], name: "index_swatch_groups_on_status"
   end
 
+  create_table "telegram_setups", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "bot_token"
+    t.string "personal_phone"
+    t.text "personal_session"
+    t.boolean "personal_authorized", default: false, null: false
+    t.string "webhook_secret"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_telegram_setups_on_account_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email_address", null: false
     t.string "password_digest", null: false
@@ -490,7 +506,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_15_094200) do
     t.string "cookie_name"
     t.integer "show_times"
     t.index ["account_id", "kind", "status"], name: "index_webforms_on_account_id_and_kind_and_status"
-    t.index ["account_id", "kind"], name: "index_webforms_on_account_kind_singleton", unique: true, where: "((kind)::text = ANY (ARRAY[('order'::character varying)::text, ('notify'::character varying)::text, ('preorder'::character varying)::text, ('abandoned_cart'::character varying)::text]))"
+    t.index ["account_id", "kind"], name: "index_webforms_on_account_kind_singleton", unique: true, where: "((kind)::text = ANY ((ARRAY['order'::character varying, 'notify'::character varying, 'preorder'::character varying, 'abandoned_cart'::character varying])::text[]))"
     t.index ["account_id"], name: "index_webforms_on_account_id"
   end
 
@@ -535,6 +551,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_15_094200) do
   add_foreign_key "swatch_group_products", "products"
   add_foreign_key "swatch_group_products", "swatch_groups"
   add_foreign_key "swatch_groups", "accounts"
+  add_foreign_key "telegram_setups", "accounts"
   add_foreign_key "variants", "products"
   add_foreign_key "webform_fields", "webforms"
   add_foreign_key "webforms", "accounts"

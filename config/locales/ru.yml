@@ -63,6 +63,7 @@ ru:
     email_settings: "Настройки Email"
     idgtl: "I-dgtl"
     moizvonki: "Moizvonki"
+    telegram: "Telegram"
     users: "Пользователи"
     status: "Статус"
     automation: "Автоматизация"
@@ -136,6 +137,54 @@ ru:
       error: "Ошибка при отправке тестового SMS"
       success: "Тестовое SMS отправлено"
       no_settings: "Настройки Moizvonki не настроены для этого аккаунта"
+
+  telegram_setups:
+    new:
+      title: "Настройка Telegram"
+      already_exists: "Настройки Telegram уже существуют"
+    create:
+      success: "Настройки Telegram успешно сохранены"
+    edit:
+      title: "Редактировать настройки Telegram"
+    update:
+      success: "Настройки Telegram успешно обновлены"
+    show:
+      title: "Настройки Telegram"
+    destroy:
+      success: "Настройки Telegram успешно удалены"
+    authorize_personal:
+      label: "Авторизовать личный аккаунт"
+      title: "Авторизация личного аккаунта Telegram"
+      phone_label: "Номер телефона"
+      code_label: "Код из Telegram"
+      password_label: "Пароль (если включена 2FA)"
+      submit: "Авторизовать"
+      send_code: "Отправить код"
+      code_sent: "Код отправлен в Telegram. Введите код для авторизации."
+      send_code_error: "Ошибка отправки кода"
+      phone_code_hash_missing: "Код не был отправлен. Пожалуйста, сначала отправьте код."
+      new_code_sent: "Telegram отправил новый код. Пожалуйста, введите новый код из Telegram."
+      new_code_requested: "Запрошен новый код. Пожалуйста, введите новый код из Telegram."
+      failed_to_request_code: "Не удалось запросить новый код. Попробуйте еще раз."
+      success: "Личный аккаунт успешно авторизован"
+      error: "Ошибка авторизации"
+      credentials_missing: "api_id и api_hash не настроены в credentials"
+    verify_code:
+      success: "Личный аккаунт успешно авторизован"
+      error: "Ошибка авторизации"
+    test_message:
+      label: "Тестовое сообщение"
+      title: "Отправить тестовое сообщение"
+      recipient_label: "Получатель"
+      text_label: "Текст сообщения"
+      error: "Ошибка при отправке тестового сообщения"
+      success: "Тестовое сообщение отправлено"
+      no_settings: "Настройки Telegram не настроены для этого аккаунта"
+    set_webhook:
+      label: "Установить webhook"
+      confirm: "Установить webhook для бота?"
+      webhook_set: "Webhook установлен"
+      webhook_error: "Ошибка установки webhook"
   
   dashboard:
     status_ok: "OK"
@@ -207,6 +256,8 @@ ru:
         email: "Email"
         phone: "Телефон"
         ya_client: "Я.Клиент"
+        telegram_chat_id: "Telegram Chat ID"
+        telegram_username: "Telegram Username"
       message_template:
         title: "Название"
         channel: "Канал"
@@ -308,6 +359,12 @@ ru:
         user_name: "Пользователь (email)"
         api_key: "API ключ"
         webhook_secret: "Webhook секрет"
+      telegram_setup:
+        bot_token: "Bot Token"
+        personal_phone: "Номер телефона"
+        personal_session: "Сессия"
+        personal_authorized: "Авторизован"
+        webhook_secret: "Webhook Secret"
       stock_check_schedule:
         recurrence: "Интервал"
         time: "Время"
@@ -1011,6 +1068,7 @@ ru:
       send_email_to_users: "Отправить email пользователям"
       send_sms_idgtl: "Отправить SMS (i-dgtl)"
       send_sms_moizvonki: "Отправить SMS (Moizvonki)"
+      send_telegram: "Отправить Telegram"
       change_status: "Изменить статус"
   automation_conditions:
     select_field: "Выберите поле"

@@ -136,6 +136,19 @@ accessories:
         - POSTGRES_PASSWORD
         - S3_ACCESS_KEY_ID
         - S3_SECRET_ACCESS_KEY
+  telegram_service:
+    image: panaet780/telegram-microservice
+    host: 185.247.185.69
+    port: "127.0.0.1:8001:8000"  # Внутренний порт (localhost:8001 -> container:8000)
+    env:
+      clear:
+        LOG_LEVEL: info
+        RAILS_CALLBACK_URL: http://mark-web:3000/api/telegram_webhooks/incoming_message
+      secret:
+        - TELEGRAM_API_ID
+        - TELEGRAM_API_HASH
+        - DATABASE_URL
+        - RAILS_CALLBACK_SECRET
 #   redis:
 #     image: redis:7.0
 #     host: 192.168.0.2

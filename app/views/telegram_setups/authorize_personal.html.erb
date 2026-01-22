@@ -1,0 +1,48 @@
+<%= render 'shared/offcanvas_inner', title: t('telegram_setups.authorize_personal.title', default: 'Авторизация личного аккаунта Telegram'), width: '30rem' do %>
+  <% if local_assigns[:phone_code_hash].present? && local_assigns[:phone].present? %>
+    <%# Шаг 2: Ввод кода после отправки %>
+    <%= form_with url: verify_code_account_telegram_setup_path(current_account, @telegram_setup), method: :post, data: { turbo_stream: true }, class: "space-y-4" do |f| %>
+      <div class="mb-4 p-3 bg-blue-50 rounded-md">
+        <p class="text-sm text-blue-800">
+          Код отправлен на номер: <strong><%= local_assigns[:phone] %></strong>
+        </p>
+        <%= link_to "Начать заново", authorize_personal_account_telegram_setup_path(current_account, @telegram_setup, reset: true), 
+            method: :get,
+            data: { turbo_stream: true },
+            class: "text-xs text-blue-600 hover:text-blue-800 underline mt-2 inline-block" %>
+      </div>
+      <%= f.hidden_field :phone, value: local_assigns[:phone] %>
+      <%= f.hidden_field :phone_code_hash, value: local_assigns[:phone_code_hash] %>
+      <div>
+        <%= f.label :code, t('telegram_setups.authorize_personal.code_label', default: 'Код из Telegram'), class: "block text-sm font-medium text-gray-700" %>
+        <%= f.text_field :code, placeholder: "12345", required: true, value: nil, autocomplete: "off", class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-2 py-2" %>
+      </div>
+      <div>
+        <%= f.label :password, t('telegram_setups.authorize_personal.password_label', default: 'Пароль (если включена 2FA)'), class: "block text-sm font-medium text-gray-700" %>
+        <%= f.password_field :password, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-2 py-2" %>
+        <p class="mt-2 text-xs text-gray-500">
+          Введите пароль двухфакторной аутентификации, если она включена
+        </p>
+      </div>
+      <div class="flex justify-end space-x-2">
+        <button type="button" class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200" data-action="offcanvas#close"><%= t('cancel') %></button>
+        <%= f.submit t('telegram_setups.authorize_personal.submit'), class: "inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700" %>
+      </div>
+    <% end %>
+  <% else %>
+    <%# Шаг 1: Ввод номера телефона %>
+    <%= form_with url: authorize_personal_account_telegram_setup_path(current_account, @telegram_setup), method: :get, data: { turbo_stream: true }, class: "space-y-4", id: 'step-1-auth' do |f| %>
+      <div>
+        <%= f.label :phone, t('telegram_setups.authorize_personal.phone_label', default: 'Номер телефона'), class: "block text-sm font-medium text-gray-700" %>
+        <%= f.text_field :phone, placeholder: "+79991234567", required: true, value: nil, autocomplete: "off", class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-2 py-2" %>
+        <p class="mt-2 text-xs text-gray-500">
+          Введите номер телефона, привязанный к вашему Telegram аккаунту
+        </p>
+      </div>
+      <div class="flex justify-end space-x-2">
+        <button type="button" class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200" data-action="offcanvas#close"><%= t('cancel') %></button>
+        <%= f.submit t('telegram_setups.authorize_personal.send_code'), class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

@@ -16,6 +16,8 @@ module Automation
         send_sms_idgtl
       when 'send_sms_moizvonki'
         send_sms_moizvonki
+      when 'send_telegram'
+        send_telegram
       when 'change_status'
         change_status
       else
@@ -331,6 +333,72 @@ module Automation
         # Отправляем email через Mailganer
         send_email_via_mailganer(message, user.email_address, rendered_subject, rendered_content)
       end
+    end
+
+    def send_telegram
+      template_id = @action.template_id
+      template = @account.message_templates.find_by(id: template_id)
+      return unless template
+
+      recipient = @context['client'] || @context[:client]
+      return unless recipient
+
+      # Проверяем, что у клиента есть telegram_chat_id или telegram_username или phone
+      unless recipient.telegram_chat_id.present? || recipient.telegram_username.present? || recipient.phone.present?
+        Rails.logger.warn "Client ##{recipient.id} has no Telegram contact information"
+        return
+      end
+
+      incase = @context['incase'] || @context[:incase]
+      variants = @context['variants'] || []
+      variant = @context['variant'] || @context[:variant]
+      product = @context['product'] || @context[:product]
+      client_incases = @context['incases'] || @context[:incases]
+
+      webform = @context['webform'] || incase&.webform
+
+      liquid_context = Automation::LiquidContextBuilder.build(
+        incase: incase,
+        client: recipient,
+        client_incases: client_incases,
+        webform: webform,
+        variants: variants,
+        variant: variant,
+        product: product
+      )
+
+      rendered_content = render_liquid(template.content, liquid_context)
+
+      message = @account.automation_messages.create!(
+        automation_rule: @action.automation_rule,
+        automation_action: @action,
+        client: recipient,
+        incase: incase,
+        channel: 'telegram',
+        status: 'pending',
+        content: rendered_content
+      )
+
+      sender = TelegramProviders::MessageSender.new(account: @account)
+      result = sender.send(client: recipient, text: rendered_content)
+
+      if result[:ok]
+        message.update!(
+          status: 'sent',
+          sent_at: Time.current,
+          message_id: result[:message_id].to_s,
+          provider: result[:channel]
+        )
+      else
+        message.update!(
+          status: 'failed',
+          error_message: result[:error] || "Unknown error"
+        )
+        Rails.logger.error "Failed to send automation telegram: #{result[:error]}"
+      end
+    rescue => e
+      message&.update!(status: 'failed', error_message: e.message.to_s)
+      Rails.logger.error "Failed to send automation telegram: #{e.message}"
     end
 
     def change_status

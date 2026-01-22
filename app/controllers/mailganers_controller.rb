@@ -37,7 +37,7 @@ class MailganersController < ApplicationController
               locals: { mailganer: @mailganer }
             ),
             turbo_stream.update(
-              "mailganers",
+              dom_id(current_account, "mailganers"),
               partial: "mailganers/index_content",
               locals: { mailganer: @mailganer, current_account: current_account }
             )
@@ -65,7 +65,7 @@ class MailganersController < ApplicationController
               locals: { mailganer: @mailganer }
             ),
             turbo_stream.update(
-              "mailganers",
+              dom_id(current_account, "mailganers"),
               partial: "mailganers/index_content",
               locals: { mailganer: @mailganer, current_account: current_account }
             )
@@ -88,7 +88,7 @@ class MailganersController < ApplicationController
         render turbo_stream: turbo_close_offcanvas_flash + [
           turbo_stream.update(:mailganers_actions, partial: "mailganers/actions"),
           turbo_stream.update(
-            "mailganers",
+            dom_id(current_account, "mailganers"),
             partial: "mailganers/index_content",
             locals: { mailganer: nil, current_account: current_account }
           )

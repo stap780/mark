@@ -1,0 +1,16 @@
+<%= turbo_frame_tag dom_id(current_account, "actions") do %>
+  <% if telegram_setup.present? %>
+    <% unless telegram_setup.personal_authorized? %>
+      <%= link_to t('telegram_setups.authorize_personal_label', default: 'Авторизовать личный аккаунт'),
+            authorize_personal_account_telegram_setup_path(current_account, telegram_setup),
+            data: { turbo_frame: 'offcanvas' },
+            class: "inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm" %>
+    <% end %>
+    <%= link_to t('telegram_setups.test_message_label', default: 'Тестовое сообщение'),
+          test_message_form_account_telegram_setup_path(current_account, telegram_setup),
+          data: { turbo_frame: 'offcanvas' },
+          class: "inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm" %>
+  <% else %>
+    <%= link_to_new new_account_telegram_setup_path(current_account), data: { turbo_frame: :offcanvas, turbo_prefetch: false } %>
+  <% end %>
+<% end %>

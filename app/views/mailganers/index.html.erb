@@ -18,7 +18,7 @@
 
 <%= turbo_stream_from [current_account, "mailganers"] %>
 
-<%= turbo_frame_tag "mailganers", class: "bg-white rounded-lg shadow divide-y" do %>
+<%= turbo_frame_tag dom_id(current_account, "mailganers"), class: "bg-white rounded-lg shadow divide-y" do %>
   <%= render "index_content", mailganer: @mailganer, current_account: current_account %>
 <% end %>
 

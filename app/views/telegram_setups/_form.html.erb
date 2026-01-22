@@ -1,0 +1,15 @@
+<%= form_with(model: [current_account, telegram_setup], class: "p-4") do |f| %>
+  <div class="space-y-4">
+    <%= render "shared/errors", object: f.object %>
+    <div>
+      <%= f.label :bot_token, t('activerecord.attributes.telegram_setup.bot_token', default: 'Bot Token'), class: "block text-sm font-medium text-gray-700" %>
+      <%= f.text_field :bot_token, placeholder: "123456:ABC-DEF...", class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-2 py-2" %>
+      <p class="mt-2 text-xs text-gray-500">
+        Получите токен у @BotFather в Telegram
+      </p>
+    </div>
+    <div class="pt-2">
+      <%= f.submit t('save'), class: "inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    </div>
+  </div>
+<% end %>

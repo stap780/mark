@@ -60,6 +60,15 @@ gem 'receipts'
 
 gem "mailganer-client"
 
+# HTTP client for microservice communication
+gem "faraday"
+
+# Telegram integration
+gem 'telegram-bot-ruby', '~> 2.1'  # для Bot API
+# Личный аккаунт теперь обрабатывается через Python микросервис (Telethon)
+# Старый гем telegram-mtproto-ruby больше не используется
+
+
 # Ruby 3.4+: csv is no longer a default gem
 gem "csv"
 

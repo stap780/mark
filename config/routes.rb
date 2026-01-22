@@ -113,6 +113,14 @@ Rails.application.routes.draw do
         post :test_sms
       end
     end
+    resources :telegram_setups do
+      member do
+        get :authorize_personal
+        post :verify_code
+        get :test_message_form
+        post :test_message
+      end
+    end
     resources :swatch_groups do
       member do
         get :preview
@@ -220,6 +228,11 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :webhooks do
       post "moizvonki/:account_id/:secret", to: "moizvonkis#sms_message"
+      post "telegram/:account_id/:secret", to: "telegrams#update"
+    end
+    
+    namespace :telegram_webhooks do
+      post 'incoming_message', to: 'telegram_webhooks#incoming_message'
     end
 
     scope "/accounts/:account_id" do

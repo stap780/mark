@@ -1,0 +1,21 @@
+<div class="flex items-center justify-between mb-4">
+  <div class="flex space-x-2 items-center">
+    <h1 class="text-xl font-semibold"><%= t('menu.telegram') %></h1>
+  </div>
+  <%= render "actions", telegram_setup: @telegram_setup %>
+</div>
+
+<%= turbo_stream_from [current_account, "telegram_setups"] %>
+  <div class="text-sm text-gray-500 border rounded p-3">
+    Добавьте настройки для интеграции с Telegram. <br>Это позволит вам отправлять сообщения клиентам через бота или личный аккаунт.
+  </div>
+<%= turbo_frame_tag dom_id(current_account, "telegram_setups"), class: "bg-white rounded-lg shadow divide-y" do %>
+  <div class="grid grid-cols-[1fr_1fr_150px] gap-4 p-4 font-medium text-gray-700">
+    <div>Bot Token</div>
+    <div>Personal Account</div>
+    <div></div>
+  </div>
+    <% unless @telegram_setup.blank? %>
+    <%= render "telegram_setup", telegram_setup: @telegram_setup, current_account: current_account %>
+  <% end %>
+<% end %>

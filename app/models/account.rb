@@ -18,6 +18,7 @@ class Account < ApplicationRecord
   has_one :mailganer, dependent: :destroy
   has_one :idgtl, dependent: :destroy
   has_one :moizvonki, dependent: :destroy
+  has_one :telegram_setup, dependent: :destroy
   has_many :stock_check_schedules, dependent: :destroy
   
   validates :name, presence: true
