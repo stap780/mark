@@ -115,6 +115,6 @@ class ClientsController < ApplicationController
     end
 
     def client_params
-      params.require(:client).permit(:name, :surname, :email, :phone, :ya_client, :telegram_block)
+      params.require(:client).permit(:name, :surname, :email, :phone, :ya_client, :telegram_username, :telegram_block)
     end
 end

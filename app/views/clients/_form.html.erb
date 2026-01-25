@@ -25,6 +25,7 @@
     <%= form.label :ya_client %>
     <%= form.text_field :ya_client, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": client.errors[:ya_client].none?, "border-red-400 focus:outline-red-600": client.errors[:ya_client].any?}] %>
   </div>
+  
   <div class="my-5">
     <%= form.label :telegram_username %>
     <%= form.text_field :telegram_username, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": client.errors[:telegram_username].none?, "border-red-400 focus:outline-red-600": client.errors[:telegram_username].any?}] %>

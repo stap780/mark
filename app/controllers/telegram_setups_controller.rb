@@ -215,7 +215,7 @@ class TelegramSetupsController < ApplicationController
         format.turbo_stream do
           render turbo_stream: turbo_close_offcanvas_flash + [
             render_turbo_flash,
-            turbo_stream.update(
+            turbo_stream.replace(
               dom_id(current_account, dom_id(@telegram_setup)),
               partial: "telegram_setups/telegram_setup",
               locals: { telegram_setup: @telegram_setup.reload, current_account: current_account }
