@@ -1,6 +1,17 @@
 <% app_type = current_account.settings.dig("apps")&.find { |app| app.start_with?('ins') } %>
 <div class="flex items-center justify-between mb-4">
-  <h1 class="text-xl font-semibold">Правила автоматизации</h1>
+  <div class="flex space-x-2 items-center">
+    <h1 class="text-xl font-semibold">Правила автоматизации</h1>
+    <%= link_to info_account_automation_rules_path(current_account),
+          data: { turbo_frame: :offcanvas },
+          class: "inline-flex items-center justify-center px-2 py-1 text-violet-600 hover:text-violet-800" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+        <line x1="12" y1="8" x2="12" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="12" y1="12" x2="12" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    <% end %>
+  </div>
   <div class="flex space-x-2">
     <% unless app_type == 'insnotify' %>
       <%= link_to t('automation_rules.index.add_standard_scenarios'),

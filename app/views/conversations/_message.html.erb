@@ -1,0 +1,38 @@
+<%= turbo_frame_tag dom_id(current_account, dom_id(conversation, dom_id(message))), class: "flex #{message.outgoing? ? 'justify-end' : 'justify-start'}" do %>
+  <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg <%= message.outgoing? ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' %>">
+    <% if message.email? && message.subject.present? %>
+      <div class="font-semibold mb-1 text-sm">
+        <%= message.subject %>
+      </div>
+    <% end %>
+    <div class="text-sm">
+      <%= simple_format(message.content) %>
+    </div>
+    <div class="flex items-center justify-between mt-2 text-xs opacity-75">
+      <span>
+        <%= case message.channel
+            when 'telegram' then '📱 Telegram'
+            when 'email' then '✉️ Email'
+            when 'sms' then '💬 SMS'
+            else message.channel
+            end %>
+      </span>
+      <span class="ml-2">
+        <%= l(message.created_at, format: :short) %>
+      </span>
+    </div>
+    <% if message.status == 'failed' && message.error_message.present? %>
+      <div class="mt-1 text-xs opacity-75">
+        ❌ <%= message.error_message %>
+      </div>
+    <% elsif message.status == 'delivered' %>
+      <div class="mt-1 text-xs opacity-75">
+        ✓ Доставлено
+      </div>
+    <% elsif message.status == 'read' %>
+      <div class="mt-1 text-xs opacity-75">
+        ✓✓ Прочитано
+      </div>
+    <% end %>
+  </div>
+<% end %>

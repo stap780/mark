@@ -14,6 +14,8 @@ class Account < ApplicationRecord
   has_many :automation_rules, dependent: :destroy
   has_many :message_templates, dependent: :destroy
   has_many :automation_messages, dependent: :destroy
+  has_many :conversations, dependent: :destroy
+  has_many :messages, dependent: :destroy
   has_one :email_setup, dependent: :destroy
   has_one :mailganer, dependent: :destroy
   has_one :idgtl, dependent: :destroy

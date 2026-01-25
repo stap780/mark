@@ -70,13 +70,31 @@ module Automation
     end
 
     def build_context(base_context)
-      {
+      context = {
         'incase' => base_context[:incase] || @object,
         'client' => base_context[:client] || @object.try(:client),
         'webform' => base_context[:webform] || @object.try(:webform),
         'variant' => base_context[:variant] || @object,
         'product' => base_context[:product] || @object.try(:product)
-      }.compact
+      }
+      
+      # Для событий automation_message.* объект - это AutomationMessage
+      # Добавляем его в контекст и извлекаем связанные объекты
+      if @event.to_s.start_with?('automation_message.')
+        context['automation_message'] = @object
+        # Извлекаем связанные объекты из AutomationMessage
+        if @object.respond_to?(:incase) && @object.incase
+          context['incase'] ||= @object.incase
+        end
+        if @object.respond_to?(:client) && @object.client
+          context['client'] ||= @object.client
+        end
+        if context['incase'] && context['incase'].respond_to?(:webform)
+          context['webform'] ||= context['incase'].webform
+        end
+      end
+      
+      context.compact
     end
   end
 end

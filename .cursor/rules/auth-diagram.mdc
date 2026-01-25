@@ -1,0 +1,39 @@
+---
+description: "Правило для диаграммы аутентификации в проекте mark"
+alwaysApply: false
+globs:
+  - "app/controllers/sessions_controller.rb"
+  - "app/controllers/inswatch_controller.rb"
+  - "app/controllers/insnotify_controller.rb"
+  - "app/controllers/concerns/authentication.rb"
+  - "app/models/session.rb"
+  - "app/models/user.rb"
+  - "docs/authentication_flow*"
+---
+
+## Диаграмма аутентификации в Mark
+
+- **Единый источник правды** для потока аутентификации — файл `docs/authentication_flow_simple.html`.  
+  - В нём лежит упрощённая диаграмма Mermaid, показывающая:
+    - вход через Browser (email/password),
+    - вход через провайдеров **Inswatch / Insnotify** (autologin),
+    - создание записи в `sessions`, установку `cookies.signed[:session_id]` и `Current user`,
+    - проверку доступа в защищённых контроллерах и logout/reset password.
+
+## Правило для изменений в аутентификации
+
+- При **любых изменениях в аутентификации** (контроллеры, `Authentication` concern, `Session`, `User`, Inswatch/Insnotify):
+  - **обновляйте диаграмму** в `docs/authentication_flow_simple.html`, чтобы она отражала актуальный поток:
+    - оба входа (Browser и Inswatch / Insnotify),
+    - общую точку `Create session`,
+    - управление сессией и проверку доступа.
+
+## Связь с git commit
+
+- При подготовке **коммита, затрагивающего аутентификацию**, перед коммитом или сразу после него:
+  - убедитесь, что:
+    - структура диаграммы в `docs/authentication_flow_simple.html` соответствует текущему коду,
+    - провайдеры **Inswatch / Insnotify** явно показаны на диаграмме как отдельный вход.
+- Если вы просите `@cursor` помочь с изменениями аутентификации или с коммитом:
+  - агент должен **также проверить и при необходимости обновить** `docs/authentication_flow_simple.html` согласно этому правилу.
+

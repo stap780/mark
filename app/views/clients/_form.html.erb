@@ -25,6 +25,16 @@
     <%= form.label :ya_client %>
     <%= form.text_field :ya_client, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": client.errors[:ya_client].none?, "border-red-400 focus:outline-red-600": client.errors[:ya_client].any?}] %>
   </div>
+  <div class="my-5">
+    <%= form.label :telegram_username %>
+    <%= form.text_field :telegram_username, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": client.errors[:telegram_username].none?, "border-red-400 focus:outline-red-600": client.errors[:telegram_username].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :telegram_block, "Блокировать диалоги в Telegram" %>
+    <%= form.check_box :telegram_block, class: "rounded border-gray-300" %>
+    <p class="text-sm text-gray-500 mt-1">Если включено, новые диалоги с этим клиентом в Telegram не создаются, входящие сообщения не обрабатываются.</p>
+  </div>
 
   <div class="inline">
     <%= form.submit t(:save), class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>

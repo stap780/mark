@@ -1,0 +1,38 @@
+<%= turbo_stream_from [dom_id(current_account), :conversations, (params.dig(:q, :status_eq).presence || "active")] %>
+<div class="flex h-[calc(100vh-150px)] gap-4">
+  <!-- Левая колонка -->
+  <div class="w-80 bg-white rounded-lg shadow flex flex-col">
+    <div class="p-4 border-b space-y-3">
+      <%= link_to t('conversations.index.create_dialog'), new_account_conversation_path(current_account), 
+          data: { turbo_frame: :offcanvas }, 
+          class: "inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 text-sm font-medium" %>
+      <div class="flex flex-wrap gap-2 text-sm">
+        <% status_eq = params.dig(:q, :status_eq).to_s %>
+        <%= link_to t('conversations.index.filter.active'), account_conversations_path(current_account, q: { status_eq: 'active' }), class: "px-2 py-1 rounded #{status_eq.blank? || status_eq == 'active' ? 'bg-violet-100 text-violet-800' : 'text-gray-600 hover:bg-gray-100'}" %>
+        <%= link_to t('conversations.index.filter.closed'), account_conversations_path(current_account, q: { status_eq: 'closed' }), class: "px-2 py-1 rounded #{status_eq == 'closed' ? 'bg-violet-100 text-violet-800' : 'text-gray-600 hover:bg-gray-100'}" %>
+        <%= link_to t('conversations.index.filter.all'), account_conversations_path(current_account, q: { status_eq: 'all' }), class: "px-2 py-1 rounded #{status_eq == 'all' ? 'bg-violet-100 text-violet-800' : 'text-gray-600 hover:bg-gray-100'}" %>
+      </div>
+    </div>
+    <div class="flex-1 min-h-0 overflow-y-auto">
+      <%= turbo_frame_tag dom_id(current_account, :conversations) do %>
+        <% if @conversations.any? %>
+          <% @conversations.each do |conversation| %>
+            <%= render conversation, current_account: current_account %>
+          <% end %>
+          <div class="p-4">
+            <%# render "shared/paginate", f: @conversations %>
+          </div>
+        <% else %>
+          <div id="<%= dom_id(current_account, :conversations_empty) %>" class="p-4 text-center text-gray-500">
+            <%= t('conversations.index.no_conversations') %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Правая колонка: слот диалога (аккаунт → conversation) -->
+  <div class="flex-1 min-h-0 bg-white rounded-lg shadow flex flex-col">
+    <%= render 'conversations/conversation_placeholder', current_account: current_account %>
+  </div>
+</div>

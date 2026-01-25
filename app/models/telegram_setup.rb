@@ -8,6 +8,7 @@ class TelegramSetup < ApplicationRecord
 
   before_validation :ensure_webhook_secret
   after_save :setup_webhook_after_save, if: -> { saved_change_to_bot_token? && bot_token.present? }
+  before_destroy :clear_personal_session
 
   # Проверяет, настроен ли бот (есть токен)
   def bot_configured?
@@ -52,6 +53,23 @@ class TelegramSetup < ApplicationRecord
   def setup_webhook_after_save
     # Выполняем в фоне, чтобы не блокировать сохранение
     TelegramSetupWebhookJob.perform_later(id)
+  end
+
+  def clear_personal_session
+    # Очищаем сессию в микросервисе перед удалением записи
+    if personal_authorized?
+      microservice = TelegramProviders::MicroserviceClient.new(account: account)
+      result = microservice.clear_session
+      
+      if result[:ok]
+        Rails.logger.info "Сессия Telegram очищена для account ##{account_id}"
+      else
+        Rails.logger.error "Ошибка очистки сессии Telegram для account ##{account_id}: #{result[:error]}"
+      end
+    end
+  rescue => e
+    # Не блокируем удаление, если очистка сессии не удалась
+    Rails.logger.error "Ошибка при очистке сессии Telegram перед удалением: #{e.message}"
   end
 
   def application_base_url

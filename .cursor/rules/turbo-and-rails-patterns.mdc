@@ -1,0 +1,299 @@
+---
+description: "Правила работы с Turbo Stream, Rails контроллерами, моделями и views в проекте mark"
+alwaysApply: true
+globs:
+  - "app/controllers/**/*.rb"
+  - "app/models/**/*.rb"
+  - "app/views/**/*.erb"
+  - "app/helpers/**/*.rb"
+---
+
+# Правила работы с Turbo Stream и Rails паттернами в проекте mark
+
+## Turbo Stream в контроллерах
+
+### Обязательные паттерны для ответов
+
+1. **Всегда используйте `respond_to` блок** для поддержки нескольких форматов:
+   ```ruby
+   respond_to do |format|
+     format.turbo_stream { ... }
+     format.html { ... }
+     format.json { ... }
+   end
+   ```
+
+2. **Для Turbo Stream ответов используйте helper методы**:
+   - `render_turbo_flash` - обновляет flash сообщения
+   - `turbo_close_offcanvas_flash` - закрывает offcanvas + обновляет flash
+   - Эти методы доступны через `OffcanvasResponder` concern (включен в `ApplicationController`)
+
+3. **Стандартный паттерн для успешного создания/обновления**:
+   ```ruby
+   if @record.save
+     flash.now[:success] = t('.success')
+     format.turbo_stream {
+       render turbo_stream: turbo_close_offcanvas_flash + [
+         turbo_stream.append(dom_id(current_account, :records), partial: "records/record", locals: { record: @record, current_account: current_account })
+       ]
+     }
+     format.html { redirect_to path, notice: t('.success') }
+   end
+   ```
+
+4. **Стандартный паттерн для обновления**:
+   ```ruby
+   if @record.update(params)
+     flash.now[:success] = t('.success')
+     format.turbo_stream {
+       render turbo_stream: turbo_close_offcanvas_flash + [
+         turbo_stream.replace(dom_id(@record), partial: "records/record", locals: { record: @record, current_account: current_account })
+       ]
+     }
+     format.html { redirect_to path, notice: t('.success') }
+   end
+   ```
+
+5. **Стандартный паттерн для удаления**:
+   ```ruby
+   @record.destroy
+   flash.now[:success] = t('.success')
+   format.turbo_stream {
+     render turbo_stream: [
+       turbo_stream.remove(dom_id(@record)),
+       render_turbo_flash
+     ]
+   }
+   format.html { redirect_to path, notice: t('.success') }
+   ```
+
+### Использование dom_id
+
+1. **Всегда включайте `ActionView::RecordIdentifier`** в контроллерах, которые работают с Turbo Stream:
+   ```ruby
+   class MyController < ApplicationController
+     include ActionView::RecordIdentifier
+   end
+   ```
+
+2. **Используйте `dom_id` для идентификации элементов**:
+   - Для одного объекта: `dom_id(@record)`
+   - Для вложенных объектов: `dom_id(current_account, dom_id(@record))`
+   - Для коллекций: `dom_id(current_account, :records)`
+
+3. **В views используйте `turbo_id_for` helper** для новых (несохранённых) записей:
+   ```erb
+   <%= turbo_frame_tag "record_#{turbo_id_for(@record)}" do %>
+   ```
+
+## Offcanvas паттерны
+
+1. **Используйте `OffcanvasResponder` concern** (уже включен в `ApplicationController`)
+
+2. **Для закрытия offcanvas используйте**:
+   ```ruby
+   turbo_stream.update(:offcanvas, "")
+   ```
+
+3. **Комбинируйте с flash**:
+   ```ruby
+   turbo_close_offcanvas_flash  # = render_turbo_flash + turbo_stream.update(:offcanvas, "")
+   ```
+
+4. **В layout есть два offcanvas фрейма**:
+   - `:offcanvas` - основной
+   - `:offcanvas_left` - левый
+
+## Flash сообщения
+
+1. **Используйте `flash.now` для Turbo Stream** (не `flash`):
+   ```ruby
+   flash.now[:success] = t('.success')
+   flash.now[:error] = t('.error')
+   flash.now[:alert] = t('.alert')
+   flash.now[:notice] = t('.notice')
+   ```
+
+2. **Для HTML редиректов используйте обычный `flash`**:
+   ```ruby
+   format.html { redirect_to path, notice: t('.success') }
+   # или
+   format.html { redirect_to path, flash: { success: t('.success') } }
+   ```
+
+3. **Всегда обновляйте flash через `render_turbo_flash`** в Turbo Stream ответах
+
+## Broadcast в моделях
+
+1. **Используйте Turbo Stream broadcasts для real-time обновлений**:
+   ```ruby
+   after_create_commit { broadcast_append_to target, partial: "records/record", locals: { record: self, current_account: account } }
+   after_update_commit { broadcast_replace_to target, partial: "records/record", locals: { record: self, current_account: account } }
+   after_destroy_commit { broadcast_remove_to target }
+   ```
+
+2. **Используйте `dom_id` для target**:
+   ```ruby
+   broadcast_replace_to [dom_id(account), :records], 
+                        target: dom_id(self),
+                        partial: "records/record",
+                        locals: { record: self, current_account: account }
+   ```
+
+3. **Для вложенных структур используйте составные targets**:
+   ```ruby
+   broadcast_replace_to [dom_id(account), :records], 
+                        target: dom_id(self, dom_id(account)),
+                        partial: "records/record",
+                        locals: { record: self, current_account: account }
+   ```
+
+## Views и Turbo Frames
+
+1. **Оборачивайте обновляемые части в `turbo_frame_tag`**:
+   ```erb
+   <%= turbo_frame_tag dom_id(current_account, :records) do %>
+     <!-- содержимое -->
+   <% end %>
+   ```
+
+2. **Для отдельных записей**:
+   ```erb
+   <%= turbo_frame_tag dom_id(current_account, dom_id(record)) do %>
+     <%= render "records/record", record: record, current_account: current_account %>
+   <% end %>
+   ```
+
+3. **Используйте `turbo_id_for` для новых записей**:
+   ```erb
+   <%= turbo_frame_tag "record_#{turbo_id_for(@record)}" do %>
+   ```
+
+## Многопользовательское приложение - current_account
+
+1. **ВСЕГДА передавайте `current_account` в partials через `locals`**:
+   ```ruby
+   # ✅ Правильно
+   render partial: "records/record", locals: { record: @record, current_account: current_account }
+   turbo_stream.replace(dom_id(@record), partial: "records/record", locals: { record: @record, current_account: current_account })
+   
+   # ❌ Неправильно (без current_account)
+   render partial: "records/record", locals: { record: @record }
+   ```
+
+2. **Это правило применяется ко ВСЕМ partials**, даже если в partial не используется `current_account` напрямую - передавайте его для консистентности и будущей расширяемости
+
+3. **В broadcast callbacks в моделях также передавайте account**:
+   ```ruby
+   after_update_commit do
+     broadcast_replace_to [dom_id(account), :records],
+                          target: dom_id(self),
+                          partial: "records/record",
+                          locals: { record: self, current_account: account }
+   end
+   ```
+
+4. **В views при рендеринге partials всегда передавайте `current_account`**:
+   ```erb
+   <%= render "records/record", record: record, current_account: current_account %>
+   ```
+
+5. **Исключения** (когда `current_account` не нужен):
+   - Shared partials, которые не зависят от аккаунта (например, `shared/flash`, `shared/errors`)
+   - Layout partials
+   - Но даже в этих случаях лучше передавать для единообразия
+
+## Helpers
+
+1. **Используйте стандартные helpers для ссылок**:
+   - `link_to_edit(path)` - ссылка редактирования с иконкой
+   - `link_to_delete(path)` - ссылка удаления с иконкой и подтверждением
+   - `link_to_new(path)` - ссылка создания
+   - `link_to_show(path)` - ссылка просмотра
+
+2. **Эти helpers автоматически добавляют**:
+   - Правильные стили (Tailwind CSS классы)
+   - Иконки SVG
+   - Turbo атрибуты (`data-turbo-method`, `data-turbo-confirm`)
+
+## Контроллеры - общие правила
+
+1. **Всегда используйте `before_action :set_record`** для загрузки записи:
+   ```ruby
+   before_action :set_record, only: [:show, :edit, :update, :destroy]
+   
+   private
+   
+   def set_record
+     @record = current_account.records.find(params[:id])
+   end
+   ```
+
+2. **Используйте strong parameters**:
+   ```ruby
+   def record_params
+     params.require(:record).permit(:field1, :field2, nested_attributes: [:id, :field, :_destroy])
+   end
+   ```
+
+3. **Используйте локализацию для сообщений**:
+   ```ruby
+   t('.success')  # ищет в config/locales/ru.yml по пути контроллера
+   ```
+
+4. **Обрабатывайте ошибки валидации**:
+   ```ruby
+   if @record.save
+     # success path
+   else
+     format.html { render :new, status: :unprocessable_entity }
+     format.json { render json: @record.errors, status: :unprocessable_entity }
+   end
+   ```
+
+## Модели - общие правила
+
+1. **Используйте `AccountScoped` concern** для моделей, привязанных к аккаунту:
+   ```ruby
+   class Record < ApplicationRecord
+     include AccountScoped
+     belongs_to :account
+   end
+   ```
+
+2. **Используйте `ActionView::RecordIdentifier`** в моделях для broadcast:
+   ```ruby
+   include ActionView::RecordIdentifier
+   ```
+
+3. **Используйте `acts_as_list`** для сортируемых списков:
+   ```ruby
+   acts_as_list scope: :account_id, column: :position
+   ```
+
+## Стиль кода
+
+1. **Используйте `flash.now` для Turbo Stream, `flash` для HTML редиректов**
+
+2. **Всегда добавляйте `status: :see_other`** для HTML редиректов после POST/PUT/DELETE:
+   ```ruby
+   format.html { redirect_to path, notice: t('.success'), status: :see_other }
+   ```
+
+3. **Используйте `t()` для локализации**, не хардкодьте строки
+
+4. **Группируйте Turbo Stream операции в массив**:
+   ```ruby
+   render turbo_stream: [
+     render_turbo_flash,
+     turbo_stream.replace(...),
+     turbo_stream.update(...)
+   ]
+   ```
+
+5. **Используйте `+` для комбинирования стандартных и кастомных streams**:
+   ```ruby
+   render turbo_stream: turbo_close_offcanvas_flash + [
+     turbo_stream.append(...)
+   ]
+   ```

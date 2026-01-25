@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_16_000001) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_25_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -152,7 +152,27 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_16_000001) do
     t.datetime "updated_at", null: false
     t.string "telegram_chat_id"
     t.string "telegram_username"
+    t.boolean "telegram_block", default: false, null: false
     t.index ["account_id"], name: "index_clients_on_account_id"
+  end
+
+  create_table "conversations", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "client_id", null: false
+    t.bigint "incase_id"
+    t.bigint "user_id"
+    t.string "status", default: "active"
+    t.datetime "last_message_at"
+    t.datetime "last_outgoing_at"
+    t.datetime "last_incoming_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "client_id"], name: "index_conversations_on_account_id_and_client_id"
+    t.index ["account_id", "status"], name: "index_conversations_on_account_id_and_status"
+    t.index ["account_id"], name: "index_conversations_on_account_id"
+    t.index ["client_id"], name: "index_conversations_on_client_id"
+    t.index ["incase_id"], name: "index_conversations_on_incase_id"
+    t.index ["user_id"], name: "index_conversations_on_user_id"
   end
 
   create_table "discounts", force: :cascade do |t|
@@ -309,6 +329,33 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_16_000001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_message_templates_on_account_id"
+  end
+
+  create_table "messages", force: :cascade do |t|
+    t.bigint "conversation_id", null: false
+    t.bigint "account_id", null: false
+    t.bigint "client_id", null: false
+    t.string "direction", null: false
+    t.string "channel", null: false
+    t.text "content"
+    t.text "subject"
+    t.string "status", default: "sent"
+    t.bigint "user_id"
+    t.string "message_id"
+    t.string "replied_to_message_id"
+    t.datetime "sent_at"
+    t.datetime "delivered_at"
+    t.datetime "read_at"
+    t.text "error_message"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "channel", "status"], name: "index_messages_on_account_id_and_channel_and_status"
+    t.index ["account_id"], name: "index_messages_on_account_id"
+    t.index ["client_id"], name: "index_messages_on_client_id"
+    t.index ["conversation_id", "created_at"], name: "index_messages_on_conversation_id_and_created_at"
+    t.index ["conversation_id"], name: "index_messages_on_conversation_id"
+    t.index ["message_id"], name: "index_messages_on_message_id"
+    t.index ["user_id"], name: "index_messages_on_user_id"
   end
 
   create_table "moizvonkis", force: :cascade do |t|
@@ -524,6 +571,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_16_000001) do
   add_foreign_key "automation_messages", "users"
   add_foreign_key "automation_rules", "accounts"
   add_foreign_key "clients", "accounts"
+  add_foreign_key "conversations", "accounts"
+  add_foreign_key "conversations", "clients"
+  add_foreign_key "conversations", "incases"
+  add_foreign_key "conversations", "users"
   add_foreign_key "discounts", "accounts"
   add_foreign_key "email_setups", "accounts"
   add_foreign_key "idgtls", "accounts"
@@ -541,6 +592,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_16_000001) do
   add_foreign_key "lists", "accounts"
   add_foreign_key "mailganers", "accounts"
   add_foreign_key "message_templates", "accounts"
+  add_foreign_key "messages", "accounts"
+  add_foreign_key "messages", "clients"
+  add_foreign_key "messages", "conversations"
+  add_foreign_key "messages", "users"
   add_foreign_key "moizvonkis", "accounts"
   add_foreign_key "payments", "subscriptions"
   add_foreign_key "products", "accounts"

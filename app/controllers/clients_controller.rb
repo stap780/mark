@@ -1,5 +1,5 @@
 class ClientsController < ApplicationController
-  before_action :set_client, only: %i[ show edit update insales_info destroy ]
+  before_action :set_client, only: %i[ show edit update insales_info conversation conversations destroy ]
   include ActionView::RecordIdentifier
   
   def index
@@ -9,6 +9,30 @@ class ClientsController < ApplicationController
   end
 
   def show
+  end
+
+  def conversation
+    if @client.telegram_block?
+      @conversation = current_account.conversations.active.find_by(client: @client)
+      if @conversation.nil?
+        redirect_to account_client_path(current_account, @client), alert: t("conversations.create.telegram_blocked"), status: :see_other
+        return
+      end
+    else
+      @conversation = current_account.conversations.active.find_by(client: @client) ||
+                      current_account.conversations.create!(client: @client, status: :active)
+    end
+    @messages = @conversation.messages.order(created_at: :asc).last(50)
+  end
+
+  def conversations
+    if params[:conversation_id].present?
+      @conversation = @client.conversations.find(params[:conversation_id])
+      @messages = @conversation.messages.order(created_at: :asc).last(50)
+      render :conversation
+    else
+      @conversations = @client.conversations.includes(:messages).order(last_message_at: :desc)
+    end
   end
 
   def new
@@ -91,6 +115,6 @@ class ClientsController < ApplicationController
     end
 
     def client_params
-      params.require(:client).permit(:name, :surname, :email, :phone, :ya_client)
+      params.require(:client).permit(:name, :surname, :email, :phone, :ya_client, :telegram_block)
     end
 end

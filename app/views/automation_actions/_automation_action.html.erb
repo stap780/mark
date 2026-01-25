@@ -41,6 +41,16 @@
               {
                 class: "w-full px-2 py-1 border rounded-md text-sm"
               } %>
+        <% when 'send_telegram' %>
+          <%= ff.select :value,
+              options_for_select(
+                current_account.message_templates.pluck(:title, :id),
+                automation_action.value
+              ),
+              { include_blank: "Выберите шаблон Telegram" },
+              { 
+                class: "w-full px-2 py-1 border rounded-md text-sm"
+              } %>
         <% when 'change_status' %>
           <%= ff.select :value,
               options_for_select(

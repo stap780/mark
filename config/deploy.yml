@@ -143,7 +143,7 @@ accessories:
     env:
       clear:
         LOG_LEVEL: info
-        RAILS_CALLBACK_URL: http://mark-web:3000/api/telegram_webhooks/incoming_message
+        RAILS_CALLBACK_URL: http://mark-web:3000/api/webhooks/telegram/incoming_message
       secret:
         - TELEGRAM_API_ID
         - TELEGRAM_API_HASH

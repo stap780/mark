@@ -8,6 +8,8 @@ class AutomationRulesController < ApplicationController
     @automation_rules = current_account.automation_rules.order(:position, :created_at)
   end
 
+  def info; end
+
   def new
     @automation_rule = current_account.automation_rules.build
   end

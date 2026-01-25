@@ -1,0 +1,28 @@
+<%= render 'shared/offcanvas_inner', title: t('clients.conversations.title', name: @client.name), width: '32rem' do %>
+  <% if @conversations.any? %>
+    <ul class="divide-y divide-gray-200">
+      <% @conversations.each do |conv| %>
+        <li>
+          <%= link_to conversations_account_client_path(current_account, @client, conversation_id: conv.id),
+              data: { turbo_frame: "offcanvas" },
+              class: "block py-3 px-2 -mx-2 rounded hover:bg-gray-50" do %>
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-sm font-medium text-gray-900">
+                <%= t("conversations.status.#{conv.status}") %>
+              </span>
+              <span class="text-xs text-gray-500">
+                <%= conv.last_message_at ? l(conv.last_message_at, format: :short) : l(conv.created_at, format: :short) %>
+              </span>
+            </div>
+            <% last_msg = conv.messages.order(created_at: :desc).first %>
+            <p class="text-sm text-gray-600 mt-0.5 truncate">
+              <%= last_msg&.content&.truncate(80) || t('conversations.conversation_timeline.no_messages') %>
+            </p>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-gray-500 py-4"><%= t('clients.conversations.empty') %></p>
+  <% end %>
+<% end %>

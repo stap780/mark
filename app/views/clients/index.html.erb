@@ -11,6 +11,13 @@
           ),
           { include_blank: t('.all_lists') },
           { class: "h-8 px-2 border rounded text-sm leading-none" } %>
+      <%= f.select :conversations_status_eq,
+          options_for_select(
+            Conversation.statuses.keys.map { |k| [t("conversations.status.#{k}"), k] },
+            params.dig(:q, :conversations_status_eq)
+          ),
+          { include_blank: t('.all_statuses') },
+          { class: "h-8 px-2 border rounded text-sm leading-none"} %>
       <%= f.submit t('.search'), class: "h-8 px-3 bg-gray-200 rounded hover:bg-gray-300 text-sm leading-none" %>
       <%= link_to_clear account_clients_path(current_account), class: "h-8 px-3 bg-gray-100 rounded hover:bg-gray-200 flex items-center text-sm leading-none" %>
     <% end %>

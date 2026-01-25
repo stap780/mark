@@ -1,0 +1,130 @@
+<%= render 'shared/offcanvas_inner', title: t('automation_rules.info.title'), width: '50rem' do %>
+  <h2 class="text-2xl font-bold mb-4">Правила автоматизации</h2>
+  
+  <div class="space-y-6">
+    <div>
+      <h3 class="text-lg font-semibold mb-2">Стандартные сценарии</h3>
+      <p class="text-gray-700 mb-3">
+        Вы можете создать готовые стандартные сценарии автоматизации одним кликом через кнопку 
+        <strong>"Создать стандартные сценарии"</strong>. Эти сценарии включают:
+      </p>
+      <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+        <li>Подтверждение заказа</li>
+        <li>Подтверждение предзаказа</li>
+        <li>Уведомление о поступлении товара</li>
+        <li>Напоминание о брошенной корзине</li>
+        <li>Уведомление о скидке</li>
+      </ul>
+    </div>
+
+    <div>
+      <h3 class="text-lg font-semibold mb-2">Расширенные сценарии</h3>
+      <p class="text-gray-700 mb-3">
+        Вы можете создавать собственные правила автоматизации с цепочками событий. 
+        Правила могут реагировать на разные события и выполнять действия в зависимости от условий.
+      </p>
+      
+      <div class="bg-gray-50 p-4 rounded-lg mb-4">
+        <h4 class="font-semibold mb-3">Пример: Telegram → Email → Смена статуса</h4>
+        <p class="text-sm text-gray-600 mb-3">
+          Этот сценарий демонстрирует, как создать цепочку правил для отправки уведомлений 
+          с резервным вариантом и автоматической сменой статуса:
+        </p>
+        
+        <div class="space-y-4">
+          <div class="border-l-4 border-blue-500 pl-4">
+            <h5 class="font-semibold text-blue-700">Правило A: "Отправить Telegram при создании заявки"</h5>
+            <ul class="text-sm text-gray-700 mt-1 space-y-1">
+              <li><strong>Событие:</strong> Заявка создана</li>
+              <li><strong>Условие:</strong> Статус заявки <strong>равно</strong> "Новая"</li>
+              <li><strong>Действие:</strong> Отправить Telegram (выбрать шаблон сообщения)</li>
+            </ul>
+          </div>
+
+          <div class="border-l-4 border-yellow-500 pl-4">
+            <h5 class="font-semibold text-yellow-700">Правило B: "Отправить Email, если Telegram не доставился"</h5>
+            <ul class="text-sm text-gray-700 mt-1 space-y-1">
+              <li><strong>Событие:</strong> Ошибка отправки сообщения</li>
+              <li><strong>Условия:</strong> 
+                Канал сообщения <strong>равно</strong> "Telegram" <strong>И</strong> 
+                Email клиента <strong>содержит</strong> "@"
+              </li>
+              <li><strong>Действие:</strong> Отправить email клиенту (выбрать шаблон письма)</li>
+            </ul>
+          </div>
+
+          <div class="border-l-4 border-green-500 pl-4">
+            <h5 class="font-semibold text-green-700">Правило C: "Отметить заявку как выполненную после успешной доставки"</h5>
+            <ul class="text-sm text-gray-700 mt-1 space-y-1">
+              <li><strong>Событие:</strong> Сообщение отправлено</li>
+              <li><strong>Условие:</strong> Статус заявки (через сообщение) <strong>не равно</strong> "Выполнена"</li>
+              <li><strong>Действие:</strong> Изменить статус (выбрать статус "Выполнена")</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-blue-50 p-4 rounded-lg">
+        <h4 class="font-semibold text-blue-900 mb-2">Как это работает:</h4>
+        <ol class="list-decimal list-inside space-y-2 text-sm text-blue-800">
+          <li>При создании заявки срабатывает <strong>Правило A</strong> → отправляется сообщение в Telegram</li>
+          <li>Если Telegram не отправился, срабатывает <strong>Правило B</strong> → отправляется письмо на email клиента</li>
+          <li>После успешной отправки (Telegram или Email) срабатывает <strong>Правило C</strong> → статус заявки автоматически меняется на "Выполнена"</li>
+        </ol>
+      </div>
+    </div>
+
+    <div>
+      <h3 class="text-lg font-semibold mb-2">Доступные события</h3>
+      <p class="text-sm text-gray-600 mb-2">События — это моменты, когда система может автоматически выполнить ваши правила:</p>
+      <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+        <li><strong>Заявка создана</strong> — когда в системе создается новая заявка</li>
+        <li><strong>Заявка обновлена</strong> — когда изменяются данные существующей заявки</li>
+        <li><strong>Товар появился в наличии</strong> — когда товар, который был недоступен, снова становится доступным</li>
+        <li><strong>Сообщение отправлено</strong> — когда автоматическое сообщение успешно доставлено</li>
+        <li><strong>Ошибка отправки сообщения</strong> — когда автоматическое сообщение не удалось отправить</li>
+      </ul>
+    </div>
+
+    <div>
+      <h3 class="text-lg font-semibold mb-2">Доступные условия</h3>
+      <p class="text-sm text-gray-600 mb-2">Условия позволяют уточнить, когда именно должно сработать правило. Вы можете использовать следующие поля и операторы:</p>
+      <div class="bg-gray-50 p-3 rounded-lg mb-3">
+        <h4 class="font-semibold text-sm mb-2">Поля для условий:</h4>
+        <ul class="list-disc list-inside space-y-1 text-sm text-gray-700 ml-4">
+          <li><strong>Статус заявки</strong> — можно проверить статус (Новая, В обработке, Выполнена, Отменена, Закрыта)</li>
+          <li><strong>Тип вебформы</strong> — можно проверить тип (Заказ, Сообщить о поступлении, Предзаказ, Брошенная корзина, Кастомная)</li>
+          <li><strong>Название вебформы</strong> — можно проверить, содержит ли название определенный текст</li>
+          <li><strong>Email клиента</strong> — можно проверить, содержит ли email определенный текст</li>
+          <li><strong>Телефон клиента</strong> — можно проверить, содержит ли телефон определенный текст</li>
+          <li><strong>Количество товаров</strong> — можно сравнить количество товаров в заявке</li>
+          <li><strong>Канал сообщения</strong> — можно проверить канал (Email, Telegram, SMS, WhatsApp)</li>
+          <li><strong>Статус сообщения</strong> — можно проверить статус (Ожидает отправки, Отправлено, Ошибка отправки, Доставлено и др.)</li>
+        </ul>
+      </div>
+      <div class="bg-gray-50 p-3 rounded-lg">
+        <h4 class="font-semibold text-sm mb-2">Операторы:</h4>
+        <ul class="list-disc list-inside space-y-1 text-sm text-gray-700 ml-4">
+          <li><strong>равно</strong> — точное совпадение значения</li>
+          <li><strong>не равно</strong> — значение не совпадает</li>
+          <li><strong>содержит</strong> — текст содержит указанную строку</li>
+          <li><strong>больше</strong> — число больше указанного значения</li>
+          <li><strong>меньше</strong> — число меньше указанного значения</li>
+        </ul>
+      </div>
+    </div>
+
+    <div>
+      <h3 class="text-lg font-semibold mb-2">Доступные действия</h3>
+      <p class="text-sm text-gray-600 mb-2">Действия — это то, что система может сделать автоматически:</p>
+      <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+        <li><strong>Отправить email клиенту</strong> — отправить письмо на email адрес клиента (нужно выбрать шаблон сообщения)</li>
+        <li><strong>Отправить email пользователям</strong> — отправить письмо сотрудникам вашей компании (нужно выбрать шаблон сообщения)</li>
+        <li><strong>Отправить Telegram</strong> — отправить сообщение в Telegram (нужно выбрать шаблон сообщения)</li>
+        <li><strong>Отправить SMS (i-dgtl)</strong> — отправить SMS через сервис i-dgtl (нужно выбрать шаблон сообщения)</li>
+        <li><strong>Отправить SMS (Moizvonki)</strong> — отправить SMS через сервис Moizvonki (нужно выбрать шаблон сообщения)</li>
+        <li><strong>Изменить статус</strong> — автоматически изменить статус заявки (нужно выбрать новый статус: Новая, В обработке, Выполнена, Отменена, Закрыта)</li>
+      </ul>
+    </div>
+  </div>
+<% end %>

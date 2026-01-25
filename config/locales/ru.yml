@@ -53,6 +53,7 @@ ru:
     dashboard: "Дашборд"
     incases: "Заявки"
     clients: "Клиенты"
+    conversations: "Диалоги"
     products: "Товары"
     discounts: "Скидки"
     lists: "Списки"
@@ -740,6 +741,8 @@ ru:
       success: "Правило удалено"
     index:
       add_standard_scenarios: "Добавить стандартные сценарии"
+    info:
+      title: "Информация о правилах автоматизации"
     create_standard_scenarios:
       title: "Добавить стандартные сценарии"
       description: "Будут созданы следующие сценарии:"
@@ -784,6 +787,7 @@ ru:
       name: "Имя"
       email: "Email"
       phone: "Телефон"
+      all_statuses: "Статус диалога"
     new:
       heading: "Новый клиент"
     edit:
@@ -808,6 +812,10 @@ ru:
     client:
       reload_from_insales: "Обновить из InSales"
       delete_confirm: "Удалить клиента?"
+      conv_title: "Диалоги с клиентом"
+    conversations:
+      title: "Диалоги с %{name}"
+      empty: "Нет диалогов с этим клиентом"
 
   incases:
     index:
@@ -1092,6 +1100,26 @@ ru:
         preorder: "Предзаказ"
         abandoned_cart: "Брошенная корзина"
         custom: "Кастомная"
+      automation_message_channel:
+        email: "Email"
+        telegram: "Telegram"
+        sms: "SMS"
+        whatsapp: "WhatsApp"
+      automation_message_status:
+        pending: "Ожидает отправки"
+        sent: "Отправлено"
+        failed: "Ошибка отправки"
+        delivered: "Доставлено"
+        email_fbl: "FBL (Email)"
+        email_unsubscribe: "Отписка (Email)"
+        email_open: "Открыто (Email)"
+        email_click: "Переход (Email)"
+      automation_message_incase_status:
+        new: "Новая"
+        in_progress: "В обработке"
+        done: "Выполнена"
+        canceled: "Отменена"
+        closed: "Закрыта"
     destroy:
       success: "Условие удалено"
 
@@ -1154,3 +1182,58 @@ ru:
       email_label: "Email получателя"
       description: "Mailganer отправит простое тестовое письмо, используя текущие настройки API."
     test_email_label: "Отправить тестовое письмо"
+
+  conversations:
+    status:
+      active: "Активный"
+      closed: "Закрытый"
+      archived: "Архивный"
+    channels:
+      telegram: "Telegram"
+      email: "Email"
+      sms: "SMS"
+    index:
+      heading: "Диалоги"
+      create_dialog: "Создать диалог"
+      no_conversations: "Нет диалогов"
+      filter:
+        active: "Активные"
+        closed: "Закрытые"
+        all: "Все"
+      select_client: "Выберите клиента"
+    new:
+      heading: "Создать диалог"
+      select_client: "Выберите клиента"
+    create:
+      success: "Диалог создан"
+      telegram_blocked: "Диалог с этим клиентом заблокирован в Telegram"
+    show:
+      title: "Диалог с %{name}"
+      client_info: "Информация о клиенте"
+    close:
+      action: "Закрыть диалог"
+      confirm: "Закрыть этот диалог? Он исчезнет из списка активных."
+      success: "Диалог закрыт"
+    reopen:
+      action: "Открыть снова"
+      success: "Диалог открыт"
+    send_message:
+      success: "Сообщение отправлено"
+      error: "Ошибка отправки сообщения"
+      invalid_channel: "Неверный канал отправки"
+      content_blank: "Текст сообщения не может быть пустым"
+      subject_blank: "Тема письма не может быть пустой"
+    conversation_timeline:
+      no_messages: "Нет сообщений"
+    send_message_form:
+      channel_label: "Канал отправки"
+      subject_label: "Тема письма"
+      subject_placeholder: "Введите тему письма"
+      content_label: "Текст сообщения"
+      content_placeholder: "Введите текст сообщения"
+      submit: "Отправить"
+    communication_status:
+      waiting_response: "Ожидает ответа"
+      active: "Активный диалог"
+      no_response: "Не отвечает"
+      no_contact: "Нет контакта"

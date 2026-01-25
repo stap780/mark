@@ -1,0 +1,27 @@
+<%= render 'shared/offcanvas_inner', title: t('conversations.new.heading') do %>
+  <%= form_with url: account_conversations_path(current_account), method: :post, data: { turbo_stream: true } do |f| %>
+    <div class="space-y-4">
+      <div>
+        <%= f.label :client_id, t('conversations.new.select_client'), class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.collection_select :client_id,
+            @clients,
+            :id,
+            ->(c) { "#{c.name} #{c.surname} #{c.email} #{c.phone}".strip },
+            { prompt: t('conversations.new.select_client') },
+            { 
+              class: "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm",
+              required: true
+            } %>
+      </div>
+
+      <div class="flex justify-start space-x-3 pt-4">
+        <%= f.submit t('save'), class: "inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 text-sm font-medium" %>
+        <button type="button" 
+                class="inline-flex items-center px-4 py-2 bg-white text-violet-700 border border-violet-600 rounded-md hover:bg-violet-50 text-sm font-medium"
+                data-action="click->offcanvas#close">
+          <%= t('cancel') %>
+        </button>
+      </div>
+    </div>
+  <% end %>
+<% end %>

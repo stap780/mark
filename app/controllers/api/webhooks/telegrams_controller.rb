@@ -1,7 +1,13 @@
 class Api::Webhooks::TelegramsController < ApplicationController
   skip_before_action :require_authentication, raise: false
   skip_before_action :verify_authenticity_token
+  skip_before_action :set_locale
+  skip_before_action :load_session
+  skip_before_action :set_current_account
+  skip_before_action :ensure_user_in_current_account
+  skip_before_action :ensure_active_subscription
 
+  # Обработка webhook от Telegram Bot API (когда клиент пишет боту)
   def update
     account = Account.find(params[:account_id])
     settings = account.telegram_setup
@@ -25,48 +31,75 @@ class Api::Webhooks::TelegramsController < ApplicationController
     username = from["username"]
     text = message_data["text"]
 
-    # Находим или создаем клиента по telegram_chat_id или username
-    client = find_or_create_client(account: account, chat_id: chat_id, user_id: user_id, username: username)
+    # Преобразуем формат Telegram Bot API в формат, который понимает ProcessIncomingTelegramMessageJob
+    normalized_message = {
+      "from_id" => user_id,
+      "from_username" => username,
+      "from_phone" => nil,
+      "chat_id" => chat_id,
+      "message_id" => message_data["message_id"],
+      "text" => text,
+      "date" => message_data["date"] ? Time.at(message_data["date"]).iso8601 : nil
+    }
 
-    # Сохраняем telegram_chat_id и username если их еще нет
-    if client.telegram_chat_id.blank?
-      client.update_column(:telegram_chat_id, chat_id)
-    end
-    if username.present? && client.telegram_username.blank?
-      client.update_column(:telegram_username, "@#{username}")
-    end
+    # Используем общий job для обработки
+    result = ProcessIncomingTelegramMessageJob.perform_now(
+      account_id: account.id,
+      message: normalized_message
+    )
 
-    # TODO: Здесь можно добавить обработку входящих сообщений от клиентов
-    # Например, сохранение в историю переписки или автоматический ответ
+    if result
+      Rails.logger.info "[Api::Webhooks::TelegramsController] Successfully processed bot message"
+    else
+      Rails.logger.warn "[Api::Webhooks::TelegramsController] Failed to process bot message"
+    end
 
     head :ok
   rescue ActiveRecord::RecordNotFound
     head :not_found
   rescue => e
     raise e if Rails.env.test?
-    Rails.logger.error("Telegram webhook error: #{e.message}")
+    Rails.logger.error("Telegram bot webhook error: #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
     head :internal_server_error
   end
 
-  private
+  # Обработка callback от микросервиса (когда клиент пишет в персональный аккаунт)
+  def incoming_message
+    # account_id и message приходят в body запроса от микросервиса (JSON)
+    request_body = request.body.read
+    json_data = JSON.parse(request_body) rescue {}
+    
+    message_id = json_data.dig('message', 'message_id')
+    Rails.logger.info "[Api::Webhooks::TelegramsController] Received incoming message from microservice (message_id: #{message_id}): #{json_data.inspect}"
+    
+    # Секрет не проверяем, так как микросервис находится в той же Docker сети и недоступен извне
+    
+    account_id = json_data['account_id']&.to_i
+    message_data = json_data['message']
+    
+    return head :bad_request unless account_id && message_data
+    
+    account = Account.find_by(id: account_id)
+    return head :not_found unless account
 
-  def find_or_create_client(account:, chat_id:, user_id:, username:)
-    # Сначала пытаемся найти по telegram_chat_id
-    client = account.clients.find_by(telegram_chat_id: chat_id)
-    return client if client
-
-    # Пытаемся найти по username
-    if username.present?
-      client = account.clients.find_by(telegram_username: "@#{username}")
-      return client if client
+    # Обрабатываем входящее сообщение синхронно для немедленного отображения
+    result = ProcessIncomingTelegramMessageJob.perform_now(
+      account_id: account_id,
+      message: message_data
+    )
+    
+    if result
+      Rails.logger.info "[Api::Webhooks::TelegramsController] Successfully processed microservice message (message_id: #{message_id})"
+    else
+      Rails.logger.warn "[Api::Webhooks::TelegramsController] Failed to process microservice message (message_id: #{message_id})"
     end
 
-    # Создаем нового клиента
-    account.clients.create!(
-      name: username || "Telegram User",
-      telegram_chat_id: chat_id,
-      telegram_username: username.present? ? "@#{username}" : nil
-    )
+    head :ok
+  rescue => e
+    Rails.logger.error "Telegram microservice webhook error: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    head :internal_server_error
   end
+
 end

@@ -7,16 +7,34 @@ module TelegramProviders
 
     # Отправка сообщения клиенту
     # Определяет канал (бот/личный) и отправляет сообщение
+    # Приоритет: сначала пытаемся через бота (если есть telegram_chat_id),
+    # при ошибке - fallback на персональный аккаунт
     # @param client [Client] Клиент для отправки
     # @param text [String] Текст сообщения
     # @return [Hash] Результат отправки с message_id и каналом
     def send(client:, text:)
       return error_result("Telegram не настроен для этого аккаунта") unless @telegram_setup
 
-      # Проверяем, подписан ли клиент на бота
-      if bot_available? && client_subscribed_to_bot?(client)
-        send_via_bot(client: client, text: text)
-      elsif personal_account_authorized?
+      # Если бот настроен и у клиента есть telegram_chat_id, пытаемся отправить через бота
+      if bot_available? && client.telegram_chat_id.present?
+        bot_result = send_via_bot(client: client, text: text)
+        
+        # Если отправка через бота успешна - возвращаем результат
+        return bot_result if bot_result[:ok]
+        
+        # Если ошибка связана с тем, что клиент не подписан/заблокировал бота,
+        # пытаемся отправить через персональный аккаунт
+        if should_fallback_to_personal?(bot_result) && personal_account_authorized?
+          Rails.logger.info "Bot send failed for client ##{client.id}, falling back to personal account. Error: #{bot_result[:error]}"
+          return send_via_personal(client: client, text: text)
+        end
+        
+        # Если fallback не возможен, возвращаем ошибку бота
+        return bot_result
+      end
+      
+      # Если бот не доступен или нет telegram_chat_id, используем персональный аккаунт
+      if personal_account_authorized?
         send_via_personal(client: client, text: text)
       else
         error_result("Бот не настроен и личный аккаунт не авторизован")
@@ -33,19 +51,35 @@ module TelegramProviders
       @telegram_setup.personal_authorized?
     end
 
-    # Проверка подписки клиента на бота
-    def client_subscribed_to_bot?(client)
-      return false unless client.telegram_chat_id.present?
-
-      bot_client = TelegramProviders::BotClient.new(token: @telegram_setup.bot_token)
+    # Определяет, нужно ли делать fallback на персональный аккаунт
+    # при ошибке отправки через бота
+    # @param bot_result [Hash] Результат отправки через бота
+    # @return [Boolean] true если нужно попробовать персональный аккаунт
+    def should_fallback_to_personal?(bot_result)
+      return false unless bot_result.is_a?(Hash) && !bot_result[:ok]
       
-      # Получаем user_id из chat_id (для приватных чатов chat_id == user_id)
-      user_id = client.telegram_chat_id.to_i
-      chat_id = client.telegram_chat_id
-
-      bot_client.get_chat_member(chat_id: chat_id, user_id: user_id)
-    rescue => e
-      Rails.logger.error "Error checking bot subscription: #{e.message}"
+      error = bot_result[:error].to_s.downcase
+      error_code = bot_result[:error_code]
+      
+      # Ошибки, которые означают, что клиент не подписан/заблокировал бота
+      # и стоит попробовать персональный аккаунт
+      fallback_errors = [
+        'chat not found',
+        'user not found',
+        'bot was blocked by the user',
+        'bot blocked',
+        'chat_id is empty',
+        'bad request: chat not found',
+        'forbidden: bot was blocked by the user',
+        'forbidden: user is deactivated'
+      ]
+      
+      # Проверяем по тексту ошибки
+      return true if fallback_errors.any? { |fallback_error| error.include?(fallback_error) }
+      
+      # Проверяем по коду ошибки (400 - bad request, 403 - forbidden)
+      return true if error_code.in?([400, 403])
+      
       false
     end
 
@@ -67,7 +101,8 @@ module TelegramProviders
         {
           ok: false,
           channel: 'bot',
-          error: result[:error] || "Неизвестная ошибка"
+          error: result[:error] || "Неизвестная ошибка",
+          error_code: result[:error_code]
         }
       end
     rescue => e
@@ -89,9 +124,13 @@ module TelegramProviders
                     return error_result("У клиента нет telegram_username или phone")
                   end
 
+      Rails.logger.info "Sending message via personal account to recipient: #{recipient}, text length: #{text.length}"
+
       # Используем микросервис
       microservice = TelegramProviders::MicroserviceClient.new(account: @account)
       result = microservice.send_message(recipient: recipient, text: text)
+      
+      Rails.logger.info "Microservice result: ok=#{result[:ok]}, error=#{result[:error]}, data=#{result[:data].inspect}"
       
       if result[:ok]
         {
@@ -101,14 +140,27 @@ module TelegramProviders
           recipient: recipient
         }
       else
+        # Улучшаем сообщение об ошибке для пользователя
+        error_message = result[:error] || "Неизвестная ошибка"
+        
+        # Если ошибка связана с тем, что контакт не найден
+        if error_message.include?("Cannot find any entity") || error_message.include?("not found")
+          if recipient.start_with?('+') || recipient.match?(/^\d/)
+            error_message = "Контакт с номером #{recipient} не найден в Telegram. Убедитесь, что контакт добавлен в ваши контакты Telegram и номер указан правильно."
+          else
+            error_message = "Контакт #{recipient} не найден в Telegram. Убедитесь, что username указан правильно или контакт добавлен в ваши контакты."
+          end
+        end
+        
         {
           ok: false,
           channel: 'personal',
-          error: result[:error]
+          error: error_message
         }
       end
     rescue => e
       Rails.logger.error "Error sending message via microservice: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
       {
         ok: false,
         channel: 'personal',

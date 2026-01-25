@@ -62,9 +62,9 @@ class TelegramSetupsController < ApplicationController
           render turbo_stream: [
             render_turbo_flash,
             turbo_stream.update(:offcanvas, ""),
-            turbo_stream.update(
-              dom_id(current_account, "telegram_setups"),
-              partial: "telegram_setups/index_content",
+            turbo_stream.replace(
+              dom_id(current_account, dom_id(@telegram_setup)),
+              partial: "telegram_setups/telegram_setup",
               locals: { telegram_setup: @telegram_setup, current_account: current_account }
             )
           ]
@@ -216,12 +216,12 @@ class TelegramSetupsController < ApplicationController
           render turbo_stream: turbo_close_offcanvas_flash + [
             render_turbo_flash,
             turbo_stream.update(
-              dom_id(current_account, "telegram_setups"),
-              partial: "telegram_setups/index_content",
+              dom_id(current_account, dom_id(@telegram_setup)),
+              partial: "telegram_setups/telegram_setup",
               locals: { telegram_setup: @telegram_setup.reload, current_account: current_account }
             ),
             turbo_stream.update(
-              :telegram_setups_actions,
+              dom_id(current_account, "actions"),
               partial: "telegram_setups/actions",
               locals: { telegram_setup: @telegram_setup }
             )

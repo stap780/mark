@@ -40,6 +40,26 @@ module AutomationRulesHelper
       type: "number",
       operators: ["equals", "not_equals", "greater_than", "less_than"],
       values: nil
+    },
+    "automation_message.channel" => {
+      type: "enum",
+      operators: ["equals", "not_equals"],
+      values: ["email", "telegram", "sms", "whatsapp"]
+    },
+    "automation_message.status" => {
+      type: "enum",
+      operators: ["equals", "not_equals"],
+      values: ["pending", "sent", "failed", "delivered", "email_fbl", "email_unsubscribe", "email_open", "email_click"]
+    },
+    "automation_message.incase.status" => {
+      type: "enum",
+      operators: ["equals", "not_equals"],
+      values: ["new", "in_progress", "done", "canceled", "closed"]
+    },
+    "automation_message.client.email" => {
+      type: "string",
+      operators: ["contains"],
+      values: nil
     }
   }.freeze
 
@@ -93,6 +113,24 @@ module AutomationRulesHelper
           values: field[:values]
         }
       end
+    when /^automation_message\.(sent|failed)/
+      fields = [
+        field_info_by_key("automation_message.channel"),
+        field_info_by_key("automation_message.status"),
+        field_info_by_key("automation_message.incase.status"),
+        field_info_by_key("automation_message.client.email"),
+        field_info_by_key("client.email"),
+        field_info_by_key("client.phone")
+      ].compact.map do |field|
+        {
+          key: field[:key],
+          label: field_label(field[:key]),
+          type: field[:type],
+          values: field[:values]
+        }
+      end
+      
+      fields
     else
       []
     end
@@ -107,7 +145,11 @@ module AutomationRulesHelper
       "client.email" => "Email клиента",
       "client.phone" => "Телефон клиента",
       "incase.items.count" => "Количество товаров",
-      "variant.quantity" => "Количество товара"
+      "variant.quantity" => "Количество товара",
+      "automation_message.channel" => "Канал сообщения",
+      "automation_message.status" => "Статус сообщения",
+      "automation_message.incase.status" => "Статус заявки (через сообщение)",
+      "automation_message.client.email" => "Email клиента (через сообщение)"
     }[field_key] || field_key.humanize
   end
 

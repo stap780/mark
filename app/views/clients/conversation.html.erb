@@ -1,0 +1,11 @@
+<%= turbo_stream_from dom_id(current_account, dom_id(@conversation, :messages)) %>
+<%= render 'shared/offcanvas_inner', title: t('conversations.show.title', name: @client.name), width: '50rem' do %>
+  <div class="flex flex-col max-h-[70vh]">
+    <div class="flex-1 min-h-0 overflow-y-auto mb-4" data-controller="scroll-to-bottom">
+      <%= render 'conversations/conversation_timeline', conversation: @conversation, messages: @messages, current_account: current_account %>
+    </div>
+    <div class="flex-shrink-0">
+      <%= render 'conversations/send_message_form', conversation: @conversation, current_account: current_account %>
+    </div>
+  </div>
+<% end %>

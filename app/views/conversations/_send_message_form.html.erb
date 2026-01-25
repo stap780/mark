@@ -1,0 +1,83 @@
+<%
+  # Используем новый маршрут если conversation имеет id, иначе старый (для обратной совместимости)
+  form_url = if conversation.persisted?
+    send_message_account_conversation_path(current_account, conversation)
+  elsif conversation.client_id.present?
+    send_message_account_client_conversation_path(current_account, conversation.client)
+  else
+    '#'
+  end
+  form_frame_id = dom_id(current_account, dom_id(conversation, :send_message_form))
+%>
+<%= turbo_frame_tag form_frame_id, class: "space-y-4" do %>
+<%= form_with url: form_url,
+              method: :post,
+              data: { 
+                turbo_stream: true,
+                controller: "message-form",
+                action: "change->message-form#channelChanged"
+              },
+              class: "space-y-4" do |f| %>
+  
+  <% 
+    # Определяем все доступные варианты отправки на основе настроек аккаунта
+    available_options = []
+    
+    # Telegram
+    available_options << ['telegram', t("conversations.channels.telegram")] if current_account.telegram_setup.present?
+    
+    # Email
+    available_options << ['email', t("conversations.channels.email")] if current_account.mailganer.present? || current_account.email_setup.present?
+    
+    # SMS провайдеры (каждый отдельно)
+    idgtl = current_account.idgtl
+    moizvonki = current_account.moizvonki
+    available_options << ['sms:idgtl', "SMS (i-dgtl)"] if idgtl.present?
+    available_options << ['sms:moizvonki', "SMS (Moizvonki)"] if moizvonki.present?
+    
+    # Выбираем вариант по умолчанию (первый доступный)
+    default_option = available_options.first&.first || 'telegram'
+  %>
+  
+  <% if available_options.any? %>
+    <div>
+      <%= f.label :channel, "Канал отправки", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.select :channel,
+          options_for_select(
+            available_options.map { |value, label| [label, value] },
+            default_option
+          ),
+          {},
+          { 
+            class: "w-full px-3 py-2 border border-gray-300 rounded-md text-sm", 
+            id: "channel_select",
+            data: { action: "change->message-form#channelChanged" }
+          } %>
+    </div>
+  <% else %>
+    <div class="text-sm text-gray-500 mb-4">
+      Нет настроенных каналов отправки. Настройте Telegram, Email или SMS в разделе настроек.
+    </div>
+  <% end %>
+
+  <div data-message-form-target="emailSubject" style="display: none;">
+    <%= f.label :subject, "Тема письма", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_field :subject,
+        class: "w-full px-3 py-2 border border-gray-300 rounded-md text-sm",
+        placeholder: "Введите тему письма" %>
+  </div>
+
+  <div>
+    <%= f.label :content, "Текст сообщения", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_area :content,
+        rows: 4,
+        class: "w-full px-3 py-2 border border-gray-300 rounded-md text-sm",
+        placeholder: "Введите текст сообщения",
+        required: true %>
+  </div>
+
+  <div>
+    <%= f.submit "Отправить", class: "w-full px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 text-sm font-medium" %>
+  </div>
+<% end %>
+<% end %>

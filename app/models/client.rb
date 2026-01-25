@@ -6,6 +6,8 @@ class Client < ApplicationRecord
   belongs_to :account
   has_many :list_items, dependent: :destroy
   has_many :incases
+  has_many :conversations, dependent: :destroy
+  has_many :messages, dependent: :destroy
   has_one_attached :list_items_file
 
   validates :name, presence: true
@@ -49,8 +51,19 @@ class Client < ApplicationRecord
 
 
   def self.ransackable_associations(auth_object = nil)
-    %w[list_items]
+    %w[list_items conversations]
   end
+
+  def self.ransackable_scopes(auth_object = nil)
+    %i[needs_contact waiting_for_response no_response_after_3]
+  end
+
+  # Scope для фильтрации "не отвечают 3+ дня" через Ransack
+  scope :no_response_after_3, -> {
+    no_response_after(3)
+  }
+
+
 
 
   def insale_api_update
@@ -106,5 +119,69 @@ class Client < ApplicationRecord
   def full_name
     [name, surname, email].join(' ')
   end
+
+  # Методы для работы с перепиской
+  def conversation
+    account.conversations.find_by(client: self)
+  end
+
+  def conversation_status
+    conv = conversation
+    return 'no_contact' unless conv
+
+    if conv.waiting_for_response?
+      'waiting_response'
+    elsif conv.last_incoming_at.present? && conv.last_incoming_at > 7.days.ago
+      'active'
+    elsif conv.last_outgoing_at.present? && (conv.last_incoming_at.nil? || conv.last_outgoing_at > conv.last_incoming_at)
+      days_ago = ((Time.current - conv.last_outgoing_at) / 1.day).to_i
+      if days_ago >= 3
+        "no_response_#{days_ago}_days"
+      else
+        'waiting_response'
+      end
+    else
+      'no_contact'
+    end
+  end
+
+  def last_contact_days_ago
+    conv = conversation
+    return nil unless conv&.last_message_at
+    ((Time.current - conv.last_message_at) / 1.day).to_i
+  end
+
+  def can_send_telegram?
+    telegram_chat_id.present? || telegram_username.present? || phone.present?
+  end
+
+  def can_send_email?
+    email.present?
+  end
+
+  def can_send_sms?
+    phone.present?
+  end
+
+  # Scopes для фильтрации по статусу коммуникации
+  scope :waiting_for_response, -> {
+    joins(:conversations)
+      .where(conversations: { status: 'active' })
+      .where.not(conversations: { last_outgoing_at: nil })
+      .where('conversations.last_incoming_at IS NULL OR conversations.last_outgoing_at > conversations.last_incoming_at')
+  }
+
+  scope :needs_contact, -> {
+    left_joins(:conversations)
+      .where(conversations: { id: nil })
+  }
+
+  scope :no_response_after, ->(days) {
+    joins(:conversations)
+      .where(conversations: { status: 'active' })
+      .where.not(conversations: { last_outgoing_at: nil })
+      .where('conversations.last_outgoing_at < ?', days.days.ago)
+      .where('conversations.last_incoming_at IS NULL OR conversations.last_outgoing_at > conversations.last_incoming_at')
+  }
 
 end

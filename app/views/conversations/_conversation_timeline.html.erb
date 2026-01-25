@@ -1,0 +1,11 @@
+<%= turbo_frame_tag dom_id(current_account, dom_id(conversation, :messages)), class: "space-y-4 block" do %>
+  <% if messages.blank? %>
+    <div class="text-center text-gray-500 py-8">
+      <p>Нет сообщений</p>
+    </div>
+  <% else %>
+    <% messages.each do |message| %>
+      <%= render 'conversations/message', message: message, conversation: conversation, current_account: current_account %>
+    <% end %>
+  <% end %>
+<% end %>

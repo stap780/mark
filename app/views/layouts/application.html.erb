@@ -63,6 +63,7 @@
 
               <%= link_to_sidebar t('menu.dashboard'), account_dashboard_path(current_account), active_if: '/dashboard' %>
               <%= link_to_sidebar t('menu.incases'), account_incases_path(current_account), active_if: '/incases' if show_link?('incases') %>
+              <%= link_to_sidebar t('menu.conversations'), account_conversations_path(current_account), active_if: '/conversations' if show_link?('conversations') %>
               <%= link_to_sidebar t('menu.clients'), account_clients_path(current_account), active_if: '/clients' if show_link?('clients') %>
               <%= link_to_sidebar t('menu.products'), account_products_path(current_account), active_if: '/products' %>
               <%= link_to_sidebar t('menu.discounts'), account_discounts_path(current_account), active_if: '/discounts' if show_link?('discounts') %>

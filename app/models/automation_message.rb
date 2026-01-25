@@ -22,6 +22,9 @@ class AutomationMessage < ApplicationRecord
   scope :by_channel, ->(channel) { where(channel: channel) }
   scope :recent, -> { order(created_at: :desc) }
   
+  # Генерируем события автоматизации при изменении статуса
+  after_update_commit :trigger_automation_events, if: :saved_change_to_status?
+  
   def self.ransackable_attributes(auth_object = nil)
     attribute_names
   end
@@ -142,6 +145,34 @@ class AutomationMessage < ApplicationRecord
     end
 
     [false, "Проверка статуса доступна только для email и SMS"]
+  end
+
+  private
+
+  def trigger_automation_events
+    # Генерируем событие только при переходе в финальные статусы
+    return unless status.in?(['sent', 'failed'])
+
+    event_name = case status
+                 when 'sent'
+                   'automation_message.sent'
+                 when 'failed'
+                   'automation_message.failed'
+                 end
+
+    return unless event_name
+
+    # Вызываем Automation::Engine с контекстом сообщения
+    Automation::Engine.call(
+      account: account,
+      event: event_name,
+      object: self,
+      context: {
+        automation_message: self,
+        incase: incase,
+        client: client
+      }
+    )
   end
   
 end

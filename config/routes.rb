@@ -151,11 +151,26 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :conversations, only: [:index, :show, :new, :create] do
+      member do
+        post :send_message
+        patch :close
+        patch :reopen
+      end
+    end
+
     resources :clients do
       member do
         get :insales_info
+        get :conversation
+        get :conversations
       end
       resources :varbinds
+      resource :conversation, only: [:show], controller: 'conversations' do
+        member do
+          post :send_message
+        end
+      end
     end
 
     resources :lists do
@@ -195,6 +210,7 @@ Rails.application.routes.draw do
       collection do
         get :create_standard_scenarios_form
         post :create_standard_scenarios
+        get :info
       end
       member do
         patch :sort
@@ -229,10 +245,7 @@ Rails.application.routes.draw do
     namespace :webhooks do
       post "moizvonki/:account_id/:secret", to: "moizvonkis#sms_message"
       post "telegram/:account_id/:secret", to: "telegrams#update"
-    end
-    
-    namespace :telegram_webhooks do
-      post 'incoming_message', to: 'telegram_webhooks#incoming_message'
+      post "telegram/incoming_message", to: "telegrams#incoming_message"
     end
 
     scope "/accounts/:account_id" do

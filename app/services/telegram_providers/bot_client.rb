@@ -8,6 +8,7 @@ module TelegramProviders
     end
 
     # Отправка сообщения через бота
+    # telegram-bot-ruby возвращает Telegram::Bot::Types::Message, а не Hash с "result"
     # @param chat_id [String, Integer] ID чата
     # @param text [String] Текст сообщения
     # @return [Hash] Результат отправки с message_id
@@ -16,10 +17,11 @@ module TelegramProviders
         chat_id: chat_id,
         text: text
       )
+      # Гем возвращает Telegram::Bot::Types::Message, у него есть message_id и chat.id
       {
         ok: true,
-        message_id: response['result']['message_id'],
-        chat_id: response['result']['chat']['id'],
+        message_id: response.message_id,
+        chat_id: response.chat.is_a?(Hash) ? response.chat['id'] : response.chat.id,
         raw: response
       }
     rescue Telegram::Bot::Exceptions::ResponseError => e

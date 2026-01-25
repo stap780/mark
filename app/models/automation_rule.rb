@@ -18,7 +18,9 @@ class AutomationRule < ApplicationRecord
   EVENTS = {
     'incase.created' => 'Заявка создана',
     'incase.updated' => 'Заявка обновлена',
-    'variant.back_in_stock' => 'Товар появился в наличии'
+    'variant.back_in_stock' => 'Товар появился в наличии',
+    'automation_message.sent' => 'Сообщение отправлено',
+    'automation_message.failed' => 'Ошибка отправки сообщения'
   }.freeze
 
   validates :title, :event, presence: true
