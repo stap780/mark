@@ -18,6 +18,8 @@ class ConversationsController < ApplicationController
   end
 
   def show
+    @conversation.mark_as_read!
+    @conversation.broadcast_list_item_update
     @messages = @conversation.messages.order(created_at: :asc).last(50)
     @client = @conversation.client
   end
@@ -39,6 +41,7 @@ class ConversationsController < ApplicationController
     # Используем только активный диалог по клиенту; если есть только закрытый/архивный — создаём новый
     @conversation = @account.conversations.active.find_by(client: client) ||
                     @account.conversations.create!(client: client, status: :active)
+    @conversation.mark_as_read!
     @messages = @conversation.messages.order(created_at: :asc).last(50)
     @client = @conversation.client
     flash.now[:notice] = t("conversations.create.success")

@@ -36,6 +36,14 @@ class Conversation < ApplicationRecord
     last_outgoing_at.present? && (last_incoming_at.nil? || last_outgoing_at > last_incoming_at)
   end
 
+  def has_unread_incoming?
+    last_incoming_at.present? && (read_at.nil? || last_incoming_at > read_at)
+  end
+
+  def mark_as_read!
+    update!(read_at: Time.current)
+  end
+
   def needs_follow_up?(days: 3)
     return false unless last_outgoing_at.present?
     return false if last_incoming_at.present? && last_incoming_at > last_outgoing_at
@@ -56,7 +64,7 @@ class Conversation < ApplicationRecord
     return unless active?
     streams = [[dom_id(account), :conversations, "active"], [dom_id(account), :conversations, "all"]]
     partial = "conversations/conversation"
-    locals = { conversation: self, current_account: account, highlight_new_message: false }
+    locals = { conversation: self, current_account: account }
     streams.each do |stream|
       broadcast_remove_to stream, target: dom_id(account, :conversations_empty)
       broadcast_prepend_to stream, target: dom_id(account, :conversations), partial: partial, locals: locals
@@ -66,16 +74,21 @@ class Conversation < ApplicationRecord
   def broadcast_conversation_list_item_if_new_message
     return unless active?
     return unless saved_change_to_last_message_at?
-    item_target = [dom_id(self), dom_id(account)].join("_")
-    streams = [[dom_id(account), :conversations, "active"], [dom_id(account), :conversations, "all"]]
-    broadcast_replace_to_each_stream(streams, item_target, highlight_new_message: true)
+    broadcast_list_item_update
   end
 
-  def broadcast_replace_to_each_stream(streams, target, highlight_new_message: false)
+  def broadcast_replace_to_each_stream(streams, target)
     partial = "conversations/conversation"
-    locals = { conversation: self, current_account: account, highlight_new_message: highlight_new_message }
+    locals = { conversation: self, current_account: account }
     streams.each do |stream|
       broadcast_replace_to stream, target: target, partial: partial, locals: locals
     end
+  end
+
+  def broadcast_list_item_update
+    return unless active?
+    item_target = [dom_id(self), dom_id(account)].join("_")
+    streams = [[dom_id(account), :conversations, "active"], [dom_id(account), :conversations, "all"]]
+    broadcast_replace_to_each_stream(streams, item_target)
   end
 end

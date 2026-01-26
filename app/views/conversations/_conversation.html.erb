@@ -2,14 +2,14 @@
   last_message = conversation.messages.order(created_at: :desc).first
   preview = last_message&.content&.truncate(60) || "Нет сообщений"
   is_active = params[:id].to_s == conversation.id.to_s
-  highlight_new_message = local_assigns[:highlight_new_message]
+  unread = conversation.has_unread_incoming?
   # Пункт списка: id = account + conversation (для turbo_stream при close/reopen).
   item_id = dom_id(current_account, dom_id(conversation))
   right_slot_id = dom_id(current_account, :conversation)
   row_class = "border-b"
-  row_class += " conversation-row-new-message" if highlight_new_message
+  row_class += " conversation-row-new-message" if unread
 %>
-<div id="<%= item_id %>" class="<%= row_class %>" data-controller="conversation-row" <%= "data-conversation-row-highlight-value=true" if highlight_new_message %>>
+<div id="<%= item_id %>" class="<%= row_class %>" data-controller="conversation-row" <%= "data-conversation-row-highlight-value=true" if unread %>>
   <%= link_to account_conversation_path(current_account, conversation),
       data: { turbo_frame: right_slot_id },
       class: "block p-4 hover:bg-gray-50 #{'bg-violet-50 border-violet-200' if is_active}" do %>
@@ -28,7 +28,7 @@
             <%= conversation.client.surname %>
           <% end %>
         </h3>
-        <% if highlight_new_message %>
+        <% if unread %>
           <span class="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-violet-500 text-white rounded" data-conversation-row-target="badge">Новое</span>
         <% elsif conversation.waiting_for_response? %>
           <span class="flex-shrink-0 w-2 h-2 bg-orange-500 rounded-full" title="Ожидает ответа"></span>
