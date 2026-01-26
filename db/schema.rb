@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_25_140000) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -370,6 +370,24 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_140000) do
     t.index ["account_id"], name: "index_moizvonkis_on_account_id"
   end
 
+  create_table "page_views", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "client_id"
+    t.string "visitor_key", null: false
+    t.bigint "product_id", null: false
+    t.bigint "variant_id"
+    t.string "url"
+    t.datetime "viewed_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "client_id", "viewed_at"], name: "index_page_views_on_account_client_viewed"
+    t.index ["account_id", "visitor_key", "viewed_at"], name: "index_page_views_on_account_visitor_viewed"
+    t.index ["account_id"], name: "index_page_views_on_account_id"
+    t.index ["client_id"], name: "index_page_views_on_client_id"
+    t.index ["product_id"], name: "index_page_views_on_product_id"
+    t.index ["variant_id"], name: "index_page_views_on_variant_id"
+  end
+
   create_table "payments", force: :cascade do |t|
     t.bigint "subscription_id", null: false
     t.integer "amount", null: false
@@ -598,6 +616,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_140000) do
   add_foreign_key "messages", "conversations"
   add_foreign_key "messages", "users"
   add_foreign_key "moizvonkis", "accounts"
+  add_foreign_key "page_views", "accounts"
+  add_foreign_key "page_views", "clients"
+  add_foreign_key "page_views", "products"
+  add_foreign_key "page_views", "variants"
   add_foreign_key "payments", "subscriptions"
   add_foreign_key "products", "accounts"
   add_foreign_key "sessions", "users"
