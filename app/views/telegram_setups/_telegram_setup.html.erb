@@ -1,6 +1,10 @@
 <%= turbo_frame_tag dom_id(current_account, dom_id(telegram_setup)), class: "grid grid-cols-[1fr_1fr_150px] gap-4 p-4 items-center border-t" do %>
   <div class="text-sm">
-    <%= telegram_setup.bot_token.present? ? "✓ Настроен" : "Не настроен" %>
+    <% if telegram_setup.bot_token.present? %>
+      ✓ Настроен<%= " (#{telegram_setup.bot_display_name})" if telegram_setup.bot_display_name.present? %>
+    <% else %>
+      Не настроен
+    <% end %>
   </div>
   <div class="text-sm">
     <%= telegram_setup.personal_authorized? ? "✓ Авторизован (#{telegram_setup.personal_phone})" : "Не авторизован" %>

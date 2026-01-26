@@ -4,7 +4,7 @@ class SubscriptionsController < ApplicationController
 
   # Разрешаем обычным пользователям просматривать и создавать подписки
   # Админы нужны только для управления существующими подписками
-  before_action :ensure_account_admin, only: [:show, :edit, :update, :destroy, :cancel]
+  before_action :ensure_account_admin, only: [:edit, :update, :destroy, :cancel]
   before_action :set_subscription, only: [:show, :edit, :update, :destroy, :cancel]
 
   def index

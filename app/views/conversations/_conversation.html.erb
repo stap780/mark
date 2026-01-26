@@ -11,12 +11,12 @@
 %>
 <div id="<%= item_id %>" class="<%= row_class %>" data-controller="conversation-row" <%= "data-conversation-row-highlight-value=true" if unread %>>
   <%= link_to account_conversation_path(current_account, conversation),
-      data: { turbo_frame: right_slot_id },
+      data: { turbo_frame: right_slot_id, turbo_prefetch: false },
       class: "block p-4 hover:bg-gray-50 #{'bg-violet-50 border-violet-200' if is_active}" do %>
     <div class="flex items-start gap-3">
     <!-- Аватар/Инициалы -->
     <div class="flex-shrink-0 w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-700 font-medium text-sm">
-      <%= conversation.client.name.first.upcase %>
+      <%= conversation.client&.name.first.upcase %>
     </div>
     
     <div class="flex-1 min-w-0">

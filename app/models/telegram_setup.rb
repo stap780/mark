@@ -20,14 +20,18 @@ class TelegramSetup < ApplicationRecord
     personal_authorized && personal_session.present?
   end
 
-  # Установка webhook для бота
-  # @param base_url [String, nil] Базовый URL приложения. Если не указан, берется из ENV/credentials
+  # Имя бота из Telegram API (@"username" или first_name), с мемоизацией на время запроса
+  def bot_display_name
+    return nil unless bot_token.present?
+    @bot_display_name ||= fetch_bot_display_name
+  end
+
+  # Установка webhook для бота (localhost:3000 в dev, app.teletri.ru в prod)
   # @return [Hash] Результат установки { ok: true/false, error: ... }
-  def setup_webhook(base_url: nil)
+  def setup_webhook
     return { ok: false, error: 'Bot token отсутствует' } unless bot_token.present?
 
-    base_url ||= application_base_url
-    webhook_url = "#{base_url}/api/webhooks/telegram/#{account_id}/#{webhook_secret}"
+    webhook_url = "#{application_base_url}/api/webhooks/telegram/#{account_id}/#{webhook_secret}"
 
     bot_client = TelegramProviders::BotClient.new(token: bot_token)
     result = bot_client.set_webhook(
@@ -73,19 +77,23 @@ class TelegramSetup < ApplicationRecord
   end
 
   def application_base_url
-    ENV['APP_URL'] ||
-      Rails.application.credentials.dig(:app, :url) ||
-      default_base_url
+    Rails.env.development? ? 'http://localhost:3000' : 'https://app.teletri.ru'
   end
 
-  def default_base_url
-    if Rails.env.development?
-      'http://localhost:3000'
-    elsif Rails.env.production?
-      # В production должен быть установлен APP_URL или в credentials
-      'https://example.com' # fallback, но лучше установить APP_URL
-    else
-      'http://localhost:3000'
+  def fetch_bot_display_name
+    result = TelegramProviders::BotClient.new(token: bot_token).get_me
+    return nil unless result[:ok]
+    info = result[:bot_info]
+    return nil if info.blank?
+    username = info.is_a?(Hash) ? info['username'] : info.try(:username)
+    name = info.is_a?(Hash) ? info['first_name'] : info.try(:first_name)
+    if username.present?
+      username.to_s.start_with?('@') ? username.to_s : "@#{username}"
+    elsif name.present?
+      name.to_s
     end
+  rescue => e
+    Rails.logger.warn "TelegramSetup#bot_display_name failed: #{e.message}"
+    nil
   end
 end
