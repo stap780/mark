@@ -97,14 +97,18 @@
         <p class="text-sm text-blue-700 mt-2">
           <strong>Пример использования:</strong>
         </p>
-        <pre class="text-xs bg-blue-100 p-2 rounded mt-1 overflow-x-auto"><code>&lt;button data-twc-webform-id="<%= webform.id %>"&gt;Показать форму&lt;/button&gt;
+        <pre class="text-xs bg-blue-100 p-2 rounded mt-1 overflow-x-auto"><code>&lt;!-- Кнопка/ссылка: по клику открывается модальное окно --&gt;
+&lt;button data-twc-webform-id="<%= webform.id %>"&gt;Показать форму&lt;/button&gt;
 
 &lt;!-- С дополнительными параметрами --&gt;
 &lt;a href="#" data-twc-webform-id="<%= webform.id %>" 
    data-product-id="123" 
    data-variant-id="456"&gt;
   Заказать товар
-&lt;/a&gt;</code></pre>
+&lt;/a&gt;
+
+&lt;!-- Инлайн: форма подставляется в этот элемент (например, в футер) --&gt;
+&lt;span data-twc-webform-id="<%= webform.id %>" data-twc-webform-inline&gt;&lt;/span&gt;</code></pre>
       </div>
     <% elsif ['time_on_page', 'scroll_depth'].include?(current_trigger_type) %>
       <div>

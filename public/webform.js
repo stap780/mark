@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.3.2
+ * Версия: 1.3.3
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.3.2";
+      this.version = "1.3.3";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -113,6 +113,7 @@
       this.debugLog(`[setupEventListeners] Setting up listeners for ${this.webforms.length} webforms`);
       this.webforms.forEach(webform => {
         this.debugLog(`[setupEventListeners] Setting up listener for webform: ${webform.kind} (id: ${webform.id})`);
+        this.setupInlineContainers(webform);
         switch (webform.kind) {
           case 'notify':
             this.handleNotify(webform);
@@ -126,6 +127,25 @@
           case 'abandoned_cart':
             this.handleAbandonedCart(webform);
             break;
+        }
+      });
+    }
+
+    setupInlineContainers(webform) {
+      const containers = document.querySelectorAll(`[data-twc-webform-id="${webform.id}"][data-twc-webform-inline]`);
+      this.debugLog(`[setupInlineContainers] Found ${containers.length} inline container(s) for webform ${webform.id}`);
+      containers.forEach(container => {
+        const html = this.generateFormHTML(webform, {}, { inline: true });
+        container.innerHTML = html;
+        this.applyPhoneMasks(container);
+        const form = container.querySelector('.twc-webform-preview-form');
+        if (form) {
+          form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.handleFormSubmit(e, webform, {}, container);
+            return false;
+          });
         }
       });
     }
@@ -325,7 +345,7 @@
     }
     
     setupManualTrigger(webform) {
-      const manualTriggers = document.querySelectorAll(`[data-twc-webform-id="${webform.id}"]`);
+      const manualTriggers = document.querySelectorAll(`[data-twc-webform-id="${webform.id}"]:not([data-twc-webform-inline])`);
       this.debugLog(`[setupManualTrigger] Found ${manualTriggers.length} manual triggers for webform ${webform.id}`);
       manualTriggers.forEach(trigger => {
         trigger.addEventListener('click', (e) => {
@@ -1125,14 +1145,17 @@
         if (successMessage) {
           successMessage.style.display = 'block';
           form.reset();
-          setTimeout(() => overlay.remove(), 2000);
+          if (overlay.classList.contains('webform-overlay')) {
+            setTimeout(() => overlay.remove(), 2000);
+          }
         }
       }).catch(error => {
         console.error("WebformManager: Error sending form data", error);
       });
     }
 
-    generateFormHTML(webform, eventData = {}) {
+    generateFormHTML(webform, eventData = {}, options = {}) {
+      const inline = options.inline === true;
       const settings = webform.settings || {};
       const fields = webform.fields || [];
 
@@ -1398,6 +1421,56 @@
         />
       `;
 
+      const closeButtonHTML = inline ? '' : `
+              <button class="webform-close" style="
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+                z-index: 2;
+              ">&times;</button>
+              `;
+
+      const previewDiv = `
+            <div class="twc-webform-preview" style="
+              position: relative;
+              overflow: hidden;
+              ${gridStyle}
+              background-color: ${settings.background_color || '#ffffff'};
+              ${Object.entries(formStyles).map(([key, value]) => {
+                const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                if (key === 'backgroundColor') return '';
+                return `${cssKey}: ${value}`;
+              }).filter(s => s).join('; ')}
+            ">
+              ${behindImagesHTML}
+              ${closeButtonHTML}
+              ${hasLeft ? `<div class="twc-webform-preview-image" style="position: relative; z-index: 1; width: 100%; height: 100%;">${leftImagesHTML}</div>` : ''}
+              <form class="twc-webform-preview-form" style="position: relative;" onsubmit="return false;">
+                ${fieldsHTML}
+                ${honeypotField}
+                <div class="webform-error-message" style="display: none; color: red; font-size: 14px; margin-top: 10px;"></div>
+                <div class="webform-success-message" style="display: none; color: green; margin-top: 10px;">
+                  Форма успешно отправлена!
+                </div>
+              </form>
+              ${hasRight ? `<div class="twc-webform-preview-image" style="position: relative; z-index: 1; width: 100%; height: 100%;">${rightImagesHTML}</div>` : ''}
+            </div>`;
+
+      const wrapperHTML = `
+          <div class="webform-wrapper${inline ? ' twc-webform-inline' : ''}">
+            ${!hasLeft && !hasRight ? topImagesHTML : ''}
+            ${previewDiv}
+            ${!hasLeft && !hasRight ? bottomImagesHTML : ''}
+          </div>`;
+
+      if (inline) {
+        return wrapperHTML;
+      }
+
       return `
         <div class="webform-overlay-content" style="
           position: fixed;
@@ -1412,50 +1485,7 @@
           justify-content: center;
           z-index: 10000;
         ">
-          <div class="webform-wrapper">
-            ${!hasLeft && !hasRight ? topImagesHTML : ''}
-            
-            <div class="twc-webform-preview" style="
-              position: relative;
-              overflow: hidden;
-              ${gridStyle}
-              background-color: ${settings.background_color || '#ffffff'};
-              ${Object.entries(formStyles).map(([key, value]) => {
-                const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-                // Пропускаем backgroundColor, так как он уже добавлен выше
-                if (key === 'backgroundColor') return '';
-                return `${cssKey}: ${value}`;
-              }).filter(s => s).join('; ')}
-            ">
-              ${behindImagesHTML}
-              
-              <button class="webform-close" style="
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-                z-index: 2;
-              ">&times;</button>
-              
-              ${hasLeft ? `<div class="twc-webform-preview-image" style="position: relative; z-index: 1; width: 100%; height: 100%;">${leftImagesHTML}</div>` : ''}
-              
-              <form class="twc-webform-preview-form" style="position: relative;" onsubmit="return false;">
-                ${fieldsHTML}
-                ${honeypotField}
-                <div class="webform-error-message" style="display: none; color: red; font-size: 14px; margin-top: 10px;"></div>
-                <div class="webform-success-message" style="display: none; color: green; margin-top: 10px;">
-                  Форма успешно отправлена!
-                </div>
-              </form>
-              
-              ${hasRight ? `<div class="twc-webform-preview-image" style="position: relative; z-index: 1; width: 100%; height: 100%;">${rightImagesHTML}</div>` : ''}
-            </div>
-            
-            ${!hasLeft && !hasRight ? bottomImagesHTML : ''}
-          </div>
+          ${wrapperHTML}
         </div>
       `;
     }
