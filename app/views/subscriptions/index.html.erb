@@ -1,6 +1,8 @@
 <div class="flex items-center justify-between mb-6">
   <h1 class="text-2xl font-bold"><%= t('subscriptions.subscriptions') %></h1>
-  <%= link_to_new new_account_subscription_path(current_account), text: t('subscriptions.new_subscription'), data: { turbo_frame: :offcanvas } %>
+    <%= link_to_new new_account_subscription_path(current_account), 
+    text: t('subscriptions.new_subscription'), 
+    data: { turbo_frame: :offcanvas } unless current_account.partner? %>
   </div>
 <%= turbo_stream_from dom_id(current_account, :subscriptions) %>
 <div class="bg-white rounded-lg shadow divide-y">
