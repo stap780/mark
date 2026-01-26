@@ -100,18 +100,18 @@ module TelegramProviders
     end
 
     # Получение информации о боте
+    # telegram-bot-ruby возвращает Telegram::Bot::Types::User, а не Hash с ok/result
     def get_me
       response = @client.api.get_me
-      {
-        ok: response['ok'],
-        bot_info: response['result'],
-        raw: response
-      }
+      if response.respond_to?(:username) || response.respond_to?(:first_name)
+        { ok: true, bot_info: response, raw: response }
+      elsif response.respond_to?(:[]) && response['ok']
+        { ok: true, bot_info: response['result'], raw: response }
+      else
+        { ok: false, error: 'Unexpected get_me response', raw: response }
+      end
     rescue => e
-      {
-        ok: false,
-        error: e.message
-      }
+      { ok: false, error: e.message }
     end
   end
 end

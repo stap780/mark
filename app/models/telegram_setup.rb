@@ -20,10 +20,10 @@ class TelegramSetup < ApplicationRecord
     personal_authorized && personal_session.present?
   end
 
-  # Имя бота из Telegram API (@"username" или first_name), с мемоизацией на время запроса
+  # Имя бота из Telegram API (@"username" или first_name). Запрашивается при каждом вызове.
   def bot_display_name
     return nil unless bot_token.present?
-    @bot_display_name ||= fetch_bot_display_name
+    fetch_bot_display_name
   end
 
   # Установка webhook для бота (localhost:3000 в dev, app.teletri.ru в prod)
@@ -96,4 +96,5 @@ class TelegramSetup < ApplicationRecord
     Rails.logger.warn "TelegramSetup#bot_display_name failed: #{e.message}"
     nil
   end
+  
 end

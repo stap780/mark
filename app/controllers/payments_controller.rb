@@ -2,7 +2,7 @@ class PaymentsController < ApplicationController
   include ActionView::RecordIdentifier
   include OffcanvasResponder
   
-  before_action :ensure_account_admin
+  before_action :ensure_account_admin, only: [:index, :show]
   before_action :set_subscription, only: [:new, :create]
   before_action :set_payment, only: [:show]
 
