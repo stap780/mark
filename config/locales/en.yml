@@ -502,6 +502,15 @@ en:
       heading: "Swatch Group: %{name}"
 
   incases:
+    new:
+      heading: "New incase"
+      webform: "Webform"
+      select_webform: "Select webform"
+      select_client: "Select client"
+      submit: "Create incase"
+      no_active_webforms: "No active webforms. Create and activate a webform in Webforms."
+    create:
+      success: "Incase created."
     index:
       search_placeholder: "Search by webform, client"
       search: "Search"

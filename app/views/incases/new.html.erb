@@ -1,0 +1,3 @@
+<%= render 'shared/offcanvas_inner', title: t('incases.new.heading'), width: '28rem' do %>
+  <%= render 'incases/form', incase: @incase, active_webforms: @active_webforms, client: @client %>
+<% end %>

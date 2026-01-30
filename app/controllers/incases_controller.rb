@@ -3,6 +3,34 @@ class IncasesController < ApplicationController
   
   before_action :set_incase, only: [:show, :update_status, :destroy]
 
+  def new
+    @incase = current_account.incases.build(client_id: params[:client_id], status: :new)
+    @active_webforms = current_account.webforms.status_active.order(:title)
+    @client = current_account.clients.find_by(id: params[:client_id])
+  end
+
+  def create
+    @incase = current_account.incases.build(incase_params.merge(status: :new))
+    if @incase.save
+      flash.now[:notice] = t('.success')
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_close_offcanvas_flash + [render_turbo_flash], status: :see_other
+        end
+        format.html { redirect_to account_incase_path(current_account, @incase), notice: t('.success'), status: :see_other }
+      end
+    else
+      @active_webforms = current_account.webforms.status_active.order(:title)
+      @client = @incase.client
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(:new_incase_form, partial: "incases/form", locals: { incase: @incase, active_webforms: @active_webforms, client: @client }), status: :unprocessable_entity
+        end
+        format.html { render :new, status: :unprocessable_entity }
+      end
+    end
+  end
+
   def index
     @search = current_account.incases.includes(:client, :webform).ransack(params[:q])
     @search.sorts = "created_at desc" if @search.sorts.empty?

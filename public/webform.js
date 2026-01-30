@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.3.3
+ * Версия: 1.3.7
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.3.3";
+      this.version = "1.3.7";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -209,89 +209,61 @@
       
       this.debugLog(`[handleAbandonedCart] Webform ${webform.id} trigger type: ${triggerType}`);
       
-      // 1) НЕ страница оформления заказа (new_order):
-      //    показываем попап при попытке ухода со страницы,
-      //    каждый раз проверяя, есть ли товары в корзине и подходит ли страница/устройство.
-      //    ВАЖНО: для сценария "Брошенная корзина" не используем куки/лимиты показа (можно показывать всегда).
+      // Унифицированный exit-intent для сценария "Брошенная корзина"
+      // Работает как на checkout-странице, так и на остальных.
+      this.setupAbandonedCartExitIntent(webform, trigger);
+
+      // Дополнительная логика только для страницы оформления заказа (new_order)
       if (!this.isCheckoutPage()) {
-        document.addEventListener('mouseout', (e) => {
-          // Классический exit-intent: мышь уходит к верхней границе окна
-          if (!e.toElement && !e.relatedTarget && e.clientY < 10) {
-            const items = this.getOrderLines();
-            if (!items || items.length === 0) {
-              this.debugLog('[handleAbandonedCart] (non-checkout) No items in cart on exit-intent, popup will not be shown.');
-              return;
-            }
-
-            // Проверяем таргетинг устройств
-            const deviceType = this.getDeviceType();
-            if (trigger.target_devices && !trigger.target_devices.includes(deviceType)) {
-              this.debugLog(`[handleAbandonedCart] (non-checkout) Device ${deviceType} not in target devices, popup will not be shown.`);
-              return;
-            }
-
-            // Проверяем таргетинг страниц, но игнорируем историю показов (isFormShown),
-            // чтобы форма могла показываться при каждом уходе.
-            if (!this.isPageTargeted(trigger)) {
-              this.debugLog('[handleAbandonedCart] (non-checkout) Current page not targeted, popup will not be shown.');
-              return;
-            }
-
-            this.debugLog('[handleAbandonedCart] (non-checkout) Exit-intent detected, showing popup.');
-            const delay = trigger.show_delay || 0;
-            setTimeout(() => {
-              this.showForm(webform, {});
-              // НЕ вызываем saveFormShown → нет куки/лимитов показа для abandoned_cart вне checkout
-            }, delay);
-          }
-        });
         return;
       }
+      
+      // Страница оформления заказа (new_order)
+      // ТИХИЙ сценарий: отслеживаем активность и отправляем данные без попапа,
+      // но теперь не требуем, чтобы поля были заполнены уже в момент инициализации.
+      const intervalForSend = 4000;
+      const userDataKey = "userData";
 
-      // 2) Страница оформления заказа (new_order)
-      if (this.areCheckoutFieldsComplete()) {
-        // ТИХИЙ сценарий: отслеживаем активность и отправляем данные без попапа
-        const intervalForSend = 4000;
-        const userDataKey = "userData";
+      // Отслеживание активности (один раз при инициализации)
+      document.addEventListener("mousemove", () => this.setTimestamp());
+      document.addEventListener("click", () => this.setTimestamp());
+      document.addEventListener("keydown", () => this.setTimestamp());
+      document.body.addEventListener("mouseleave", () => {
+        if (this.isRegistered()) {
+          this.getRegisteredData(webform, userDataKey);
+        } else {
+          this.getUnregisteredData(webform, userDataKey);
+        }
+      });
 
-        // Отслеживание активности
-        document.addEventListener("mousemove", () => this.setTimestamp());
-        document.addEventListener("click", () => this.setTimestamp());
-        document.addEventListener("keydown", () => this.setTimestamp());
-        document.body.addEventListener("mouseleave", () => {
+      // Сбор данных из полей формы оформления заказа
+      const emailInput = document.querySelector("input[name='client[email]']");
+      const phoneInput = document.querySelector("input[name='client[phone]']");
+      const nameInput = document.querySelector("input[name='client[name]']");
+      const shippingAddressPhone = document.querySelector("input[name='shipping_address[phone]']");
+
+      if (emailInput) emailInput.addEventListener("input", (e) => this.abandonedCartData.email = e.target.value);
+      if (phoneInput) phoneInput.addEventListener("input", (e) => this.abandonedCartData.phone = e.target.value);
+      if (nameInput) nameInput.addEventListener("input", (e) => this.abandonedCartData.name = e.target.value);
+      if (shippingAddressPhone) shippingAddressPhone.addEventListener("input", (e) => this.abandonedCartData.phone = e.target.value);
+
+      // Периодическая проверка и отправка
+      setInterval(() => {
+        if (this.abandonedCartData.sent) return;
+        
+        const timeSinceLastActivity = new Date().getTime() - this.abandonedCartData.timestamp;
+        if (timeSinceLastActivity >= intervalForSend) {
           if (this.isRegistered()) {
             this.getRegisteredData(webform, userDataKey);
           } else {
             this.getUnregisteredData(webform, userDataKey);
           }
-        });
+        }
+      }, 2000);
 
-        // Сбор данных из полей формы оформления заказа
-        const emailInput = document.querySelector("input[name='client[email]']");
-        const phoneInput = document.querySelector("input[name='client[phone]']");
-        const nameInput = document.querySelector("input[name='client[name]']");
-        const shippingAddressPhone = document.querySelector("input[name='shipping_address[phone]']");
-
-        if (emailInput) emailInput.addEventListener("input", (e) => this.abandonedCartData.email = e.target.value);
-        if (phoneInput) phoneInput.addEventListener("input", (e) => this.abandonedCartData.phone = e.target.value);
-        if (nameInput) nameInput.addEventListener("input", (e) => this.abandonedCartData.name = e.target.value);
-        if (shippingAddressPhone) shippingAddressPhone.addEventListener("input", (e) => this.abandonedCartData.phone = e.target.value);
-
-        // Периодическая проверка и отправка
-        setInterval(() => {
-          if (this.abandonedCartData.sent) return;
-          
-          const timeSinceLastActivity = new Date().getTime() - this.abandonedCartData.timestamp;
-          if (timeSinceLastActivity >= intervalForSend) {
-            if (this.isRegistered()) {
-              this.getRegisteredData(webform, userDataKey);
-            } else {
-              this.getUnregisteredData(webform, userDataKey);
-            }
-          }
-        }, 2000);
-      } else {
-        // Страница new_order, НО обязательные поля не заполнены → показываем попап
+      // Дополнительно: если в момент инициализации поля ещё не заполнены,
+      // сохраняем прежнее поведение с показом попапа при наличии товаров.
+      if (!this.areCheckoutFieldsComplete()) {
         const items = this.getOrderLines();
         if (!items || items.length === 0) {
           this.debugLog('[handleAbandonedCart] Checkout page: no items in cart, popup will not be shown.');
@@ -342,6 +314,44 @@
           // Эти типы обрабатываются в специфичных методах handleNotify, handlePreorder, handleAbandonedCart
           break;
       }
+    }
+    
+    // Exit-intent обработчик специально для сценария "Брошенная корзина".
+    // Используется и на checkout-странице, и на остальных.
+    setupAbandonedCartExitIntent(webform, trigger) {
+      this.debugLog(`[setupAbandonedCartExitIntent] Setting up abandoned cart exit-intent for webform ${webform.id}`);
+      
+      document.addEventListener('mouseout', (e) => {
+        // Классический exit-intent: мышь уходит к верхней границе окна
+        if (!e.toElement && !e.relatedTarget && e.clientY < 10) {
+          const items = this.getOrderLines();
+          if (!items || items.length === 0) {
+            this.debugLog('[handleAbandonedCart] Exit-intent: no items in cart, popup will not be shown.');
+            return;
+          }
+
+          // Проверяем таргетинг устройств
+          const deviceType = this.getDeviceType();
+          if (trigger.target_devices && !trigger.target_devices.includes(deviceType)) {
+            this.debugLog(`[handleAbandonedCart] Exit-intent: device ${deviceType} not in target devices, popup will not be shown.`);
+            return;
+          }
+
+          // Проверяем таргетинг страниц, но игнорируем историю показов (isFormShown),
+          // чтобы форма могла показываться при каждом уходе.
+          if (!this.isPageTargeted(trigger)) {
+            this.debugLog('[handleAbandonedCart] Exit-intent: current page not targeted, popup will not be shown.');
+            return;
+          }
+
+          this.debugLog('[handleAbandonedCart] Exit-intent detected, showing popup.');
+          const delay = trigger.show_delay || 0;
+          setTimeout(() => {
+            this.showForm(webform, {});
+            // НЕ вызываем saveFormShown → нет куки/лимитов показа для abandoned_cart
+          }, delay);
+        }
+      });
     }
     
     setupManualTrigger(webform) {
@@ -707,7 +717,17 @@
 
     async sendAbandonedCartToAPI(webform, data) {
       const items = this.getOrderLines();
-      if (items.length > 0 && data.contacts.email && data.contacts.email.length > 0) {
+
+      // Дополнительный лог, чтобы понимать, почему заявка может не отправляться
+      this.debugLog('[sendAbandonedCartToAPI] items.length:', items.length, 'contacts:', {
+        hasEmail: !!(data && data.contacts && data.contacts.email),
+        hasPhone: !!(data && data.contacts && data.contacts.phone)
+      });
+
+      // Раньше отправка требовала обязательно email.
+      // Раз на checkout у вас заполняются все данные, но заявка не уходит,
+      // допускаем отправку, если есть ИЛИ email, ИЛИ телефон.
+      if (items.length > 0 && data && data.contacts && (data.contacts.email || data.contacts.phone)) {
         const clientData = { ...data.contacts };
         const yaClientId = this.getYandexClientId();
         if (yaClientId) {
@@ -716,7 +736,18 @@
         // В потоке брошенной корзины формы на сайте нет, поэтому honeypot не используется.
         // Явно передаём пустое значение, чтобы серверная проверка honeypot не срабатывала.
         clientData.website = '';
+
+        this.debugLog('[sendAbandonedCartToAPI] Sending abandoned cart with contacts:', {
+          email: clientData.email ? '[FILTERED]' : '',
+          phone: clientData.phone
+        });
+
         await this.sendToAPI(webform.id, clientData, items, data.id);
+      } else {
+        this.debugLog('[sendAbandonedCartToAPI] Conditions not met, request will NOT be sent:', {
+          hasItems: items.length > 0,
+          hasContacts: !!(data && data.contacts && (data.contacts.email || data.contacts.phone))
+        });
       }
     }
 
@@ -1147,6 +1178,8 @@
           form.reset();
           if (overlay.classList.contains('webform-overlay')) {
             setTimeout(() => overlay.remove(), 2000);
+          } else {
+            setTimeout(() => { successMessage.style.display = 'none'; }, 5000);
           }
         }
       }).catch(error => {

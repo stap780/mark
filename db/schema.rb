@@ -572,7 +572,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
     t.string "cookie_name"
     t.integer "show_times"
     t.index ["account_id", "kind", "status"], name: "index_webforms_on_account_id_and_kind_and_status"
-    t.index ["account_id", "kind"], name: "index_webforms_on_account_kind_singleton", unique: true, where: "((kind)::text = ANY ((ARRAY['order'::character varying, 'notify'::character varying, 'preorder'::character varying, 'abandoned_cart'::character varying])::text[]))"
+    t.index ["account_id", "kind"], name: "index_webforms_on_account_kind_singleton", unique: true, where: "((kind)::text = ANY (ARRAY[('order'::character varying)::text, ('notify'::character varying)::text, ('preorder'::character varying)::text, ('abandoned_cart'::character varying)::text]))"
     t.index ["account_id"], name: "index_webforms_on_account_id"
   end
 

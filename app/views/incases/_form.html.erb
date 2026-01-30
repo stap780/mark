@@ -1,0 +1,50 @@
+<%= turbo_frame_tag :new_incase_form do %>
+  <%= form_with model: incase, url: account_incases_path(current_account), data: { turbo_stream: true }, local: false, class: "space-y-4" do |f| %>
+    <% if incase.errors.any? %>
+      <div class="rounded-md bg-red-50 p-3 text-sm text-red-700">
+        <%= incase.errors.full_messages.join(", ") %>
+      </div>
+    <% end %>
+
+    <div>
+      <%= f.label :webform_id, t('incases.new.webform'), class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <% if active_webforms.any? %>
+        <%= f.collection_select :webform_id,
+            active_webforms,
+            :id,
+            ->(w) { "#{w.title} (#{w.kind})" },
+            { prompt: t('incases.new.select_webform') },
+            { class: "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm", required: true } %>
+      <% else %>
+        <p class="text-sm text-amber-600"><%= t('incases.new.no_active_webforms') %></p>
+      <% end %>
+    </div>
+
+    <% if client.present? %>
+      <div>
+        <span class="block text-sm font-medium text-gray-700 mb-1"><%= t('incases.index.client') %></span>
+        <p class="text-sm text-gray-900"><%= client.name %> <%= client.email %></p>
+        <%= f.hidden_field :client_id %>
+      </div>
+    <% else %>
+      <div>
+        <%= f.label :client_id, t('incases.index.client'), class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.collection_select :client_id,
+            current_account.clients.order(:name).limit(500),
+            :id,
+            ->(c) { "#{c.name} #{c.surname} #{c.email}".strip.presence || c.phone || "##{c.id}" },
+            { prompt: t('incases.new.select_client') },
+            { class: "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm", required: true } %>
+      </div>
+    <% end %>
+
+    <div class="flex justify-start space-x-3 pt-4">
+      <%= f.submit t('incases.new.submit'), class: "inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 text-sm font-medium", disabled: active_webforms.empty? %>
+      <button type="button"
+              class="inline-flex items-center px-4 py-2 bg-white text-violet-700 border border-violet-600 rounded-md hover:bg-violet-50 text-sm font-medium"
+              data-action="click->offcanvas#close">
+        <%= t('cancel') %>
+      </button>
+    </div>
+  <% end %>
+<% end %>

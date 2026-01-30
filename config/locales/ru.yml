@@ -818,6 +818,15 @@ ru:
       empty: "Нет диалогов с этим клиентом"
 
   incases:
+    new:
+      heading: "Новая заявка"
+      webform: "Веб-форма"
+      select_webform: "Выберите веб-форму"
+      select_client: "Выберите клиента"
+      submit: "Создать заявку"
+      no_active_webforms: "Нет активных вебформ. Создайте и включите веб-форму в разделе Веб-формы."
+    create:
+      success: "Заявка создана."
     index:
       search_placeholder: "Поиск по клиенту"
       search: "Поиск"

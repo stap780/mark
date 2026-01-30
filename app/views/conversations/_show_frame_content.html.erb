@@ -16,12 +16,13 @@
             <% end %>
           </div>
         </div>
-        <div class="flex-shrink-0">
+        <div class="flex gap-2">
           <% if conversation.active? %>
-            <%= button_to t('conversations.close.action'), close_account_conversation_path(current_account, conversation), method: :patch, class: "px-3 py-1.5 text-sm rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50", data: { turbo_confirm: t('conversations.close.confirm'), turbo_stream: true } %>
+            <%= button_to t('conversations.close.action'), close_account_conversation_path(current_account, conversation), method: :patch, class: "px-2 py-1 text-sm rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50", data: { turbo_confirm: t('conversations.close.confirm'), turbo_stream: true, turbo_prefetch: false  } %>
           <% else %>
-            <%= button_to t('conversations.reopen.action'), reopen_account_conversation_path(current_account, conversation), method: :patch, class: "px-3 py-1.5 text-sm rounded-md bg-violet-600 text-white hover:bg-violet-700", data: { turbo_stream: true } %>
+            <%= button_to t('conversations.reopen.action'), reopen_account_conversation_path(current_account, conversation), method: :patch, class: "px-2 py-1 text-sm rounded-md bg-violet-600 text-white hover:bg-violet-700", data: { turbo_stream: true, turbo_prefetch: false  } %>
           <% end %>
+          <%= link_to t('incases.new.heading'), new_account_incase_path(current_account, client_id: client.id), data: { turbo_frame: :offcanvas, turbo_prefetch: false }, class: "inline-flex items-center px-2 py-1 text-sm rounded-md border border-violet-600 text-violet-600 bg-white hover:bg-violet-50" %>
         </div>
       </div>
     </div>
