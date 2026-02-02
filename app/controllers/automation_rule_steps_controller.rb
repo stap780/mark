@@ -27,7 +27,7 @@ class AutomationRuleStepsController < ApplicationController
 
     if @step.save
       link_previous_step_to_new_one
-      flash.now[:success] = t("automation_rule_steps.created", default: "Блок добавлен")
+      flash.now[:success] = t("automation_rule_steps.created")
       steps_frame_id = dom_id(current_account, dom_id(@automation_rule, :steps))
       tree_content = render_to_string(
         partial: "automation_rules/steps_tree",

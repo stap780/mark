@@ -10,8 +10,10 @@ class MigrateAutomationRulesToSteps < ActiveRecord::Migration[8.0]
       steps_to_link = []
       position = 1
 
-      if rule.automation_conditions.ordered.any?
-        cond = rule.automation_conditions.ordered.first
+      # Используем unscoped для обхода scope, который ссылается на несуществующую колонку automation_rule_step_id
+      conditions = AutomationCondition.unscoped.where(automation_rule_id: rule.id).order(:position, :id)
+      if conditions.any?
+        cond = conditions.first
         step = rule.automation_rule_steps.create!(
           position: position,
           step_type: "condition",
