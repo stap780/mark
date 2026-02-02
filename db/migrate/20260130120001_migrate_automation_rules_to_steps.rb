@@ -36,7 +36,7 @@ class MigrateAutomationRulesToSteps < ActiveRecord::Migration[8.0]
       rule.automation_actions.order(:position).each do |action|
         step = rule.automation_rule_steps.create!(
           position: position,
-          step_type: "message",
+          step_type: "action",
           automation_action_id: action.id
         )
         steps_to_link << step
