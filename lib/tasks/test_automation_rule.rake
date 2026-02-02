@@ -124,9 +124,41 @@ namespace :test do
       }
     end
     
+    # Проверяем условия перед выполнением
+    puts "--- Pre-execution Check ---"
+    first_step = rule.automation_rule_steps.ordered.first
+    if first_step&.condition?
+      conditions_array = first_step.automation_conditions.ordered.map do |cond|
+        { "field" => cond.field, "operator" => cond.operator, "value" => cond.value }
+      end
+      condition_json = { "operator" => "AND", "conditions" => conditions_array }.to_json
+      condition_result = Automation::ConditionEvaluator.new(condition_json, context).evaluate
+      
+      puts "First step condition check:"
+      first_step.automation_conditions.ordered.each do |cond|
+        evaluator = Automation::ConditionEvaluator.new(condition_json, context)
+        field_value = evaluator.send(:get_field_value, cond.field)
+        single_result = evaluator.send(:evaluate_single_condition, cond)
+        puts "  #{cond.field} #{cond.operator} #{cond.value} → #{field_value.inspect} → #{single_result ? '✅ PASS' : '❌ FAIL'}"
+      end
+      puts "Overall condition result: #{condition_result ? '✅ PASS' : '❌ FAIL'}"
+      puts "Will execute: #{condition_result ? 'Да branch' : 'Нет branch'}"
+      puts ""
+    end
+    
+    # Показываем все правила, которые будут выполнены
+    puts "--- Rules that will execute for event '#{event}' ---"
+    all_rules = account.automation_rules.active.for_event(event).order(:position)
+    all_rules.each do |r|
+      marker = r.id == rule.id ? "👉 " : "   "
+      puts "#{marker}Rule ##{r.id}: #{r.title}"
+    end
+    puts ""
+    
     # Запускаем правило
     puts "--- Executing Rule ---"
     messages_before = account.automation_messages.where(automation_rule: rule).count
+    rule_scheduled_before = rule.scheduled_for
     
     begin
       Automation::Engine.call(
@@ -135,11 +167,24 @@ namespace :test do
         object: object,
         context: context
       )
-      puts "✅ Rule executed successfully"
+      puts "✅ All rules executed successfully"
     rescue => e
       puts "❌ Error executing rule: #{e.message}"
       puts e.backtrace.first(5).join("\n")
       exit 1
+    end
+    
+    # Проверяем, была ли запланирована пауза
+    rule.reload
+    if rule.scheduled_for.present? && rule_scheduled_before != rule.scheduled_for
+      puts ""
+      puts "⏸️  Rule has a pause scheduled:"
+      puts "  Scheduled for: #{rule.scheduled_for}"
+      time_until = (rule.scheduled_for - Time.zone.now).to_i
+      if time_until > 0
+        puts "  Time until execution: #{time_until} seconds (#{(time_until / 60.0).round(1)} minutes)"
+        puts "  ⚠️  Messages will be created after the pause completes"
+      end
     end
     
     # Показываем результаты
@@ -147,7 +192,9 @@ namespace :test do
     new_messages_count = messages_after - messages_before
     
     puts ""
-    puts "--- Results ---"
+    puts "--- Results for Rule ##{rule.id} ---"
+    puts "Messages before: #{messages_before}"
+    puts "Messages after: #{messages_after}"
     puts "New messages created: #{new_messages_count}"
     
     if new_messages_count > 0
@@ -170,6 +217,32 @@ namespace :test do
           puts "  Error: #{msg.error_message}"
         end
       end
+    elsif rule.scheduled_for.present?
+      puts ""
+      puts "ℹ️  No messages created yet - rule is paused and will continue at #{rule.scheduled_for}"
+    else
+      puts ""
+      puts "ℹ️  No messages created. Possible reasons:"
+      puts "  - Condition evaluated to false (execution went to 'Нет' branch)"
+      puts "  - Rule has no action steps"
+      puts "  - Action steps failed silently"
+    end
+    
+    # Показываем все сообщения, созданные для этого события (всех правил)
+    puts ""
+    puts "--- All Messages Created (all rules for event '#{event}') ---"
+    all_new_messages = account.automation_messages
+      .where(automation_rule: all_rules)
+      .where("created_at > ?", 5.seconds.ago)
+      .order(created_at: :desc)
+    
+    if all_new_messages.any?
+      all_new_messages.each do |msg|
+        marker = msg.automation_rule_id == rule.id ? "👉 " : "   "
+        puts "#{marker}Rule ##{msg.automation_rule_id} → Message ID: #{msg.id} | Channel: #{msg.channel} | Status: #{msg.status}"
+      end
+    else
+      puts "No messages created in the last 5 seconds"
     end
     
     puts ""
