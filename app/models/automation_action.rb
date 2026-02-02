@@ -1,5 +1,6 @@
 class AutomationAction < ApplicationRecord
   belongs_to :automation_rule
+  has_many :automation_messages
 
   enum :kind, {
     send_email: 'send_email',

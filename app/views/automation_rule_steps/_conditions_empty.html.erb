@@ -1,0 +1,11 @@
+<%= turbo_frame_tag dom_id(step, :condition_content), class: "space-y-2" do %>
+  <div class="grid grid-cols-[2fr_2fr_2fr_100px] gap-2 p-2 border-b font-medium text-sm text-gray-700">
+    <div>Поле</div>
+    <div>Оператор</div>
+    <div>Значение</div>
+    <div></div>
+  </div>
+  <%= turbo_frame_tag dom_id(step, :conditions_empty) do %>
+    <div class="text-sm text-gray-500 border rounded p-3">Нет условий. Добавьте первое условие.</div>
+  <% end %>
+<% end %>

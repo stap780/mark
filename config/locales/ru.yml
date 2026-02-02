@@ -711,6 +711,10 @@ ru:
       edit:
         heading: "Редактировать правило"
     automation_conditions:
+      create:
+        success: "Условие добавлено"
+      update:
+        success: "Условие обновлено"
       destroy:
         success: "Условие удалено"
     idgtls:
@@ -735,6 +739,47 @@ ru:
   automation_rules:
     edit:
       heading: "Редактировать правило"
+    chain:
+      heading: "Цепочка: %{title}"
+      classic_edit: "Классическое редактирование"
+      block_trigger: "Триггер"
+      field_title: "Название"
+      field_event: "Событие"
+      select_event: "Выберите событие"
+      block_condition: "Условие"
+      add_condition: "Добавить условие"
+      logic_label: "Логика между условиями:"
+      logic_and: "И (AND)"
+      logic_or: "ИЛИ (OR)"
+      col_field: "Поле"
+      col_operator: "Оператор"
+      col_value: "Значение"
+      no_conditions: "Нет условий. Добавьте первое условие."
+      block_pause: "Пауза"
+      delay_label: "Задержка (секунды)"
+      active_label: "Активно"
+      block_messages: "Сообщения"
+      add_message: "Добавить сообщение"
+      col_type: "Тип"
+      no_actions: "Нет действий. Добавьте первое действие."
+      save: "Сохранить"
+      cancel: "Отмена"
+      related_branches_title: "Другие ветки для этого события"
+      actions_count: "действий"
+      open_as_chain: "Открыть как цепочку"
+      edit: "Редактировать"
+      no_related_rules: "Нет других правил по этому событию"
+      link: "Цепочка"
+      branching_hint: "Ветвление «если … то …, иначе …» — это несколько правил с одним событием и разными условиями. На экране видна одна ветка; остальные — в блоке «Связанные ветки» ниже."
+      scroll_to_related: "↓ К связанным веткам"
+      add_block_modal_title: "Добавить блок"
+      add_block_pause: "Пауза"
+      add_block_condition: "Условие"
+      add_block_action: "Действие"
+      add_block_message: "Сообщение"
+      add_block_ab_test: "A/B тест"
+      add_block_http_request: "HTTP запрос"
+      initial_event_undeletable: "Начальное событие нельзя удалить."
     update:
       success: "Правило обновлено"
     destroy:
@@ -746,9 +791,14 @@ ru:
     create_standard_scenarios:
       title: "Добавить стандартные сценарии"
       description: "Будут созданы следующие сценарии:"
-      warning: "Внимание! Сообщаем что в системе может быть только 1 запись для Сценария 1-4, поэтому обновятся записи для этих вебформ. "
+      warning: "Внимание! Уникальность проверяется по словосочетанию 'Сценарий 1', 'Сценарий 2' и так далее. При наличии существующего правила произойдёт обновление Правила и Вебформы."
       create_button: "Создать"
       success: "Стандартные сценарии успешно созданы"
+
+  automation_rule_steps:
+    show_title: "Блок"
+    edit_title: "Редактировать блок"
+    destroy_confirm: "Удалить блок?"
 
   products:
     index:
@@ -1088,6 +1138,12 @@ ru:
       send_telegram: "Отправить Telegram"
       change_status: "Изменить статус"
   automation_conditions:
+    index_title: "Блок условий"
+    conditions: "Условия (И)"
+    create:
+      success: "Условие добавлено"
+    update:
+      success: "Условие обновлено"
     select_field: "Выберите поле"
     select_operator: "Выберите оператор"
     select_value: "Выберите значение"

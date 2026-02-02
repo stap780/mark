@@ -43,45 +43,6 @@
   
   <% if automation_rule.persisted? %>
     <div class="bg-white rounded-lg shadow p-4 mt-4">
-      <!-- Скрытое поле condition_type - всегда 'simple' -->
-      <%= f.hidden_field :condition_type, value: 'simple' %>
-
-      <!-- Условия - только для persisted -->
-      <div class="mt-2 space-y-3 mb-6">
-        <div class="flex items-center justify-between">
-          <label class="block text-sm font-medium text-gray-700">Условия:</label>
-          <% path = automation_rule.new_record? ? new_account_automation_rule_automation_condition_path(current_account, automation_rule) : new_account_automation_rule_automation_condition_path(current_account, automation_rule) %>
-          <%= link_to "+ Добавить условие", path,data: { turbo_stream: true }, class: "text-sm text-violet-600 hover:text-violet-800" %>
-        </div>
-        
-        <%= turbo_frame_tag dom_id(current_account, dom_id(automation_rule, :automation_conditions)), class: "space-y-2" do %>
-          <!-- Header row -->
-          <div class="grid grid-cols-[2fr_2fr_2fr_50px] gap-4 p-2 border-b font-medium text-sm text-gray-700">
-            <div>Поле</div>
-            <div>Оператор</div>
-            <div>Значение</div>
-            <div></div>
-          </div>
-          
-          <% automation_rule.automation_conditions.ordered.each do |condition| %>
-            <%= render "automation_conditions/automation_condition", automation_rule: automation_rule, automation_condition: condition, current_account: current_account %>
-          <% end %>
-          
-          <%= turbo_frame_tag dom_id(current_account, dom_id(@automation_rule, :automation_conditions_empty)) do %>
-            <div class="text-sm text-gray-500 border rounded p-3">Нет условий. Добавьте первое условие.</div>
-          <% end if automation_rule.automation_conditions.empty? %>
-        <% end %>
-        
-      </div>
-          
-      <div class="flex items-center space-x-2 my-4">
-        <label class="text-sm font-medium text-gray-700">Логика между условиями:</label>
-        <%= f.select :logic_operator,
-            [["И (AND)", "AND"], ["ИЛИ (OR)", "OR"]],
-            { selected: automation_rule.logic_operator || 'AND' },
-            { class: "rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2" } %>
-      </div>
-
       <!-- Действия - только для persisted, через turbo -->
       <div class="mt-2 space-y-3 mt-6">
         <div class="flex items-center justify-between mb-2">

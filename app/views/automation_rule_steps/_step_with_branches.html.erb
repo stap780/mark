@@ -1,0 +1,60 @@
+<%# Рекурсивный партиал: один шаг и его продолжение (дерево). step может быть nil (пустой слот). parent_step — шаг, «владеющий» этим слотом (для + в пустой ветке). branch — "true" (Да) или "false" (Нет) для ветки условия. %>
+<% step ||= nil %>
+<% parent_step ||= nil %>
+<% branch = local_assigns[:branch] %>
+<% add_after_id = parent_step&.id %>
+<% add_block_params = { insert_after_step_id: add_after_id }.merge(branch.present? ? { branch: branch } : {}) %>
+
+<% if step.nil? %>
+  <%# Пустой слот: плейсхолдер и кнопка «+» %>
+  <div class="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 min-h-[80px] flex flex-col items-center justify-center p-4">
+    <%= link_to add_block_account_automation_rule_path(current_account, automation_rule, add_block_params),
+        data: { turbo_frame: :offcanvas },
+        class: "inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors",
+        title: t("automation_rules.chain.add_block_modal_title") do %>
+      <span class="text-xl leading-none" aria-hidden="true">+</span>
+    <% end %>
+  </div>
+<% else %>
+  <div class="space-y-4">
+    <%= render "automation_rule_steps/step", step: step, automation_rule: automation_rule, current_account: current_account %>
+
+    <% if step.condition? %>
+      <%# Ветвление: два столбца «Нет» и «Да» %>
+      <div class="grid grid-cols-2 gap-6 mt-2">
+        <div class="space-y-2">
+          <p class="text-xs font-medium text-gray-500 uppercase tracking-wide text-center my-2">Нет</p>
+          <div class="">
+            <%= render "automation_rule_steps/step_with_branches",
+                step: step.next_step_when_false,
+                automation_rule: automation_rule,
+                current_account: current_account,
+                parent_step: step,
+                branch: "false" %>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <p class="text-xs font-medium text-gray-500 uppercase tracking-wide text-center my-2">Да</p>
+          <div class="">
+            <%= render "automation_rule_steps/step_with_branches",
+                step: step.next_step,
+                automation_rule: automation_rule,
+                current_account: current_account,
+                parent_step: step,
+                branch: "true" %>
+          </div>
+        </div>
+      </div>
+    <% else %>
+      <%# Пауза или действие: «+» уже в _step под карточкой, ниже — следующий шаг %>
+      <% display_next = step.next_step || next_step_in_ordered(step, automation_rule) %>
+      <% if display_next %>
+        <%= render "automation_rule_steps/step_with_branches",
+            step: display_next,
+            automation_rule: automation_rule,
+            current_account: current_account,
+            parent_step: step %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

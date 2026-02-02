@@ -257,5 +257,19 @@ module AutomationRulesHelper
   def operator_requires_value?(operator)
     operator.present?
   end
+
+  # Следующий шаг по позиции (для отображения цепочки, когда next_step не задан).
+  # Не используем порядок, если шаг уже является целью ветки (next_step/next_step_when_false другого шага).
+  def next_step_in_ordered(step, automation_rule)
+    return nil if step_referenced_as_branch?(step, automation_rule)
+    steps = automation_rule.automation_rule_steps.ordered.to_a
+    idx = steps.index(step)
+    idx && steps[idx + 1]
+  end
+
+  def step_referenced_as_branch?(step, automation_rule)
+    automation_rule.automation_rule_steps.exists?(next_step_id: step.id) ||
+      automation_rule.automation_rule_steps.exists?(next_step_when_false_id: step.id)
+  end
 end
 

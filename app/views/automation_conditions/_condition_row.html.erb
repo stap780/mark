@@ -1,0 +1,12 @@
+<%= turbo_frame_tag dom_id(step, dom_id(automation_condition)) do %>
+  <div class="grid grid-cols-[2fr_2fr_2fr_100px] gap-2 p-3 border rounded mb-2 bg-gray-50 items-center">
+    <div class="text-sm"><%= field_label(automation_condition.field) %></div>
+    <div class="text-sm"><%= operator_label(automation_condition.operator) %></div>
+    <div class="text-sm"><%= automation_condition.display_value %></div>
+    <div class="flex justify-end items-center gap-1">
+      <%= link_to_edit edit_account_automation_rule_automation_rule_step_automation_condition_path(current_account, automation_rule, step, automation_condition) %>
+      <%= link_to_delete account_automation_rule_automation_rule_step_automation_condition_path(current_account, automation_rule, step, automation_condition),
+          data: { turbo_method: :delete, turbo_confirm: t("automation_conditions.delete_confirm"), turbo_stream: true } %>
+    </div>
+  </div>
+<% end %>

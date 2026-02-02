@@ -1,5 +1,5 @@
 <%= turbo_frame_tag dom_id(current_account, dom_id(automation_message)) do %>
-    <div class="grid grid-cols-[50_150px_200px_200px_200px_200px_1fr] gap-4 p-4 items-center hover:bg-gray-50">
+    <div class="grid grid-cols-[50_150px_200px_200px_200px_200px_1fr_auto] gap-4 p-4 items-center hover:bg-gray-50">
       <div class="text-sm"><%= automation_message.id %></div>
       <div class="text-sm"><%= automation_message.created_at.strftime("%d.%m.%Y %H:%M") %></div>
       <div class="text-sm">
@@ -45,6 +45,20 @@
         <%= automation_message.subject %>
         <% if automation_message.error_message.present? %>
           <div class="text-xs text-red-600 mt-1"><strong>Ошибка:</strong> <%= automation_message.error_message %></div>
+        <% end %>
+      </div>
+      <div class="text-sm flex items-center gap-2">
+        <%= button_to account_automation_message_path(current_account, automation_message),
+            method: :delete,
+            data: { 
+              turbo_stream: true,
+              turbo_confirm: "Вы уверены, что хотите удалить это сообщение?"
+            },
+            class: "p-2 rounded-md bg-red-100 hover:bg-red-200 text-red-700",
+            title: "Удалить сообщение" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
         <% end %>
       </div>
     </div>

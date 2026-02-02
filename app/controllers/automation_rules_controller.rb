@@ -2,7 +2,7 @@ class AutomationRulesController < ApplicationController
   include OffcanvasResponder
   include ActionView::RecordIdentifier
 
-  before_action :set_automation_rule, only: [:edit, :update, :destroy, :sort]
+  before_action :set_automation_rule, only: [:edit, :update, :destroy, :sort, :chain, :add_block]
 
   def index
     @automation_rules = current_account.automation_rules.order(:position, :created_at)
@@ -21,8 +21,8 @@ class AutomationRulesController < ApplicationController
     respond_to do |format|
       if @automation_rule.save
         flash[:success] = "Правило создано"
-        format.turbo_stream { redirect_to edit_account_automation_rule_path(current_account, @automation_rule, format: :html) }
-        format.html { redirect_to edit_account_automation_rule_path(current_account, @automation_rule) }
+        format.turbo_stream { redirect_to chain_account_automation_rule_path(current_account, @automation_rule, format: :html) }
+        format.html { redirect_to chain_account_automation_rule_path(current_account, @automation_rule) }
       else
         format.html { render :new, status: :unprocessable_entity }
       end
@@ -39,24 +39,48 @@ class AutomationRulesController < ApplicationController
     
     respond_to do |format|
       if @automation_rule.update(automation_rule_params)
-        # flash[:success] = "Правило обновлено"
-        format.turbo_stream { redirect_to edit_account_automation_rule_path(current_account, @automation_rule) }
-        format.html { redirect_to account_automation_rules_path(current_account), notice: t('.success')}
+        chain_url = chain_account_automation_rule_path(current_account, @automation_rule)
+        from_chain = request.referer.to_s.include?("/chain")
+        format.turbo_stream do
+          # Не делаем redirect, чтобы сохранить фокус в поле ввода
+          # Просто обновляем flash, если нужно
+          render turbo_stream: render_turbo_flash
+        end
+        format.html { redirect_to from_chain ? chain_url : account_automation_rules_path(current_account), notice: t('.success') }
       else
         puts "errors: #{@automation_rule.errors.full_messages.join(' ')}"
         flash.now[:notice] = @automation_rule.errors.full_messages.join(' ')
-        format.html { render :edit, status: :unprocessable_entity }
+        from_chain = request.referer.to_s.include?("/chain")
+        format.html { render(from_chain ? :chain : :edit, status: :unprocessable_entity) }
         format.turbo_stream {
           render turbo_stream: [
             render_turbo_flash
           ]
-          # redirect_to edit_account_automation_rule_path(current_account, @automation_rule), status: :see_other 
         }
       end
     end
   end
 
   def destroy
+    messages_count = @automation_rule.linked_messages_count
+    
+    if messages_count > 0
+      message_word = case messages_count
+                     when 1 then 'сообщение'
+                     when 2..4 then 'сообщения'
+                     else 'сообщений'
+                     end
+      
+      respond_to do |format|
+        flash.now[:warning] = "Есть #{messages_count} #{message_word}, которые связаны с правилом. Удалите их перед удалением правила."
+        format.turbo_stream do
+          render turbo_stream: render_turbo_flash
+        end
+        format.html { redirect_to account_automation_rules_path(current_account), alert: "Есть #{messages_count} #{message_word}, которые связаны с правилом. Удалите их перед удалением правила." }
+      end
+      return
+    end
+
     @automation_rule.destroy
     respond_to do |format|
       flash.now[:success] = t('.success')
@@ -73,6 +97,15 @@ class AutomationRulesController < ApplicationController
   def sort
     @automation_rule.insert_at(params[:position].to_i)
     head :ok
+  end
+
+  def chain
+  end
+
+  def add_block
+    @insert_after_step_id = params[:insert_after_step_id]
+    @position = params[:position]
+    @branch = params[:branch]
   end
 
   def create_standard_scenarios_form

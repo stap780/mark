@@ -1,0 +1,88 @@
+<%= form_with model: [current_account, automation_rule, step],
+    url: account_automation_rule_automation_rule_step_path(current_account, automation_rule, step),
+    data: (step.step_type == "action" ? { turbo_stream: true, controller: "auto-submit", "auto-submit-delay-value": 200 } : { turbo_stream: true }),
+    class: "space-y-4" do |f| %>
+  <%= render "shared/errors", object: step %>
+
+  <% case step.step_type %>
+  <% when "pause" %>
+    <div>
+      <%= f.label :delay_seconds, t("automation_rules.chain.delay_label"), class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.number_field :delay_seconds, min: 0, step: 1, class: "block w-full rounded-md border-gray-300 shadow-sm px-3 py-2" %>
+    </div>
+  <% when "condition" %>
+    <div class="space-y-2">
+      <p class="text-sm text-gray-600">
+        Условий: <%= step.automation_conditions.size %>.
+        <%= link_to "Настроить условия",
+            account_automation_rule_automation_rule_step_path(current_account, automation_rule, step),
+            data: { turbo_frame: :offcanvas },
+            class: "text-violet-600 hover:text-violet-800" %> — добавление и удаление в экране просмотра блока.
+      </p>
+    </div>
+    <div>
+      <%= f.label :next_step_id, "Следующий блок (да)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.select :next_step_id,
+          options_from_collection_for_select(automation_rule.automation_rule_steps.ordered.where.not(id: step.id), :id, :summary, step.next_step_id),
+          { include_blank: "— Конец цепочки —" },
+          class: "block w-full rounded-md border-gray-300 shadow-sm px-3 py-2" %>
+    </div>
+    <div>
+      <%= f.label :next_step_when_false_id, "Следующий блок (нет)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.select :next_step_when_false_id,
+          options_from_collection_for_select(automation_rule.automation_rule_steps.ordered.where.not(id: step.id), :id, :summary, step.next_step_when_false_id),
+          { include_blank: "— Конец цепочки —" },
+          class: "block w-full rounded-md border-gray-300 shadow-sm px-3 py-2" %>
+    </div>
+  <% when "action" %>
+    <% if step.automation_action %>
+      <%= f.fields_for :automation_action_attributes, step.automation_action do |af| %>
+        <%= af.hidden_field :id %>
+        <div class="grid grid-cols-[2fr_2fr] gap-4 p-3 border rounded mb-2 bg-gray-50">
+          <div>
+            <%= af.label :kind, t("automation_actions.kind_label", default: "Тип действия"), class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= af.select :kind,
+                AutomationAction.kinds.keys.map { |k| [t("automation_actions.kinds.#{k}", default: k.humanize), k] },
+                { include_blank: false },
+                class: "block w-full rounded-md border-gray-300 shadow-sm px-3 py-2" %>
+          </div>
+          <div>
+            <% current_kind = step.automation_action.kind.presence || "send_email" %>
+            <%= af.label :value, t("automation_actions.value_label"), class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <% case current_kind %>
+            <% when "send_email", "send_email_to_users" %>
+              <%= af.select :value,
+                  options_for_select(automation_rule.account.message_templates.email.pluck(:title, :id).map { |t, id| [t, id.to_s] }, step.automation_action.value),
+                  { include_blank: "Выберите шаблон" },
+                  { class: "block w-full rounded-md border-gray-300 shadow-sm px-3 py-2", data: { "auto-submit-ignore": true } } %>
+            <% when "send_sms_idgtl", "send_sms_moizvonki" %>
+              <%= af.select :value,
+                  options_for_select(automation_rule.account.message_templates.sms.pluck(:title, :id).map { |t, id| [t, id.to_s] }, step.automation_action.value),
+                  { include_blank: "Выберите шаблон SMS" },
+                  { class: "block w-full rounded-md border-gray-300 shadow-sm px-3 py-2", data: { "auto-submit-ignore": true } } %>
+            <% when "send_telegram" %>
+              <%= af.select :value,
+                  options_for_select(automation_rule.account.message_templates.pluck(:title, :id).map { |t, id| [t, id.to_s] }, step.automation_action.value),
+                  { include_blank: "Выберите шаблон Telegram" },
+                  { class: "block w-full rounded-md border-gray-300 shadow-sm px-3 py-2", data: { "auto-submit-ignore": true } } %>
+            <% when "change_status" %>
+              <%= af.select :value,
+                  options_for_select(Incase.statuses.keys.map { |k| [t("automation_conditions.values.incase_status.#{k}"), k] }, step.automation_action.value),
+                  { include_blank: "Выберите статус" },
+                  { class: "block w-full rounded-md border-gray-300 shadow-sm px-3 py-2", data: { "auto-submit-ignore": true } } %>
+            <% else %>
+              <%= af.text_field :value, class: "block w-full rounded-md border-gray-300 shadow-sm px-3 py-2", data: { "auto-submit-ignore": true } %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="text-sm text-gray-500"><%= t("automation_rule_steps.no_action", default: "Действие не назначено.") %></p>
+    <% end %>
+  <% end %>
+
+  <div class="flex justify-end gap-2">
+    <%= f.submit t("save", default: "Сохранить"), class: "px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    <button type="button" class="px-3 py-1 bg-gray-200 rounded-md" data-action="offcanvas#close"><%= t("cancel", default: "Отмена") %></button>
+  </div>
+<% end %>

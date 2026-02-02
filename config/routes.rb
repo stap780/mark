@@ -213,16 +213,19 @@ Rails.application.routes.draw do
         get :info
       end
       member do
+        get :chain
+        get :add_block
         patch :sort
       end
-      resources :automation_conditions, only: [:new, :create, :destroy]
       resources :automation_actions, only: [:new, :create, :destroy]
+      resources :automation_rule_steps, only: [:create, :show, :edit, :update, :destroy] do
+        resources :automation_conditions
+      end
     end
-    resources :automation_conditions, only: [:new, :destroy]
     resources :automation_actions, only: [:new, :destroy]
 
     resources :message_templates
-    resources :automation_messages, only: [:index] do
+    resources :automation_messages, only: [:index, :destroy] do
       member do
         get :check_status
       end

@@ -1,0 +1,46 @@
+<%# Offcanvas «Добавить блок»: 5 типов — Пауза, Условие, Действие (активны), A/B тест, HTTP запрос (неактивны). %>
+<% insert_after_step_id = local_assigns[:insert_after_step_id] %>
+<% branch = local_assigns[:branch] %>
+<% base_params = { insert_after_step_id: insert_after_step_id }.merge(branch.present? ? { branch: branch } : {}) %>
+<% create_path = account_automation_rule_automation_rule_steps_path(current_account, automation_rule) %>
+<div class="flex flex-wrap gap-4 justify-center">
+  <%= button_to create_path, params: base_params.merge(step_type: "condition"),
+      data: { turbo_stream: true },
+      class: "flex flex-col items-center justify-center w-24 h-24 rounded-lg border-2 border-blue-500 text-blue-600 hover:bg-blue-50 transition-colors" do %>
+    <span class="text-2xl mb-1" aria-hidden="true">◇</span>
+    <span class="text-sm font-medium"><%= t('automation_rules.chain.add_block_condition') %></span>
+  <% end %>
+
+  <%= button_to create_path,
+      params: base_params.merge(step_type: "action"),
+      method: :post,
+      data: { turbo_stream: true },
+      class: "flex flex-col items-center justify-center w-24 h-24 rounded-lg border-2 border-violet-500 text-violet-600 hover:bg-violet-50 transition-colors" do %>
+    <span class="text-2xl mb-1" aria-hidden="true">⚡</span>
+    <span class="text-sm font-medium"><%= t('automation_rules.chain.add_block_action') %></span>
+  <% end %>
+  <%= button_to create_path,
+      params: base_params.merge(step_type: "pause"),
+      method: :post,
+      data: { turbo_stream: true },
+      class: "flex flex-col items-center justify-center w-24 h-24 rounded-lg border-2 border-orange-500 text-orange-600 hover:bg-orange-50 transition-colors" do %>
+    <span class="text-2xl mb-1" aria-hidden="true">⏸</span>
+    <span class="text-sm font-medium"><%= t('automation_rules.chain.add_block_pause') %></span>
+  <% end %>
+
+
+  <div class="flex flex-col items-center justify-center w-24 h-24 rounded-lg border-2 border-sky-200 text-sky-400 bg-gray-50 opacity-60 cursor-not-allowed"
+       aria-disabled="true"
+       title="<%= t('automation_rules.chain.add_block_ab_test') %> (недоступно)">
+    <span class="text-2xl mb-1" aria-hidden="true">A/B</span>
+    <span class="text-sm font-medium"><%= t('automation_rules.chain.add_block_ab_test') %></span>
+  </div>
+
+  <div class="flex flex-col items-center justify-center w-24 h-24 rounded-lg border-2 border-sky-200 text-sky-400 bg-gray-50 opacity-60 cursor-not-allowed"
+       aria-disabled="true"
+       title="<%= t('automation_rules.chain.add_block_http_request') %> (недоступно)">
+    <span class="text-2xl mb-1" aria-hidden="true">🌐</span>
+    <span class="text-sm font-medium"><%= t('automation_rules.chain.add_block_http_request') %></span>
+  </div>
+
+</div>

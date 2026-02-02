@@ -13,29 +13,25 @@ module Automation
 
     def call
       rules = find_rules
-      rules.each do |rule|
-        if rule.delayed?
-          # Отложенное выполнение через метод модели (по аналогии с ImportSchedule)
-          rule.enqueue_delayed_execution!(
-            account: @account,
-            event: @event,
-            object: @object,
-            context: @context
-          )
-        else
-          # Немедленное выполнение
-          process_rule(rule)
-        end
-      end
+      rules.each { |rule| process_rule(rule) }
     end
 
     def execute_rule(rule)
       process_rule(rule)
     end
 
+    def execute_rule_from_step(rule, step_id)
+      step = rule.automation_rule_steps.find_by(id: step_id)
+      return unless step
+
+      process_from_step(rule, step)
+    end
+
     private
 
     def find_rules
+      return [] if @event.blank?
+
       @account.automation_rules
               .active
               .for_event(@event)
@@ -43,15 +39,71 @@ module Automation
     end
 
     def process_rule(rule)
-      return unless evaluate_condition(rule)
+      first_step = rule.automation_rule_steps.ordered.first
+      return unless first_step
 
-      rule.automation_actions.each do |action|
-        execute_action(action)
-      end
+      process_from_step(rule, first_step)
     rescue => e
       Rails.logger.error "Automation rule ##{rule.id} error: #{e.message}"
       Rails.logger.error e.backtrace.join("\n")
-      # НЕ raise - продолжаем выполнение других правил
+    end
+
+    def process_from_step(rule, step)
+      case step.step_type
+      when "condition"
+        result = evaluate_step_condition(step)
+        next_step = result ? step.next_step : step.next_step_when_false
+        process_from_step(rule, next_step) if next_step
+      when "pause"
+        enqueue_pause_resume(rule, step)
+      when "action"
+        execute_step_action(step)
+        process_from_step(rule, step.next_step) if step.next_step
+      end
+    rescue => e
+      Rails.logger.error "Automation step ##{step.id} error: #{e.message}"
+      raise
+    end
+
+    def evaluate_step_condition(step)
+      return false if step.automation_conditions.empty?
+
+      conditions_array = step.automation_conditions.ordered.map do |cond|
+        { "field" => cond.field, "operator" => cond.operator, "value" => cond.value }
+      end
+      condition_json = { "operator" => "AND", "conditions" => conditions_array }.to_json
+      Automation::ConditionEvaluator.new(condition_json, @context).evaluate
+    end
+
+    def enqueue_pause_resume(rule, step)
+      delay_seconds = step.delay_seconds.to_i
+      return process_from_step(rule, step.next_step) if step.next_step && delay_seconds <= 0
+
+      unless step.next_step
+        Rails.logger.warn "AutomationRule ##{rule.id} pause step ##{step.id} has no next_step"
+        return
+      end
+
+      run_at = Time.zone.now + delay_seconds.seconds
+      rule.update_columns(scheduled_for: run_at)
+
+      job = AutomationRuleExecutionJob.set(wait_until: run_at).perform_later(
+        account_id: @account.id,
+        rule_id: rule.id,
+        event: nil,
+        object_type: nil,
+        object_id: nil,
+        context: @context.deep_stringify_keys,
+        resume_from_step_id: step.next_step.id,
+        expected_at: run_at.to_i
+      )
+      rule.update_columns(active_job_id: job.job_id)
+    end
+
+    def execute_step_action(step)
+      return unless step.automation_action
+
+      execute_action(step.automation_action)
     end
 
     def evaluate_condition(rule)

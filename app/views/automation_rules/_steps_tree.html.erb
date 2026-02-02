@@ -1,0 +1,9 @@
+<%# Содержимое turbo_frame :steps — дерево от корня с ветвлением «Да»/«Нет». %>
+<% root_step = automation_rule.automation_rule_steps.ordered.first %>
+<% if root_step %>
+  <%= render "automation_rule_steps/step_with_branches",
+      step: root_step,
+      automation_rule: automation_rule,
+      current_account: current_account,
+      parent_step: nil %>
+<% end %>

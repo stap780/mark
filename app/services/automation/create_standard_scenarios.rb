@@ -68,20 +68,20 @@ module Automation
       rule = find_or_create_rule(
         title: "Сценарий 1: Отправка подтверждения заказа",
         event: "incase.created",
-        condition_type: "simple",
-        active: false,
-        delay_seconds: 0
+        active: false
       )
 
-      recreate_conditions(rule, [
-        { field: "incase.webform.kind", operator: "equals", value: "order", position: 1 },
-        { field: "incase.status", operator: "equals", value: "new", position: 2 }
-      ])
-
-      recreate_actions(rule, [
-        { kind: "send_email", value: template.id.to_s, position: 1 },
-        { kind: "change_status", value: "in_progress", position: 2 }
-      ])
+      create_chain(rule, {
+        conditions: [
+          { field: "incase.webform.kind", operator: "equals", value: "order" },
+          { field: "incase.status", operator: "equals", value: "new" }
+        ],
+        delay_seconds: 0,
+        actions: [
+          { kind: "send_email", value: template.id.to_s },
+          { kind: "change_status", value: "in_progress" }
+        ]
+      })
     end
 
     # Сценарий 2: Поступил предзаказ
@@ -134,20 +134,20 @@ module Automation
       rule = find_or_create_rule(
         title: "Сценарий 2: Отправка подтверждения предзаказа",
         event: "incase.created",
-        condition_type: "simple",
-        active: false,
-        delay_seconds: 0
+        active: false
       )
 
-      recreate_conditions(rule, [
-        { field: "incase.webform.kind", operator: "equals", value: "preorder", position: 1 },
-        { field: "incase.status", operator: "equals", value: "new", position: 2 }
-      ])
-
-      recreate_actions(rule, [
-        { kind: "send_email", value: template.id.to_s, position: 1 },
-        { kind: "change_status", value: "in_progress", position: 2 }
-      ])
+      create_chain(rule, {
+        conditions: [
+          { field: "incase.webform.kind", operator: "equals", value: "preorder" },
+          { field: "incase.status", operator: "equals", value: "new" }
+        ],
+        delay_seconds: 0,
+        actions: [
+          { kind: "send_email", value: template.id.to_s },
+          { kind: "change_status", value: "in_progress" }
+        ]
+      })
     end
 
     # Сценарий 3: Товар появился в наличии
@@ -199,23 +199,23 @@ module Automation
       rule = find_or_create_rule(
         title: "Сценарий 3: Уведомление о поступлении товара",
         event: "variant.back_in_stock",
-        condition_type: "simple",
-        active: false,
-        delay_seconds: 0
+        active: false
       )
 
-      recreate_conditions(rule, [
-        { field: "incase.webform.kind", operator: "equals", value: "notify", position: 1 },
-        { field: "variant.quantity", operator: "greater_than", value: "0", position: 2 }
-      ])
-
-      recreate_actions(rule, [
-        { kind: "send_email", value: template.id.to_s, position: 1 },
-        { kind: "change_status", value: "done", position: 2 }
-      ])
+      create_chain(rule, {
+        conditions: [
+          { field: "incase.webform.kind", operator: "equals", value: "notify" },
+          { field: "variant.quantity", operator: "greater_than", value: "0" }
+        ],
+        delay_seconds: 0,
+        actions: [
+          { kind: "send_email", value: template.id.to_s },
+          { kind: "change_status", value: "done" }
+        ]
+      })
     end
 
-    # Сценарий 4: Брошенная корзина
+    # Сценарий 4: Брошенная корзина (с ветвлением Да/Нет)
     def create_scenario_4_abandoned_cart
       webform = find_or_create_webform(
         title: "Сценарий 4: Брошенная корзина",
@@ -265,20 +265,92 @@ module Automation
       rule = find_or_create_rule(
         title: "Сценарий 4: Напоминание о брошенной корзине",
         event: "incase.created",
-        condition_type: "simple",
-        active: false,
-        delay_seconds: 3600
+        active: false
       )
 
-      recreate_conditions(rule, [
-        { field: "incase.webform.kind", operator: "equals", value: "abandoned_cart", position: 1 },
-        { field: "incase.has_order_with_same_items?", operator: "equals", value: "false", position: 2 }
-      ])
+      # Удаляем старые шаги если есть
+      rule.automation_rule_steps.destroy_all
+      rule.automation_conditions.destroy_all
+      
+      # Удаляем только те actions, которые не используются (не имеют связанных messages)
+      used_action_ids = AutomationMessage.where(automation_rule_id: rule.id).distinct.pluck(:automation_action_id).compact
+      if used_action_ids.any?
+        rule.automation_actions.where.not(id: used_action_ids).destroy_all
+      else
+        rule.automation_actions.destroy_all
+      end
 
-      recreate_actions(rule, [
-        { kind: "send_email", value: template.id.to_s, position: 1 },
-        { kind: "change_status", value: "done", position: 2 }
-      ])
+      position = 1
+
+      # Шаг 1: Условие (проверяем webform.kind и has_order_with_same_items?)
+      condition_step = rule.automation_rule_steps.create!(
+        step_type: "condition",
+        position: position
+      )
+      position += 1
+
+      # Добавляем условия в шаг
+      condition_step.automation_conditions.create!(
+        field: "incase.webform.kind",
+        operator: "equals",
+        value: "abandoned_cart",
+        position: 1
+      )
+      condition_step.automation_conditions.create!(
+        field: "incase.has_order_with_same_items?",
+        operator: "equals",
+        value: "false",
+        position: 2
+      )
+
+      # Ветка "Да" (заказа нет): пауза → email → change_status done
+      pause_step = rule.automation_rule_steps.create!(
+        step_type: "pause",
+        delay_seconds: 3600,
+        position: position
+      )
+      condition_step.update_column(:next_step_id, pause_step.id)
+      position += 1
+
+      # Действие: отправить email
+      email_action = rule.automation_actions.create!(
+        kind: "send_email",
+        value: template.id.to_s,
+        position: 1
+      )
+      email_action_step = rule.automation_rule_steps.create!(
+        step_type: "action",
+        automation_action_id: email_action.id,
+        position: position
+      )
+      pause_step.update_column(:next_step_id, email_action_step.id)
+      position += 1
+
+      # Действие: изменить статус на done
+      status_action = rule.automation_actions.create!(
+        kind: "change_status",
+        value: "done",
+        position: 2
+      )
+      status_action_step = rule.automation_rule_steps.create!(
+        step_type: "action",
+        automation_action_id: status_action.id,
+        position: position
+      )
+      email_action_step.update_column(:next_step_id, status_action_step.id)
+
+      # Ветка "Нет" (заказ уже есть): просто закрываем заявку
+      close_action = rule.automation_actions.create!(
+        kind: "change_status",
+        value: "closed",
+        position: 3
+      )
+      close_action_step = rule.automation_rule_steps.create!(
+        step_type: "action",
+        automation_action_id: close_action.id,
+        position: position + 1
+      )
+      condition_step.update_column(:next_step_when_false_id, close_action_step.id)
     end
 
     # Сценарий 5: Кастомная заявка о скидке
@@ -312,18 +384,102 @@ module Automation
       rule = find_or_create_rule(
         title: "Сценарий 5: Уведомление о скидке",
         event: "incase.created",
-        condition_type: "simple",
-        active: false,
-        delay_seconds: 0
+        active: false
       )
 
-      recreate_conditions(rule, [
-        { field: "incase.webform.title", operator: "contains", value: "скидк", position: 1 }
-      ])
+      create_chain(rule, {
+        conditions: [
+          { field: "incase.webform.title", operator: "contains", value: "скидк" }
+        ],
+        delay_seconds: 0,
+        actions: [
+          { kind: "send_email", value: template.id.to_s }
+        ]
+      })
+    end
 
-      recreate_actions(rule, [
-        { kind: "send_email", value: template.id.to_s, position: 1 }
-      ])
+    # Создает цепочку шагов для правила
+    # options: { conditions: [...], delay_seconds: 0, actions: [...] }
+    def create_chain(rule, options)
+      # Удаляем старые шаги если есть
+      rule.automation_rule_steps.destroy_all
+      rule.automation_conditions.destroy_all
+      
+      # Удаляем только те actions, которые не используются (не имеют связанных messages)
+      used_action_ids = AutomationMessage.where(automation_rule_id: rule.id).distinct.pluck(:automation_action_id).compact
+      if used_action_ids.any?
+        rule.automation_actions.where.not(id: used_action_ids).destroy_all
+      else
+        rule.automation_actions.destroy_all
+      end
+
+      steps = []
+      position = 1
+
+      # Шаг 1: Условие (если есть)
+      if options[:conditions]&.any?
+        condition_step = rule.automation_rule_steps.create!(
+          step_type: "condition",
+          position: position
+        )
+        position += 1
+
+        # Добавляем условия в шаг
+        options[:conditions].each_with_index do |cond_data, idx|
+          condition_step.automation_conditions.create!(
+            field: cond_data[:field],
+            operator: cond_data[:operator],
+            value: cond_data[:value],
+            position: idx + 1
+          )
+        end
+
+        steps << condition_step
+      end
+
+      # Шаг 2: Пауза (если delay_seconds > 0)
+      if options[:delay_seconds].to_i > 0
+        pause_step = rule.automation_rule_steps.create!(
+          step_type: "pause",
+          delay_seconds: options[:delay_seconds].to_i,
+          position: position
+        )
+        position += 1
+
+        # Связываем предыдущий шаг с паузой
+        if steps.last
+          steps.last.update_column(:next_step_id, pause_step.id)
+        end
+
+        steps << pause_step
+      end
+
+      # Шаги 3+: Действия
+      if options[:actions]&.any?
+        options[:actions].each_with_index do |action_data, idx|
+          # Создаем AutomationAction
+          action = rule.automation_actions.create!(
+            kind: action_data[:kind],
+            value: action_data[:value],
+            position: idx + 1
+          )
+
+          # Создаем шаг action
+          action_step = rule.automation_rule_steps.create!(
+            step_type: "action",
+            automation_action_id: action.id,
+            position: position
+          )
+          position += 1
+
+          # Связываем с предыдущим шагом
+          if steps.last
+            steps.last.update_column(:next_step_id, action_step.id)
+          end
+
+          steps << action_step
+        end
+      end
     end
 
     def find_or_create_webform(title:, kind:, status:)
@@ -371,26 +527,21 @@ module Automation
       template
     end
 
-    def find_or_create_rule(title:, event:, condition_type:, active:, delay_seconds:)
-      rule = account.automation_rules.find_by(title: title, event: event)
+    def find_or_create_rule(title:, event:, active:)
+      # Ищем по title, так как он уникален для каждого сценария
+      rule = account.automation_rules.find_by(title: title)
       
       if rule
         rule.update!(
           event: event,
-          condition_type: condition_type,
-          active: active,
-          delay_seconds: delay_seconds,
-          logic_operator: "AND"
+          active: active
         )
       else
         max_position = account.automation_rules.maximum(:position) || 0
         rule = account.automation_rules.create!(
           title: title,
           event: event,
-          condition_type: condition_type,
           active: active,
-          delay_seconds: delay_seconds,
-          logic_operator: "AND",
           position: max_position + 1
         )
       end
@@ -398,33 +549,5 @@ module Automation
       rule
     end
 
-    def recreate_conditions(rule, conditions_data)
-      rule.automation_conditions.destroy_all
-      
-      conditions_data.each do |cond_data|
-        rule.automation_conditions.create!(
-          field: cond_data[:field],
-          operator: cond_data[:operator],
-          value: cond_data[:value],
-          position: cond_data[:position]
-        )
-      end
-      
-      # Сохраняем правило, чтобы обновился condition JSON через before_save callback
-      rule.save!
-    end
-
-    def recreate_actions(rule, actions_data)
-      rule.automation_actions.destroy_all
-      
-      actions_data.each do |action_data|
-        rule.automation_actions.create!(
-          kind: action_data[:kind],
-          value: action_data[:value],
-          position: action_data[:position]
-        )
-      end
-    end
   end
 end
-

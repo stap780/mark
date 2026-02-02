@@ -1,6 +1,7 @@
 <div class="bg-white rounded-lg shadow p-4">
   <div class="flex items-center justify-between mb-4">
     <h1 class="text-xl font-semibold"><%= t('.heading') %></h1>
+    <%= link_to t('automation_rules.chain.open_as_chain'), chain_account_automation_rule_path(current_account, @automation_rule), class: "text-sm text-violet-600 hover:text-violet-800" %>
   </div>
   <%= render 'form' , automation_rule: @automation_rule %>
 </div>

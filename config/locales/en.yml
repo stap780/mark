@@ -478,6 +478,47 @@ en:
   automation_rules:
     edit:
       heading: "Edit automation rule"
+    chain:
+      heading: "Chain: %{title}"
+      classic_edit: "Classic edit"
+      block_trigger: "Trigger"
+      field_title: "Title"
+      field_event: "Event"
+      select_event: "Select event"
+      block_condition: "Condition"
+      add_condition: "Add condition"
+      logic_label: "Logic between conditions:"
+      logic_and: "AND"
+      logic_or: "OR"
+      col_field: "Field"
+      col_operator: "Operator"
+      col_value: "Value"
+      no_conditions: "No conditions. Add first condition."
+      block_pause: "Pause"
+      delay_label: "Delay (seconds)"
+      active_label: "Active"
+      block_messages: "Messages"
+      add_message: "Add message"
+      col_type: "Type"
+      no_actions: "No actions. Add first action."
+      save: "Save"
+      cancel: "Cancel"
+      related_branches_title: "Other branches for this event"
+      actions_count: "actions"
+      open_as_chain: "Open as chain"
+      edit: "Edit"
+      no_related_rules: "No other rules for this event"
+      link: "Chain"
+      branching_hint: "Branching («if … then …, else …») is implemented as multiple rules with the same event and different conditions. This screen shows one branch; others are listed under «Related branches» below."
+      scroll_to_related: "↓ Go to related branches"
+      add_block_modal_title: "Add block"
+      add_block_pause: "Pause"
+      add_block_condition: "Condition"
+      add_block_action: "Action"
+      add_block_message: "Message"
+      add_block_ab_test: "A/B test"
+      add_block_http_request: "HTTP request"
+      initial_event_undeletable: "The initial event cannot be deleted."
     update:
       success: "Automation rule updated"
     destroy:
@@ -490,6 +531,11 @@ en:
       warning: "Warning! Existing scenarios with the same names will be updated."
       create_button: "Create"
       success: "Standard scenarios created successfully"
+
+  automation_rule_steps:
+    show_title: "Block"
+    edit_title: "Edit block"
+    destroy_confirm: "Delete block?"
 
   swatch_groups:
     index:
@@ -801,6 +847,10 @@ en:
       send_sms_moizvonki: "Send SMS (Moizvonki)"
       change_status: "Change status"
     automation_conditions:
+      create:
+        success: "Condition added"
+      update:
+        success: "Condition updated"
       destroy:
         success: "Condition deleted"
     idgtls:

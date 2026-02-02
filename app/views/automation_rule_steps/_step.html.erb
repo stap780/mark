@@ -1,0 +1,33 @@
+<%= turbo_frame_tag dom_id(current_account,  dom_id(automation_rule, dom_id(step))) do %>
+  <div class="rounded-lg border bg-white p-4 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3 min-w-0">
+      <% case step.step_type %>
+      <% when "condition" %>
+        <span class="text-2xl text-blue-600 flex-shrink-0" aria-hidden="true">◇</span>
+      <% when "pause" %>
+        <span class="text-2xl text-orange-600 flex-shrink-0 еуые" aria-hidden="true">⏸</span>
+      <% when "action" %>
+        <span class="text-2xl text-violet-600 flex-shrink-0" aria-hidden="true">⚡</span>
+      <% else %>
+        <span class="text-2xl text-gray-500 flex-shrink-0" aria-hidden="true">•</span>
+      <% end %>
+      <span class="text-sm font-medium text-gray-700 truncate"><%= step.summary %></span>
+    </div>
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <% show_path = step.condition? ? account_automation_rule_automation_rule_step_automation_conditions_path(current_account, automation_rule, step) : account_automation_rule_automation_rule_step_path(current_account, automation_rule, step) %>
+      <%= link_to_show show_path, data: { turbo_frame: :offcanvas, turbo_prefetch: false } %>
+      <%= link_to_delete account_automation_rule_automation_rule_step_path(current_account, automation_rule, step),
+          data: { turbo_method: :delete, turbo_confirm: t("automation_rule_steps.destroy_confirm") } %>
+    </div>
+  </div>
+  <% unless step.condition? %>
+    <div class="flex justify-center my-2">
+      <%= link_to add_block_account_automation_rule_path(current_account, automation_rule, insert_after_step_id: step.id),
+          data: { turbo_frame: :offcanvas, turbo_prefetch: false },
+          class: "inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors",
+          title: t("automation_rules.chain.add_block_modal_title") do %>
+        <span class="text-xl leading-none" aria-hidden="true">+</span>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

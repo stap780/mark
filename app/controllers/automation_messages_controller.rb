@@ -1,7 +1,7 @@
 class AutomationMessagesController < ApplicationController
   include ActionView::RecordIdentifier
 
-  before_action :set_automation_message, only: [:check_status]
+  before_action :set_automation_message, only: [:check_status, :destroy]
 
   def index
     @search = current_account.automation_messages.ransack(params[:q])
@@ -49,6 +49,20 @@ class AutomationMessagesController < ApplicationController
       format.html do
         redirect_to account_automation_messages_path(current_account), flash: { (success ? :success : :alert) => text }
       end
+    end
+  end
+
+  def destroy
+    @automation_message.destroy
+    respond_to do |format|
+      flash.now[:success] = "Сообщение удалено"
+      format.turbo_stream do
+        render turbo_stream: [
+          turbo_stream.remove(dom_id(current_account, dom_id(@automation_message))),
+          render_turbo_flash
+        ]
+      end
+      format.html { redirect_to account_automation_messages_path(current_account), notice: "Сообщение удалено" }
     end
   end
 

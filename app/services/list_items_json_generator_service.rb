@@ -7,6 +7,7 @@ class ListItemsJsonGeneratorService
   end
 
   def call
+    Account.switch_to(@account.id)
     insale = @account.insales.first
     return unless insale
 
@@ -33,6 +34,8 @@ class ListItemsJsonGeneratorService
         content_type: "application/json"
       )
     end
+  ensure
+    Account.current = nil
   end
 
   private

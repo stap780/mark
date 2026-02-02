@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_02_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -67,7 +67,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   end
 
   create_table "automation_actions", force: :cascade do |t|
-    t.bigint "automation_rule_id", null: false
+    t.bigint "automation_rule_id"
     t.string "kind", null: false
     t.jsonb "settings"
     t.integer "position"
@@ -78,15 +78,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   end
 
   create_table "automation_conditions", force: :cascade do |t|
-    t.bigint "automation_rule_id", null: false
+    t.bigint "automation_rule_id"
     t.string "field", null: false
     t.string "operator", null: false
     t.string "value"
     t.integer "position"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "automation_rule_step_id"
     t.index ["automation_rule_id", "position"], name: "index_automation_conditions_on_automation_rule_id_and_position"
     t.index ["automation_rule_id"], name: "index_automation_conditions_on_automation_rule_id"
+    t.index ["automation_rule_step_id"], name: "index_automation_conditions_on_automation_rule_step_id"
   end
 
   create_table "automation_messages", force: :cascade do |t|
@@ -122,6 +124,25 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
     t.index ["x_track_id"], name: "index_automation_messages_on_x_track_id"
   end
 
+  create_table "automation_rule_steps", force: :cascade do |t|
+    t.bigint "automation_rule_id", null: false
+    t.integer "position", null: false
+    t.string "step_type", null: false
+    t.bigint "automation_action_id"
+    t.bigint "message_template_id"
+    t.integer "delay_seconds"
+    t.bigint "next_step_id"
+    t.bigint "next_step_when_false_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["automation_action_id"], name: "index_automation_rule_steps_on_automation_action_id"
+    t.index ["automation_rule_id", "position"], name: "index_automation_rule_steps_on_automation_rule_id_and_position"
+    t.index ["automation_rule_id"], name: "index_automation_rule_steps_on_automation_rule_id"
+    t.index ["message_template_id"], name: "index_automation_rule_steps_on_message_template_id"
+    t.index ["next_step_id"], name: "index_automation_rule_steps_on_next_step_id"
+    t.index ["next_step_when_false_id"], name: "index_automation_rule_steps_on_next_step_when_false_id"
+  end
+
   create_table "automation_rules", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.string "title", null: false
@@ -142,7 +163,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   end
 
   create_table "clients", force: :cascade do |t|
-    t.integer "account_id", null: false
+    t.bigint "account_id", null: false
     t.string "name"
     t.string "surname"
     t.string "email"
@@ -177,7 +198,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   end
 
   create_table "discounts", force: :cascade do |t|
-    t.integer "account_id", null: false
+    t.bigint "account_id", null: false
     t.string "title"
     t.string "rule"
     t.string "move"
@@ -214,19 +235,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   end
 
   create_table "incases", force: :cascade do |t|
-    t.integer "account_id", null: false
-    t.string "status", default: "new", null: false
-    t.integer "webform_id", null: false
-    t.integer "client_id", null: false
+    t.bigint "account_id", null: false
+    t.bigint "webform_id", null: false
+    t.bigint "client_id", null: false
+    t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "number"
     t.integer "display_number"
     t.jsonb "custom_fields", default: {}
-    t.index ["account_id", "created_at"], name: "index_incases_on_account_id_and_created_at"
     t.index ["account_id", "display_number"], name: "index_incases_on_account_id_and_display_number", unique: true, where: "(display_number IS NOT NULL)"
     t.index ["account_id", "number"], name: "index_incases_on_account_id_and_number", unique: true, where: "(number IS NOT NULL)"
-    t.index ["account_id", "status"], name: "index_incases_on_account_id_and_status"
     t.index ["account_id"], name: "index_incases_on_account_id"
     t.index ["client_id"], name: "index_incases_on_client_id"
     t.index ["custom_fields"], name: "index_incases_on_custom_fields", using: :gin
@@ -237,7 +256,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
     t.string "api_key"
     t.string "api_password"
     t.string "api_link"
-    t.integer "account_id", null: false
+    t.bigint "account_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "product_xml"
@@ -271,7 +290,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   end
 
   create_table "items", force: :cascade do |t|
-    t.integer "incase_id", null: false
+    t.bigint "incase_id", null: false
     t.integer "quantity"
     t.decimal "price", precision: 12, scale: 2
     t.datetime "created_at", null: false
@@ -284,12 +303,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   end
 
   create_table "list_items", force: :cascade do |t|
-    t.integer "list_id", null: false
+    t.bigint "list_id", null: false
     t.string "item_type", null: false
-    t.integer "item_id", null: false
+    t.bigint "item_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "client_id", null: false
+    t.bigint "client_id", null: false
     t.index ["client_id"], name: "index_list_items_on_client_id"
     t.index ["item_type", "item_id"], name: "index_list_items_on_item"
     t.index ["list_id", "client_id", "item_type", "item_id"], name: "index_list_items_on_list_client_and_item", unique: true
@@ -297,7 +316,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   end
 
   create_table "lists", force: :cascade do |t|
-    t.integer "account_id", null: false
+    t.bigint "account_id", null: false
     t.string "name"
     t.integer "items_count"
     t.datetime "created_at", null: false
@@ -315,8 +334,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
     t.string "api_key_web_portal", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "from_email"
-    t.string "test_subject"
     t.index ["account_id"], name: "index_mailganers_on_account_id"
   end
 
@@ -370,24 +387,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
     t.index ["account_id"], name: "index_moizvonkis_on_account_id"
   end
 
-  create_table "page_views", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.bigint "client_id"
-    t.string "visitor_key", null: false
-    t.bigint "product_id", null: false
-    t.bigint "variant_id"
-    t.string "url"
-    t.datetime "viewed_at", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id", "client_id", "viewed_at"], name: "index_page_views_on_account_client_viewed"
-    t.index ["account_id", "visitor_key", "viewed_at"], name: "index_page_views_on_account_visitor_viewed"
-    t.index ["account_id"], name: "index_page_views_on_account_id"
-    t.index ["client_id"], name: "index_page_views_on_client_id"
-    t.index ["product_id"], name: "index_page_views_on_product_id"
-    t.index ["variant_id"], name: "index_page_views_on_variant_id"
-  end
-
   create_table "payments", force: :cascade do |t|
     t.bigint "subscription_id", null: false
     t.integer "amount", null: false
@@ -415,7 +414,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   end
 
   create_table "products", force: :cascade do |t|
-    t.integer "account_id", null: false
+    t.bigint "account_id", null: false
     t.string "title"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -423,7 +422,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   end
 
   create_table "sessions", force: :cascade do |t|
-    t.integer "user_id", null: false
+    t.bigint "user_id", null: false
     t.string "ip_address"
     t.string "user_agent"
     t.datetime "created_at", null: false
@@ -457,8 +456,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   end
 
   create_table "swatch_group_products", force: :cascade do |t|
-    t.integer "swatch_group_id", null: false
-    t.integer "product_id"
+    t.bigint "swatch_group_id", null: false
+    t.bigint "product_id"
     t.string "swatch_value"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -472,7 +471,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   end
 
   create_table "swatch_groups", force: :cascade do |t|
-    t.integer "account_id", null: false
+    t.bigint "account_id", null: false
     t.string "name", null: false
     t.string "option_name", null: false
     t.integer "status", default: 0
@@ -513,7 +512,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
 
   create_table "varbinds", force: :cascade do |t|
     t.string "varbindable_type", null: false
-    t.integer "varbindable_id", null: false
+    t.bigint "varbindable_id", null: false
     t.string "value", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -525,7 +524,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   end
 
   create_table "variants", force: :cascade do |t|
-    t.integer "product_id", null: false
+    t.bigint "product_id", null: false
     t.string "barcode"
     t.string "sku"
     t.decimal "price", precision: 12, scale: 2
@@ -539,7 +538,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   end
 
   create_table "webform_fields", force: :cascade do |t|
-    t.integer "webform_id", null: false
+    t.bigint "webform_id", null: false
     t.string "name", null: false
     t.string "label", null: false
     t.string "field_type", null: false
@@ -554,7 +553,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   end
 
   create_table "webforms", force: :cascade do |t|
-    t.integer "account_id", null: false
+    t.bigint "account_id", null: false
     t.string "title", null: false
     t.string "kind", null: false
     t.string "status", default: "inactive", null: false
@@ -580,7 +579,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   add_foreign_key "account_users", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "automation_actions", "automation_rules"
+  add_foreign_key "automation_actions", "automation_rules", on_delete: :nullify
+  add_foreign_key "automation_conditions", "automation_rule_steps"
   add_foreign_key "automation_conditions", "automation_rules"
   add_foreign_key "automation_messages", "accounts"
   add_foreign_key "automation_messages", "automation_actions"
@@ -588,6 +588,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   add_foreign_key "automation_messages", "clients"
   add_foreign_key "automation_messages", "incases"
   add_foreign_key "automation_messages", "users"
+  add_foreign_key "automation_rule_steps", "automation_actions"
+  add_foreign_key "automation_rule_steps", "automation_rule_steps", column: "next_step_id"
+  add_foreign_key "automation_rule_steps", "automation_rule_steps", column: "next_step_when_false_id"
+  add_foreign_key "automation_rule_steps", "automation_rules"
+  add_foreign_key "automation_rule_steps", "message_templates"
   add_foreign_key "automation_rules", "accounts"
   add_foreign_key "clients", "accounts"
   add_foreign_key "conversations", "accounts"
@@ -616,10 +621,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_150000) do
   add_foreign_key "messages", "conversations"
   add_foreign_key "messages", "users"
   add_foreign_key "moizvonkis", "accounts"
-  add_foreign_key "page_views", "accounts"
-  add_foreign_key "page_views", "clients"
-  add_foreign_key "page_views", "products"
-  add_foreign_key "page_views", "variants"
   add_foreign_key "payments", "subscriptions"
   add_foreign_key "products", "accounts"
   add_foreign_key "sessions", "users"

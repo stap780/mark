@@ -3,10 +3,11 @@ class AutomationRule < ApplicationRecord
   belongs_to :account
   acts_as_list scope: :account_id, column: :position
 
-  has_many :automation_actions, dependent: :destroy
-  has_many :automation_conditions, dependent: :destroy
-  accepts_nested_attributes_for :automation_actions, allow_destroy: true
+  has_many :automation_rule_steps, -> { order(:position, :id) }, dependent: :destroy
+  has_many :automation_conditions, -> { where(automation_rule_step_id: nil).order(:position, :id) }, dependent: :destroy, inverse_of: :automation_rule
+  has_many :automation_actions
   accepts_nested_attributes_for :automation_conditions, allow_destroy: true
+  accepts_nested_attributes_for :automation_actions, allow_destroy: true
 
   enum :condition_type, { simple: 'simple', liquid: 'liquid' }
 
@@ -35,6 +36,7 @@ class AutomationRule < ApplicationRecord
   after_update :handle_delay_change, if: :saved_change_to_delay_seconds?
   after_update :handle_active_change, if: :saved_change_to_active?
   before_destroy :cancel_pending_job
+  before_destroy :destroy_steps_first
 
   def delayed?
     delay_seconds.to_i > 0
@@ -83,6 +85,34 @@ class AutomationRule < ApplicationRecord
     Rails.logger.warn("AutomationRule##{id}: failed to cancel pending job #{active_job_id}: #{e.message}")
   end
 
+  # Проверяет наличие связанных сообщений
+  def has_linked_messages?
+    AutomationMessage.where(automation_rule_id: id).exists?
+  end
+
+  # Возвращает количество связанных сообщений
+  def linked_messages_count
+    AutomationMessage.where(automation_rule_id: id).count
+  end
+
+  def destroy_steps_first
+    # Удаляем steps первыми, чтобы освободить ссылки на actions
+    automation_rule_steps.destroy_all
+    
+    # Определяем actions, которые используются в messages (их нельзя удалять из-за внешнего ключа)
+    used_action_ids = AutomationMessage.where(automation_rule_id: id).distinct.pluck(:automation_action_id).compact
+    
+    if used_action_ids.any?
+      # Обнуляем automation_rule_id у используемых actions (теперь это возможно, так как optional: true)
+      automation_actions.where(id: used_action_ids).update_all(automation_rule_id: nil)
+      # Удаляем только неиспользуемые actions
+      automation_actions.where.not(id: used_action_ids).delete_all
+    else
+      # Если нет использованных actions, удаляем все
+      automation_actions.delete_all
+    end
+  end
+
   private
 
   def ensure_position
@@ -101,10 +131,9 @@ class AutomationRule < ApplicationRecord
   def validate_condition_format
     return if condition.blank? && !persisted?
 
-    # Условия обязательны для всех правил автоматизации
-    # Правило должно проверять условия перед выполнением действий
-    if persisted? && automation_conditions.empty?
-      errors.add(:base, "должно быть хотя бы одно условие")
+    # Правило выполняется по шагам; без шагов и без условий правило неполное
+    if persisted? && automation_conditions.empty? && automation_rule_steps.empty?
+      errors.add(:base, "должен быть хотя бы один шаг или условие")
       return
     end
 

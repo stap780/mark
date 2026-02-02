@@ -28,7 +28,7 @@
 <%= turbo_stream_from dom_id(current_account, :automation_rules) %>
 <div class="bg-white rounded-lg shadow divide-y">
   <div class="grid grid-cols-[50px_1fr_200px_150px_100px_150px] gap-4 p-4 font-medium text-gray-700">
-    <div>Pos</div>
+    <div></div>
     <div>Название</div>
     <div>Событие</div>
     <div>Активно</div>
@@ -36,7 +36,7 @@
     <div></div>
   </div>
   <%= turbo_frame_tag dom_id(current_account, :automation_rules), data: { controller: "sortable" } do %>
-    <%= render partial: 'index_list', locals: { automation_rules: @automation_rules, current_account: current_account } %>
+    <%= render @automation_rules %>
   <% end %>
 </div>
 

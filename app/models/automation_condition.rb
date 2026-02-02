@@ -1,15 +1,75 @@
 class AutomationCondition < ApplicationRecord
-  belongs_to :automation_rule
-  
+  belongs_to :automation_rule, optional: true
+  belongs_to :automation_rule_step, optional: true
+
   validates :field, :operator, presence: true
+  validate :rule_or_step_present
   validate :operator_allowed_for_field
   validate :value_matches_input_type
-  
+
+  before_validation :set_automation_rule_from_step
   before_validation :reset_operator_and_value_if_field_changed
-  
+
   scope :ordered, -> { order(:position, :id) }
-  
+  scope :for_rule, -> { where(automation_rule_step_id: nil) }
+  scope :for_step, ->(step) { where(automation_rule_step_id: step.id) }
+
+  def rule
+    automation_rule_step&.automation_rule || automation_rule
+  end
+
+  # Краткое описание условия с переводами поля, оператора и значения (для summary шага)
+  def summary_sentence
+    helper = Object.new.extend(AutomationRulesHelper)
+    [
+      helper.field_label(field),
+      helper.operator_label(operator),
+      translated_value(helper)
+    ].join(" ")
+  end
+
+  # Значение для отображения в списке (с переводом для boolean/enum)
+  def display_value
+    mapping = AutomationRulesHelper::FIELD_MAPPING[field]
+    return value.presence || "—" if mapping.blank? || value.blank?
+
+    case mapping[:type]
+    when "boolean"
+      I18n.t("automation_conditions.values.boolean.#{value}", default: value.to_s)
+    when "enum"
+      key = "automation_conditions.values.#{field&.gsub('.', '_')&.gsub('?', '')}.#{value}"
+      I18n.t(key, default: value.to_s.humanize)
+    else
+      value.presence || "—"
+    end
+  end
+
   private
+
+  def translated_value(helper)
+    mapping = AutomationRulesHelper::FIELD_MAPPING[field]
+    return value.to_s if mapping.blank? || value.blank?
+
+    case mapping[:type]
+    when "boolean"
+      I18n.t("automation_conditions.values.boolean.#{value}", default: value.to_s)
+    when "enum"
+      key = "automation_conditions.values.#{field&.gsub('.', '_')&.gsub('?', '')}.#{value}"
+      I18n.t(key, default: value.to_s.humanize)
+    else
+      value.to_s
+    end
+  end
+
+  def rule_or_step_present
+    return if automation_rule_id.present? || automation_rule_step_id.present?
+    errors.add(:base, "должно быть указано правило или шаг")
+  end
+
+  def set_automation_rule_from_step
+    return unless automation_rule_step_id.present? && automation_rule_id.blank?
+    self.automation_rule_id = automation_rule_step&.automation_rule_id
+  end
   
   def reset_operator_and_value_if_field_changed
     return unless field.present?
@@ -120,5 +180,6 @@ class AutomationCondition < ApplicationRecord
       end
     end
   end
+  
 end
 

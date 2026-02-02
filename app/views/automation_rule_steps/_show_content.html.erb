@@ -1,0 +1,42 @@
+<% case step.step_type %>
+<% when "pause" %>
+  <div class="space-y-4">
+    <%= render "automation_rule_steps/form", step: @step, automation_rule: @automation_rule %>
+  </div>
+<% when "condition" %>
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <label class="block text-sm font-medium text-gray-700">Условия:</label>
+      <%= link_to "+ Добавить условие",
+          account_automation_rule_automation_rule_step_automation_conditions_path(current_account, automation_rule, step),
+          data: { turbo_frame: "offcanvas", turbo_prefetch: false },
+          class: "text-sm text-violet-600 hover:text-violet-800" %>
+    </div>
+
+    <%= turbo_frame_tag dom_id(step, :condition_content), class: "space-y-2" do %>
+      <div class="grid grid-cols-[2fr_2fr_2fr_100px] gap-2 p-2 border-b font-medium text-sm text-gray-700">
+        <div>Поле</div>
+        <div>Оператор</div>
+        <div>Значение</div>
+        <div></div>
+      </div>
+
+      <% step.automation_conditions.ordered.each do |condition| %>
+        <%= render "automation_conditions/condition_row",
+            step: step,
+            automation_rule: automation_rule,
+            automation_condition: condition,
+            current_account: current_account %>
+      <% end %>
+      <%= turbo_frame_tag dom_id(step, :conditions_empty) do %>
+        <div class="text-sm text-gray-500 border rounded p-3">Нет условий. Добавьте первое условие.</div>
+      <% end if step.automation_conditions.empty? %>
+    <% end %>
+  </div>
+<% when "action" %>
+  <%= turbo_frame_tag dom_id(current_account, dom_id(step, :step_form)), class: "space-y-4" do %>
+    <%= render "automation_rule_steps/form", step: step, automation_rule: automation_rule %>
+  <% end %>
+<% else %>
+  <p class="text-sm text-gray-600"><%= step.summary %></p>
+<% end %>
