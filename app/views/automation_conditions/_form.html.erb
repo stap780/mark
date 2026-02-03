@@ -12,7 +12,7 @@
             @automation_condition.field
           ),
           { include_blank: false },
-          { class: "mt-1 block w-full rounded-md border-gray-300 px-3 py-2" } %>
+          { class: "block w-full rounded-md border-gray-300 px-2 py-2 bg-white text-sm" } %>
     </div>
     <div>
       <%= f.label :operator, t('automation_conditions.select_operator'), class: "block text-sm font-medium text-gray-700" if @automation_condition.new_record? %>
@@ -21,7 +21,7 @@
       <%= f.select :operator,
           options_for_select(available_ops.map { |op| [op[:label], op[:key]] }, @automation_condition.operator),
           { include_blank: false },
-          { class: "mt-1 block w-full rounded-md border-gray-300 px-3 py-2" } %>
+          { class: "block w-full rounded-md border-gray-300 px-2 py-2 bg-white text-sm" } %>
     </div>
     <div>
       <%= f.label :value, t('automation_conditions.select_value'), class: "block text-sm font-medium text-gray-700" if @automation_condition.new_record? %>
@@ -31,13 +31,13 @@
         <% select_options = select_options_for_condition(field_info, @automation_condition.operator) %>
         <%= f.select :value, options_for_select(select_options, @automation_condition.value),
             { include_blank: false },
-            { class: "mt-1 block w-full rounded-md border-gray-300 px-3 py-2", data: { "auto-submit-ignore": true } } %>
+            { class: "block w-full rounded-md border-gray-300 px-2 py-2 bg-white text-sm", data: { "auto-submit-ignore": true } } %>
       <% elsif input_type == 'number' %>
         <%= f.number_field :value, value: @automation_condition.value, placeholder: t('automation_conditions.value_placeholder'),
-            class: "mt-1 block w-full rounded-md border-gray-300 px-3 py-2", data: { "auto-submit-ignore": true } %>
+            class: "block w-full rounded-md border-gray-300 px-2 py-2 bg-white text-sm", data: { "auto-submit-ignore": true } %>
       <% else %>
         <%= f.text_field :value, value: @automation_condition.value, placeholder: t('automation_conditions.value_placeholder'),
-            class: "mt-1 block w-full rounded-md border-gray-300 px-3 py-2", data: { "auto-submit-ignore": true } %>
+            class: "block w-full rounded-md border-gray-300 px-2 py-2 bg-white text-sm", data: { "auto-submit-ignore": true } %>
       <% end %>
     </div>
     <div>

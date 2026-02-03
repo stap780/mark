@@ -5,7 +5,8 @@ class MessageTemplate < ApplicationRecord
 
   enum :channel, {
     email: 'email',
-    sms: 'sms'
+    sms: 'sms',
+    telegram: 'telegram'
   }
 
   validates :title, :channel, :content, presence: true

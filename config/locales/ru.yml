@@ -1126,6 +1126,7 @@ ru:
       save: "Сохранить"
 
   automation_actions:
+    value_label: "Значение"
     create:
       success: "Действие успешно добавлено."
     destroy:

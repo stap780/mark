@@ -17,10 +17,10 @@
   <div>
     <%= f.label :channel, "Канал", class: "block text-sm font-medium text-gray-700" %>
     <% if message_template.new_record? %>
-      <%= f.select :channel, [["Email", "email"], ["SMS", "sms"]], {},
+      <%= f.select :channel, MessageTemplate.channels.keys.map { |k| [t("message_templates.channel.#{k}"), k] }, {},
       class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
     <% else %>
-      <%= f.select :channel, [["Email", "email"], ["SMS", "sms"]], {},
+      <%= f.select :channel, MessageTemplate.channels.keys.map { |k| [t("message_templates.channel.#{k}"), k] }, {},
       class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
     <% end %>
   </div>

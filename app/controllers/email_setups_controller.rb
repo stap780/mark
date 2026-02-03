@@ -11,7 +11,7 @@ class EmailSetupsController < ApplicationController
   def new
     if current_account&.email_setup&.present?
       respond_to do |format|
-        notice = t('.already_exists', default: 'Email settings already exist')
+        notice = t('.already_exists')
         flash.now[:notice] = notice
         format.turbo_stream { render turbo_stream: turbo_close_offcanvas_flash }
         format.html { redirect_to account_email_setups_path(current_account), notice: notice }
@@ -58,9 +58,7 @@ class EmailSetupsController < ApplicationController
         message = t('.success')
         flash.now[:success] = message
         format.turbo_stream { 
-          render turbo_stream: [
-            render_turbo_flash,
-            turbo_stream.update(:offcanvas, ""),
+          render turbo_stream: turbo_close_offcanvas_flash + [
             turbo_stream.update(
               :email_setups_actions,
               partial: "email_setups/actions",

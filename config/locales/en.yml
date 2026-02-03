@@ -836,6 +836,7 @@ en:
       save: "Save"
 
   automation_actions:
+    value_label: "Value"
     create:
       success: "Action added successfully."
     destroy:

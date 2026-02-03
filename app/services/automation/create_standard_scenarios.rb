@@ -282,37 +282,47 @@ module Automation
 
       position = 1
 
-      # Шаг 1: Условие (проверяем webform.kind и has_order_with_same_items?)
-      condition_step = rule.automation_rule_steps.create!(
+      # Шаг 1: Условие (фильтруем тип события - только abandoned_cart)
+      condition_step_1 = rule.automation_rule_steps.create!(
         step_type: "condition",
         position: position
       )
       position += 1
 
-      # Добавляем условия в шаг
-      condition_step.automation_conditions.create!(
+      # Добавляем условие фильтрации по типу вебформы
+      condition_step_1.automation_conditions.create!(
         field: "incase.webform.kind",
         operator: "equals",
         value: "abandoned_cart",
         position: 1
       )
-      condition_step.automation_conditions.create!(
+
+      # Ветка "Да" (тип события подходит): пауза → второе условие
+      pause_step = rule.automation_rule_steps.create!(
+        step_type: "pause",
+        delay_seconds: 1800, # 30 минут
+        position: position
+      )
+      condition_step_1.update_column(:next_step_id, pause_step.id)
+      position += 1
+
+      # Шаг 2: Условие (проверяем появился ли заказ после паузы)
+      condition_step_2 = rule.automation_rule_steps.create!(
+        step_type: "condition",
+        position: position
+      )
+      pause_step.update_column(:next_step_id, condition_step_2.id)
+      position += 1
+
+      # Добавляем условие проверки заказа
+      condition_step_2.automation_conditions.create!(
         field: "incase.has_order_with_same_items?",
         operator: "equals",
         value: "false",
-        position: 2
+        position: 1
       )
 
-      # Ветка "Да" (заказа нет): пауза → email → change_status done
-      pause_step = rule.automation_rule_steps.create!(
-        step_type: "pause",
-        delay_seconds: 3600,
-        position: position
-      )
-      condition_step.update_column(:next_step_id, pause_step.id)
-      position += 1
-
-      # Действие: отправить email
+      # Ветка "Да" (заказа нет): отправляем email → change_status done
       email_action = rule.automation_actions.create!(
         kind: "send_email",
         value: template.id.to_s,
@@ -323,7 +333,7 @@ module Automation
         automation_action_id: email_action.id,
         position: position
       )
-      pause_step.update_column(:next_step_id, email_action_step.id)
+      condition_step_2.update_column(:next_step_id, email_action_step.id)
       position += 1
 
       # Действие: изменить статус на done
@@ -339,7 +349,7 @@ module Automation
       )
       email_action_step.update_column(:next_step_id, status_action_step.id)
 
-      # Ветка "Нет" (заказ уже есть): просто закрываем заявку
+      # Ветка "Нет" (заказ появился): закрываем заявку
       close_action = rule.automation_actions.create!(
         kind: "change_status",
         value: "closed",
@@ -350,7 +360,7 @@ module Automation
         automation_action_id: close_action.id,
         position: position + 1
       )
-      condition_step.update_column(:next_step_when_false_id, close_action_step.id)
+      condition_step_2.update_column(:next_step_when_false_id, close_action_step.id)
     end
 
     # Сценарий 5: Кастомная заявка о скидке

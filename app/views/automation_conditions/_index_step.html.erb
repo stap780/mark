@@ -1,12 +1,11 @@
-<%= render "shared/offcanvas_inner", title: t("automation_conditions.index_title") do %>
-  <div class="flex items-center justify-between mb-3">
+<%= render "shared/offcanvas_inner", title: t("automation_conditions.index_title"), width: "45rem" do %>
+  <div class="flex items-center justify-between mb-3 test">
     <div class="text-sm font-medium text-gray-700"><%= t("automation_conditions.conditions") %></div>
     <%= button_to "+ Добавить условие",
         account_automation_rule_automation_rule_step_automation_conditions_path(current_account, automation_rule, step),
         method: :post,
         params: { automation_condition: { field: (AutomationRulesHelper::FIELD_MAPPING.keys.first || "incase.status"), operator: "equals", value: "new", position: step.automation_conditions.count } },
-        data: { turbo_stream: true },
-        class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700 text-sm" %>
+        data: { turbo_stream: true }, class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700 text-sm" %>
   </div>
   <%= turbo_frame_tag dom_id(step, :condition_content), class: "space-y-2" do %>
     <div class="grid grid-cols-[2fr_2fr_2fr_100px] gap-2 p-2 border-b font-medium text-sm text-gray-700">

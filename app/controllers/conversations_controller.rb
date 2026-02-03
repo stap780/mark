@@ -74,7 +74,7 @@ class ConversationsController < ApplicationController
       unless channel.in?(%w[telegram email sms])
         flash.now[:alert] = "Неверный канал отправки"
         format.turbo_stream {
-          render turbo_stream: turbo_stream.replace("flash", partial: "shared/flash")
+          render turbo_stream: render_turbo_flash
         }
         redirect_path = @client ? account_client_path(@account, @client) : account_conversation_path(@account, @conversation)
         format.html { redirect_to redirect_path, alert: "Неверный канал отправки" }
@@ -84,7 +84,7 @@ class ConversationsController < ApplicationController
       unless content.present?
         flash.now[:alert] = "Текст сообщения не может быть пустым"
         format.turbo_stream {
-          render turbo_stream: turbo_stream.replace("flash", partial: "shared/flash")
+          render turbo_stream: render_turbo_flash
         }
         redirect_path = @client ? account_client_path(@account, @client) : account_conversation_path(@account, @conversation)
         format.html { redirect_to redirect_path, alert: "Текст сообщения не может быть пустым" }
@@ -94,7 +94,7 @@ class ConversationsController < ApplicationController
       if channel == 'email' && subject.blank?
         flash.now[:alert] = "Тема письма не может быть пустой"
         format.turbo_stream {
-          render turbo_stream: turbo_stream.replace("flash", partial: "shared/flash")
+          render turbo_stream: render_turbo_flash
         }
         redirect_path = @client ? account_client_path(@account, @client) : account_conversation_path(@account, @conversation)
         format.html { redirect_to redirect_path, alert: "Тема письма не может быть пустой" }
@@ -118,7 +118,7 @@ class ConversationsController < ApplicationController
         flash.now[:notice] = "Сообщение отправлено"
         format.turbo_stream {
           render turbo_stream: [
-            turbo_stream.replace("flash", partial: "shared/flash"),
+            render_turbo_flash,
             turbo_stream.replace(dom_id(@account, dom_id(@conversation, :messages)), partial: "conversations/conversation_timeline", locals: { conversation: @conversation, messages: @messages, current_account: @account }),
             turbo_stream.replace(dom_id(@account, dom_id(@conversation, :send_message_form)), partial: "conversations/send_message_form", locals: { conversation: @conversation, current_account: @account })
           ]
@@ -129,7 +129,7 @@ class ConversationsController < ApplicationController
         flash.now[:alert] = "Ошибка отправки: #{result[:error]}"
         format.turbo_stream {
           render turbo_stream: [
-            turbo_stream.replace("flash", partial: "shared/flash"),
+            render_turbo_flash,
             turbo_stream.replace(dom_id(@account, dom_id(@conversation, :messages)), partial: "conversations/conversation_timeline", locals: { conversation: @conversation, messages: @messages, current_account: @account }),
             turbo_stream.replace(dom_id(@account, dom_id(@conversation, :send_message_form)), partial: "conversations/send_message_form", locals: { conversation: @conversation, current_account: @account })
           ]

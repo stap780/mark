@@ -10,7 +10,7 @@
       <%= f.text_field :title, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
     </div>
     <div class="flex-1">
-      <%= f.label :event, "Событие", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.label :event, class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.select :event,
           AutomationRule::EVENTS.map { |key, value| [value, key] },
           { selected: automation_rule.event, include_blank: "Выберите событие" },

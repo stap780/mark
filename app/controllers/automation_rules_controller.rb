@@ -119,17 +119,8 @@ class AutomationRulesController < ApplicationController
       service.call
       @automation_rules = current_account.automation_rules.order(:position, :created_at)
       flash.now[:success] = t('automation_rules.create_standard_scenarios.success')
-      format.turbo_stream do
-        render turbo_stream: [
-          turbo_stream.update(
-            dom_id(current_account, :automation_rules),
-            partial: 'automation_rules/index_list',
-            locals: { automation_rules: @automation_rules, current_account: current_account }
-          ),
-          turbo_stream.update(:offcanvas, ""),
-          render_turbo_flash
-        ]
-      end
+      format.turbo_stream { render turbo_stream: turbo_close_offcanvas_flash }
+      format.turbo_stream { redirect_to account_automation_rules_path(current_account, format: :html) }
       format.html { redirect_to account_automation_rules_path(current_account), notice: t('automation_rules.create_standard_scenarios.success') }
     end
   rescue => e

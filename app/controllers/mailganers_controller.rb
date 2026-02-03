@@ -11,7 +11,7 @@ class MailganersController < ApplicationController
   def new
     if current_account.mailganer.present?
       respond_to do |format|
-        notice = t('.already_exists', default: 'Mailganer settings already exist')
+        notice = t('.already_exists')
         flash.now[:notice] = notice
         format.turbo_stream { render turbo_stream: turbo_close_offcanvas_flash }
         format.html { redirect_to account_mailganers_path(current_account), notice: notice }
@@ -28,7 +28,7 @@ class MailganersController < ApplicationController
 
     respond_to do |format|
       if @mailganer.save
-        flash.now[:success] = t('.success', default: 'Mailganer settings saved')
+        flash.now[:success] = t('.success')
         format.turbo_stream do
           render turbo_stream: turbo_close_offcanvas_flash + [
             turbo_stream.update(
@@ -43,7 +43,7 @@ class MailganersController < ApplicationController
             )
           ]
         end
-        format.html { redirect_to account_mailganers_path(current_account), notice: t('.success', default: 'Mailganer settings saved') }
+        format.html { redirect_to account_mailganers_path(current_account), notice: t('.success') }
       else
         format.html { render :new, status: :unprocessable_entity }
       end
@@ -53,7 +53,7 @@ class MailganersController < ApplicationController
   def update
     respond_to do |format|
       if @mailganer.update(mailganer_params)
-        message = t('.success', default: 'Mailganer settings updated')
+        message = t('.success')
         flash.now[:success] = message
         format.turbo_stream do
           render turbo_stream: [
@@ -82,7 +82,7 @@ class MailganersController < ApplicationController
     @mailganer.destroy!
 
     respond_to do |format|
-      message = t('.success', default: 'Mailganer settings removed')
+      message = t('.success')
       flash.now[:success] = message
       format.turbo_stream do
         render turbo_stream: turbo_close_offcanvas_flash + [
@@ -106,14 +106,14 @@ class MailganersController < ApplicationController
     to_email = params[:test_email]
     unless @mailganer
       success = false
-      message = t('mailganers.test_email.no_settings', default: 'Mailganer settings are not configured for this account')
+      message = t('mailganers.test_email.no_settings')
     else
       success, message = @mailganer.send_test_email(to_email)
     end
 
     respond_to do |format|
       flash.now[success ? :success : :error] = message
-      format.turbo_stream { render turbo_stream: turbo_close_offcanvas_flash + [render_turbo_flash] }
+      format.turbo_stream { render turbo_stream: turbo_close_offcanvas_flash }
       format.html { redirect_to account_mailganers_path(current_account) }
     end
   end

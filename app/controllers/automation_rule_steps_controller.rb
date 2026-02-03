@@ -35,10 +35,8 @@ class AutomationRuleStepsController < ApplicationController
       )
       respond_to do |format|
         format.turbo_stream do
-          render turbo_stream: [
-            turbo_stream.update(steps_frame_id, tree_content),
-            turbo_stream.update(:offcanvas, ""),
-            render_turbo_flash
+          render turbo_stream: turbo_close_offcanvas_flash + [
+            turbo_stream.update(steps_frame_id, tree_content)
           ]
         end
         format.html { redirect_to chain_account_automation_rule_path(current_account, @automation_rule) }
