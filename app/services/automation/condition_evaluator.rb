@@ -48,9 +48,19 @@ module Automation
 
       case operator
       when 'equals'
-        field_value.to_s == value.to_s
+        # Для boolean значений сравниваем напрямую или через строковое представление
+        if [true, false].include?(field_value) && ['true', 'false'].include?(value.to_s.downcase)
+          field_value == (value.to_s.downcase == 'true')
+        else
+          field_value.to_s == value.to_s
+        end
       when 'not_equals'
-        field_value.to_s != value.to_s
+        # Для boolean значений сравниваем напрямую или через строковое представление
+        if [true, false].include?(field_value) && ['true', 'false'].include?(value.to_s.downcase)
+          field_value != (value.to_s.downcase == 'true')
+        else
+          field_value.to_s != value.to_s
+        end
       when 'contains'
         field_value.to_s.downcase.include?(value.to_s.downcase)
       when 'present'
