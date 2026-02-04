@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.3.7
+ * Версия: 1.3.8
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.3.7";
+      this.version = "1.3.8";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -696,6 +696,16 @@
       }
     }
 
+    // Проверка валидности телефона: должен содержать минимум 11 цифр (7 + 10 цифр номера)
+    isValidPhone(phone) {
+      if (!phone || typeof phone !== 'string') {
+        return false;
+      }
+      const digitsOnly = phone.replace(/\D/g, ''); // Удаляем все нецифровые символы
+      // Проверяем, что номер содержит минимум 11 цифр и начинается с 7 или 8
+      return digitsOnly.length >= 11 && (digitsOnly[0] === '7' || digitsOnly[0] === '8');
+    }
+
     getOrderLines() {
       const lines = [];
       if (typeof Cart !== 'undefined' && Cart.order && Cart.order.order_lines) {
@@ -718,16 +728,22 @@
     async sendAbandonedCartToAPI(webform, data) {
       const items = this.getOrderLines();
 
+      // Проверяем наличие валидных контактов: email ИЛИ валидный телефон (минимум 11 цифр)
+      const hasValidEmail = data && data.contacts && data.contacts.email && data.contacts.email.trim() !== '';
+      const hasValidPhone = data && data.contacts && data.contacts.phone && this.isValidPhone(data.contacts.phone);
+
       // Дополнительный лог, чтобы понимать, почему заявка может не отправляться
       this.debugLog('[sendAbandonedCartToAPI] items.length:', items.length, 'contacts:', {
         hasEmail: !!(data && data.contacts && data.contacts.email),
-        hasPhone: !!(data && data.contacts && data.contacts.phone)
+        hasPhone: !!(data && data.contacts && data.contacts.phone),
+        isValidPhone: hasValidPhone,
+        phoneValue: data && data.contacts && data.contacts.phone ? data.contacts.phone : null
       });
 
       // Раньше отправка требовала обязательно email.
       // Раз на checkout у вас заполняются все данные, но заявка не уходит,
-      // допускаем отправку, если есть ИЛИ email, ИЛИ телефон.
-      if (items.length > 0 && data && data.contacts && (data.contacts.email || data.contacts.phone)) {
+      // допускаем отправку, если есть ИЛИ email, ИЛИ валидный телефон (минимум 11 цифр).
+      if (items.length > 0 && data && data.contacts && (hasValidEmail || hasValidPhone)) {
         const clientData = { ...data.contacts };
         const yaClientId = this.getYandexClientId();
         if (yaClientId) {
@@ -746,7 +762,9 @@
       } else {
         this.debugLog('[sendAbandonedCartToAPI] Conditions not met, request will NOT be sent:', {
           hasItems: items.length > 0,
-          hasContacts: !!(data && data.contacts && (data.contacts.email || data.contacts.phone))
+          hasValidEmail: hasValidEmail,
+          hasValidPhone: hasValidPhone,
+          phoneValue: data && data.contacts && data.contacts.phone ? data.contacts.phone : null
         });
       }
     }

@@ -796,6 +796,7 @@ ru:
       success: "Стандартные сценарии успешно созданы"
 
   automation_rule_steps:
+    created: "Блок успешно создан"
     show_title: "Блок"
     edit_title: "Редактировать блок"
     destroy_confirm: "Удалить блок?"

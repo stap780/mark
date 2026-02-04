@@ -533,6 +533,7 @@ en:
       success: "Standard scenarios created successfully"
 
   automation_rule_steps:
+    created: "Block created successfully"
     show_title: "Block"
     edit_title: "Edit block"
     destroy_confirm: "Delete block?"
