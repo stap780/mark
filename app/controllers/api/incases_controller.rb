@@ -73,49 +73,13 @@ class Api::IncasesController < ApplicationController
   # Webhook endpoint для InSales orders/create
   def insales_order
     account = current_account || Account.find(params[:account_id])
-    
-    webform = account.webforms.find_by(kind: 'order', status: 'active')
-    return render json: { error: 'order webform not active' }, status: :unprocessable_entity unless webform
-
     payload = request.request_parameters.deep_symbolize_keys
     order_data = payload[:order] || payload
-    
-    # Извлекаем данные клиента из order.client
-    client_data = order_data[:client]
-    return render json: { error: 'client data missing' }, status: :unprocessable_entity unless client_data
-    
-    client = resolve_client!(account, client_data, from_insales: true)
 
-    # Обрабатываем товары из order.order_lines
-    order_lines = Array(order_data[:order_lines])
-    if order_lines.blank?
-      return render json: { error: 'order_lines are required' }, status: :unprocessable_entity
-    end
-
-    # Собираем атрибуты позиций для nested attributes
-    items_attributes = order_lines.each_with_index.to_h do |order_line, index|
-      attrs = resolve_item_attributes!(account, {
-        variant_id: order_line[:variant_id],
-        product_id: order_line[:product_id],
-        quantity: order_line[:quantity],
-        price: order_line[:sale_price] || order_line[:total_price]
-      }, from_insales: true)
-      [index.to_s, attrs]
-    end
-
-    # Создаем заявку с позициями одним запросом через nested attributes
-    incase_attrs = { webform: webform, client: client, status: 'new' }
-    incase_attrs[:number] = order_data[:number].to_s if order_data[:number].present?
-    incase = account.incases.create!(incase_attrs.merge(items_attributes: items_attributes))
-
-    # Запускаем автоматику после создания заявки и всех позиций
-    Automation::Engine.call(
-      account: account,
-      event: "incase.created",
-      object: incase
-    )
-
+    InsalesOrderIncaseCreator.call(account: account, order_data: order_data)
     head :ok
+  rescue InsalesOrderIncaseCreator::Error => e
+    render json: { error: e.message }, status: :unprocessable_entity
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.warn "Incase/Item validation failed: #{e.record.errors.full_messages}"
     render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity

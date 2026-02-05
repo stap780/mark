@@ -94,7 +94,8 @@ class IncasesController < ApplicationController
   end
 
   def incase_params
-    params.require(:incase).permit(:status, :webform_id, :client_id, :number, :display_number, custom_fields: {})
+    params.require(:incase).permit(:status, :webform_id, :client_id, :number, :display_number, custom_fields: {}, 
+    items_attributes: %i[id quantity price product_id variant_id _destroy])
   end
   
 end
