@@ -64,6 +64,7 @@ class Api::IncasesController < ApplicationController
 
     render json: { incase: { id: incase.id, status: incase.status, webform_id: webform.id, client_id: client.id } }, status: :created
   rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.warn "Incase/Item validation failed: #{e.record.errors.full_messages}"
     render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'not found' }, status: :not_found
@@ -120,6 +121,7 @@ class Api::IncasesController < ApplicationController
 
     head :ok
   rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.warn "Incase/Item validation failed: #{e.record.errors.full_messages}"
     render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
   end
 
