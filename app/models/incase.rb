@@ -5,6 +5,8 @@ class Incase < ApplicationRecord
   belongs_to :client
 
   has_many :items, dependent: :destroy
+  accepts_nested_attributes_for :items, allow_destroy: true
+  
   has_many :automation_messages
 
   enum :status, {

@@ -85,28 +85,38 @@ class Api::IncasesController < ApplicationController
     
     client = resolve_client!(account, client_data, from_insales: true)
 
+    # Обрабатываем товары из order.order_lines
+    order_lines = Array(order_data[:order_lines])
+    if order_lines.blank?
+      return render json: { error: 'order_lines are required' }, status: :unprocessable_entity
+    end
+
     # Создаем заявку с номером заказа из InSales, если он есть
     incase_attrs = { webform: webform, client: client, status: 'new' }
     incase_attrs[:number] = order_data[:number].to_s if order_data[:number].present?
-    
-    incase = account.incases.create!(incase_attrs)
-    
-    # Обрабатываем товары из order.order_lines
-    Array(order_data[:order_lines]).each do |order_line|
-      resolve_item!(incase, account, {
-        variant_id: order_line[:variant_id],
-        product_id: order_line[:product_id],
-        quantity: order_line[:quantity],
-        price: order_line[:sale_price] || order_line[:total_price]
-      }, from_insales: true)
-    end
+    incase = nil
 
-    # Запускаем автоматику после создания заявки и всех позиций
-    Automation::Engine.call(
-      account: account,
-      event: "incase.created",
-      object: incase
-    )
+    Incase.transaction do
+      incase = account.incases.new(incase_attrs)
+
+      order_lines.each do |order_line|
+        resolve_item!(incase, account, {
+          variant_id: order_line[:variant_id],
+          product_id: order_line[:product_id],
+          quantity: order_line[:quantity],
+          price: order_line[:sale_price] || order_line[:total_price]
+        }, from_insales: true, build_only: true)
+      end
+
+      incase.save!
+
+      # Запускаем автоматику после создания заявки и всех позиций
+      Automation::Engine.call(
+        account: account,
+        event: "incase.created",
+        object: incase
+      )
+    end
 
     head :ok
   rescue ActiveRecord::RecordInvalid => e
@@ -222,7 +232,7 @@ class Api::IncasesController < ApplicationController
     client
   end
 
-  def resolve_item!(incase, account, item_params, from_insales: false)
+  def resolve_item!(incase, account, item_params, from_insales: false, build_only: false)
     # item_params содержит: 
     # - для обычного API: type: "Variant", id: external_variant_id из InSales, quantity, price
     # - для webhook InSales: variant_id: external_variant_id, product_id, quantity, price
@@ -316,13 +326,19 @@ class Api::IncasesController < ApplicationController
       variant.update_column(:quantity, 0)
     end
 
-    # Создаем Item напрямую для incase
-    incase.items.create!(
+    item_attributes = {
       product_id: variant.product_id,
       variant_id: variant.id,
       quantity: quantity,
       price: price
-    )
+    }
+
+    if build_only
+      incase.items.build(item_attributes)
+    else
+      # Создаем Item напрямую для incase
+      incase.items.create!(item_attributes)
+    end
   end
 
   
