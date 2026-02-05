@@ -3,7 +3,7 @@ class Admin::AccountsController < ApplicationController
   
   skip_before_action :ensure_user_in_current_account
   before_action :ensure_super_admin_account
-  before_action :set_account, only: %i[show edit update destroy]
+  before_action :set_account, only: %i[show edit update destroy check_subscription]
 
   def index
     @search = Account.ransack(params[:q])
@@ -71,6 +71,29 @@ class Admin::AccountsController < ApplicationController
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @account.errors, status: :unprocessable_entity }
       end
+    end
+  end
+
+  def check_subscription
+    result = PartnerBillingCheck.call(@account)
+
+    if result.success?
+      paid_till = result.paid_till.presence || "-"
+      message = "Подписка обновлена. Статус: #{result.status || '-'}, оплачено до: #{paid_till}"
+      flash.now[:success] = message
+    else
+      flash.now[:error] = "Не удалось обновить подписку: #{result.error || 'unknown error'}"
+    end
+
+    respond_to do |format|
+      format.turbo_stream do
+        @account.reload
+        render turbo_stream: [
+          render_turbo_flash,
+          turbo_stream.replace(dom_id(@account), partial: "admin/accounts/account", locals: { account: @account })
+        ]
+      end
+      format.html { redirect_back(fallback_location: admin_account_path(@account)) }
     end
   end
 

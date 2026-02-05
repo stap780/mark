@@ -1,5 +1,5 @@
 class SubscriptionPeriodCheckJob < ApplicationJob
-  queue_as :default
+  queue_as :subscription_period_check
 
   def perform
     Rails.logger.info "Starting subscription period check at #{Time.current}"

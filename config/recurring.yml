@@ -17,3 +17,8 @@ production:
   check_expired_subscriptions:
     class: SubscriptionPeriodCheckJob
     schedule: at 2am every day
+  
+  partner_billing_daily:
+    class: PartnerBillingDailyJob
+    schedule: at 5am every day
+    queue: default

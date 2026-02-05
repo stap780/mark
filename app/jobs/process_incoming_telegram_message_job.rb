@@ -1,5 +1,5 @@
 class ProcessIncomingTelegramMessageJob < ApplicationJob
-  queue_as :default
+  queue_as :process_incoming_telegram_message
 
   def perform(account_id:, message:)
     account = Account.find_by(id: account_id)

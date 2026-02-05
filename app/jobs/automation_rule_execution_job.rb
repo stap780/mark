@@ -1,5 +1,5 @@
 class AutomationRuleExecutionJob < ApplicationJob
-  queue_as :default
+  queue_as :automation_rule_execution
 
   # Если правило было удалено или деактивировано, игнорируем job
   # (как в ImportScheduleJob)

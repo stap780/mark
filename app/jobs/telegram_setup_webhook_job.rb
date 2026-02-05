@@ -1,5 +1,5 @@
 class TelegramSetupWebhookJob < ApplicationJob
-  queue_as :default
+  queue_as :telegram_setup_webhook
 
   def perform(telegram_setup_id)
     telegram_setup = TelegramSetup.find_by(id: telegram_setup_id)

@@ -1,5 +1,5 @@
 class InsaleOrderImportJob < ApplicationJob
-  queue_as :default
+  queue_as :insale_order_import
 
   def perform(payload)
     # TODO: Implement import logic akin to dizauto's Insale::OrderImport service

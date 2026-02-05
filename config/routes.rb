@@ -15,6 +15,7 @@ Rails.application.routes.draw do
     resources :payments, only: [:index, :show, :update]
     # Invoices merged into Payments (filter by processor=invoice)
     resources :accounts do
+      post :check_subscription, on: :member
       resources :users, except: [:index, :show]
     end
   end
