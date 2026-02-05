@@ -92,32 +92,28 @@ class Api::IncasesController < ApplicationController
       return render json: { error: 'order_lines are required' }, status: :unprocessable_entity
     end
 
-    # Создаем заявку с номером заказа из InSales, если он есть
+    # Собираем атрибуты позиций для nested attributes
+    items_attributes = order_lines.each_with_index.to_h do |order_line, index|
+      attrs = resolve_item_attributes!(account, {
+        variant_id: order_line[:variant_id],
+        product_id: order_line[:product_id],
+        quantity: order_line[:quantity],
+        price: order_line[:sale_price] || order_line[:total_price]
+      }, from_insales: true)
+      [index.to_s, attrs]
+    end
+
+    # Создаем заявку с позициями одним запросом через nested attributes
     incase_attrs = { webform: webform, client: client, status: 'new' }
     incase_attrs[:number] = order_data[:number].to_s if order_data[:number].present?
-    incase = nil
+    incase = account.incases.create!(incase_attrs.merge(items_attributes: items_attributes))
 
-    Incase.transaction do
-      incase = account.incases.new(incase_attrs)
-
-      order_lines.each do |order_line|
-        resolve_item!(incase, account, {
-          variant_id: order_line[:variant_id],
-          product_id: order_line[:product_id],
-          quantity: order_line[:quantity],
-          price: order_line[:sale_price] || order_line[:total_price]
-        }, from_insales: true, build_only: true)
-      end
-
-      incase.save!
-
-      # Запускаем автоматику после создания заявки и всех позиций
-      Automation::Engine.call(
-        account: account,
-        event: "incase.created",
-        object: incase
-      )
-    end
+    # Запускаем автоматику после создания заявки и всех позиций
+    Automation::Engine.call(
+      account: account,
+      event: "incase.created",
+      object: incase
+    )
 
     head :ok
   rescue ActiveRecord::RecordInvalid => e
@@ -234,10 +230,8 @@ class Api::IncasesController < ApplicationController
     client
   end
 
-  def resolve_item!(incase, account, item_params, from_insales: false, build_only: false)
-    # item_params содержит: 
-    # - для обычного API: type: "Variant", id: external_variant_id из InSales, quantity, price
-    # - для webhook InSales: variant_id: external_variant_id, product_id, quantity, price
+  # Возвращает хеш атрибутов для Item (для nested attributes). Не создаёт запись.
+  def resolve_item_attributes!(account, item_params, from_insales: false)
     variant_id_param = item_params[:id] || item_params[:variant_id]
     external_variant_id = variant_id_param.to_s if variant_id_param.present?
     quantity = item_params[:quantity] || 1
@@ -245,8 +239,7 @@ class Api::IncasesController < ApplicationController
 
     insale = account.insales.first
     variant = nil
-    
-    # Для обоих случаев ищем через Varbind по external_id (для обычных форм id - это external_id из InSales)
+
     if insale && external_variant_id.present?
       varbind = Varbind.find_by(
         varbindable: insale,
@@ -256,10 +249,7 @@ class Api::IncasesController < ApplicationController
       variant = varbind&.record
     end
 
-    # Если variant не найден, создаем его
     unless variant
-      # Пытаемся найти product по external_product_id, если он есть
-      # Для обоих случаев product_id - это external_id из InSales
       product = nil
       if item_params[:product_id].present? && insale
         product_varbind = Varbind.find_by(
@@ -270,10 +260,8 @@ class Api::IncasesController < ApplicationController
         product = product_varbind&.record
       end
 
-      # Если product не найден, создаем новый
       product ||= account.products.create!(title: "API Product #{item_params[:product_id] || 'Unknown'}")
 
-      # Создаем varbind для product только для InSales webhook
       if from_insales && insale && item_params[:product_id].present?
         Varbind.find_or_create_by!(
           record: product,
@@ -283,10 +271,8 @@ class Api::IncasesController < ApplicationController
         )
       end
 
-      # Создаем variant
       variant = product.variants.create!
-      
-      # Создаем varbind для variant только для InSales webhook
+
       if from_insales && insale && external_variant_id.present?
         Varbind.find_or_create_by!(
           record: variant,
@@ -297,11 +283,9 @@ class Api::IncasesController < ApplicationController
       end
     end
 
-    # Если variant найден, убеждаемся что varbind'ы созданы для product и variant
     if variant && insale
       product = variant.product
-      
-      # Создаем varbind для product, если передан product_id и varbind еще не существует
+
       if item_params[:product_id].present?
         Varbind.find_or_create_by!(
           record: product,
@@ -310,8 +294,7 @@ class Api::IncasesController < ApplicationController
           value: item_params[:product_id].to_s
         )
       end
-      
-      # Создаем varbind для variant, если передан external_variant_id и varbind еще не существует
+
       if external_variant_id.present?
         Varbind.find_or_create_by!(
           record: variant,
@@ -322,25 +305,23 @@ class Api::IncasesController < ApplicationController
       end
     end
 
-    # Для заявок типа "notify" устанавливаем quantity = 0 у варианта
-    # Это нужно для того, чтобы StockCheck мог определить, что товар появился в наличии
-    if incase.webform.kind == 'notify'
-      variant.update_column(:quantity, 0)
-    end
-
-    item_attributes = {
+    {
       product_id: variant.product_id,
       variant_id: variant.id,
       quantity: quantity,
       price: price
     }
+  end
 
-    if build_only
-      incase.items.build(item_attributes)
-    else
-      # Создаем Item напрямую для incase
-      incase.items.create!(item_attributes)
+  def resolve_item!(incase, account, item_params, from_insales: false)
+    attrs = resolve_item_attributes!(account, item_params, from_insales: from_insales)
+
+    # Для заявок типа "notify" устанавливаем quantity = 0 у варианта
+    if incase.webform.kind == 'notify'
+      Variant.find(attrs[:variant_id]).update_column(:quantity, 0)
     end
+
+    incase.items.create!(attrs)
   end
 
   
