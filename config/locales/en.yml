@@ -669,6 +669,16 @@ en:
     cancel:
       success: "Subscription canceled successfully."
 
+  subscription_expiry_reminder:
+    subject: "Reminder: subscription expires in %{days} days"
+    body: |
+      <p>Hello!</p>
+      <p>Your subscription for account «%{account_name}» expires in %{days} days.</p>
+      <p>Expiration date: %{end_date}</p>
+      <p>Please renew your subscription to continue using the service:</p>
+      <p><a href="%{subscriptions_url}">Renew subscription</a></p>
+      <p>Best regards,<br/>the team</p>
+
   discounts:
     index:
       title: "Discounts"

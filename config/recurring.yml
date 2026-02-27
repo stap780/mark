@@ -22,3 +22,8 @@ production:
     class: PartnerBillingDailyJob
     schedule: at 5am every day
     queue: default
+
+  subscription_expiry_reminders:
+    class: SubscriptionExpiryReminderJob
+    schedule: at 9am every day
+    queue: subscription_expiry_reminder
