@@ -1,11 +1,12 @@
+<% current_webform_id = params[:webform_id].presence || params.dig(:q, :webform_id_eq) %>
 <div class="flex flex-wrap gap-2 mb-4">
   <%= link_to t('incases.index.all', default: 'Все'),
-      account_incases_path(current_account, q: (params[:q] || {}).except(:webform_id_eq)),
-      class: "px-3 py-1 rounded-md #{params.dig(:q, :webform_id_eq).blank? ? 'bg-violet-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}" %>
+      account_incases_path(current_account),
+      class: "px-3 py-1 rounded-md #{current_webform_id.blank? ? 'bg-violet-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}" %>
   <% @webforms.each do |wf| %>
     <%= link_to wf.title,
-        account_incases_path(current_account, q: (params[:q] || {}).merge(webform_id_eq: wf.id)),
-        class: "px-3 py-1 rounded-md #{params.dig(:q, :webform_id_eq).to_s == wf.id.to_s ? 'bg-violet-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}" %>
+        account_incases_path(current_account, webform_id: wf.id),
+        class: "px-3 py-1 rounded-md #{current_webform_id.to_s == wf.id.to_s ? 'bg-violet-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}" %>
   <% end %>
 </div>
 

@@ -34,14 +34,18 @@ class IncasesController < ApplicationController
   end
 
   def index
-    @search = current_account.incases.includes(:client, :webform, :incase_status).ransack(params[:q])
+    q_params = params[:q] || {}
+    q_params = q_params.merge(webform_id_eq: params[:webform_id]) if params[:webform_id].present?
+
+    @search = current_account.incases.includes(:client, :webform, :incase_status).ransack(q_params)
     @search.sorts = "created_at desc" if @search.sorts.empty?
     @incases = @search.result(distinct: true).paginate(page: params[:page], per_page: 50)
     @webforms = current_account.webforms.order(:title)
 
     days_count = (params[:chart_days] || 14).to_i.clamp(7, 30)
     base_scope = current_account.incases
-    base_scope = base_scope.where(webform_id: params.dig(:q, :webform_id_eq)) if params.dig(:q, :webform_id_eq).present?
+    effective_webform_id = params[:webform_id].presence || params.dig(:q, :webform_id_eq)
+    base_scope = base_scope.where(webform_id: effective_webform_id) if effective_webform_id.present?
     @chart_data = build_chart_data(base_scope, days_count)
   end
 
