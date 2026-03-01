@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_02_120000) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_01_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -234,21 +234,34 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_02_120000) do
     t.index ["account_id"], name: "index_idgtls_on_account_id"
   end
 
+  create_table "incase_statuses", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "key", null: false
+    t.string "name", null: false
+    t.string "color", default: "bg-gray-100 text-gray-800", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "key"], name: "index_incase_statuses_on_account_id_and_key", unique: true
+    t.index ["account_id"], name: "index_incase_statuses_on_account_id"
+  end
+
   create_table "incases", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "webform_id", null: false
     t.bigint "client_id", null: false
-    t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "number"
     t.integer "display_number"
     t.jsonb "custom_fields", default: {}
+    t.bigint "incase_status_id", null: false
     t.index ["account_id", "display_number"], name: "index_incases_on_account_id_and_display_number", unique: true, where: "(display_number IS NOT NULL)"
     t.index ["account_id", "number"], name: "index_incases_on_account_id_and_number", unique: true, where: "(number IS NOT NULL)"
     t.index ["account_id"], name: "index_incases_on_account_id"
     t.index ["client_id"], name: "index_incases_on_client_id"
     t.index ["custom_fields"], name: "index_incases_on_custom_fields", using: :gin
+    t.index ["incase_status_id"], name: "index_incases_on_incase_status_id"
     t.index ["webform_id"], name: "index_incases_on_webform_id"
   end
 
@@ -602,8 +615,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_02_120000) do
   add_foreign_key "discounts", "accounts"
   add_foreign_key "email_setups", "accounts"
   add_foreign_key "idgtls", "accounts"
+  add_foreign_key "incase_statuses", "accounts"
   add_foreign_key "incases", "accounts"
   add_foreign_key "incases", "clients"
+  add_foreign_key "incases", "incase_statuses"
   add_foreign_key "incases", "webforms"
   add_foreign_key "insales", "accounts"
   add_foreign_key "insnotifies", "users"

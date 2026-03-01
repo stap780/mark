@@ -102,6 +102,7 @@
                 </button>
                 
                 <div data-accordion-target="content" class="hidden ml-4 space-y-1">
+                  <%= link_to_sidebar t('menu.incase_statuses'), account_incase_statuses_path(current_account), active_if: '/incase_statuses' %>
                   <%= link_to_sidebar t('menu.insales'), account_insales_path(current_account), active_if: '/insales' %>
                   <%= link_to_sidebar t('menu.stock_check_schedule'), account_stock_check_schedules_path(current_account), active_if: '/stock_check_schedules' if show_link?('stock_check_schedule') %>
                   <%= link_to_sidebar t('menu.telegram'), account_telegram_setups_path(current_account), active_if: '/telegram_setups' %>

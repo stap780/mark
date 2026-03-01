@@ -75,6 +75,25 @@ module ApplicationHelper
     </svg>'.html_safe
   end
 
+  def info_icon
+    '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+      <line x1="12" y1="8" x2="12" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="12" y1="12" x2="12" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>'.html_safe
+  end
+
+  def link_to_info(path, **options)
+    options[:class] ||= "inline-flex items-center justify-center px-2 py-1 text-violet-600 hover:text-violet-800"
+    options[:title] ||= t('info', default: 'Info')
+    options[:data] ||= {}
+    options[:data][:turbo_frame] ||= :offcanvas
+
+    link_to path, options do
+      info_icon
+    end
+  end
+
   def link_to_edit(path, **options)
     # Если класс содержит текстовый стиль или bg-gray-100, заменяем на стиль иконки
     # Иначе используем переданный класс (например, для кнопок с bg-violet-600)

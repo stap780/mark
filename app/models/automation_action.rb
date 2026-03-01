@@ -45,7 +45,7 @@ class AutomationAction < ApplicationRecord
     'change_status' => {
       type: 'string',
       label: 'Статус заявки',
-      validation: ->(value) { value.present? && Incase.statuses.key?(value) }
+      validation: ->(value) { value.present? }
     }
   }.freeze
 
@@ -70,7 +70,15 @@ class AutomationAction < ApplicationRecord
   def value_matches_kind
     return if kind.blank?
     return if value.blank? # Пропускаем валидацию если value пустое (будет валидироваться presence отдельно)
-    
+
+    if kind == 'change_status'
+      account = automation_rule&.account
+      unless account&.incase_statuses&.exists?(key: value)
+        errors.add(:value, I18n.t("activerecord.errors.models.automation_action.invalid_status"))
+      end
+      return
+    end
+
     mapping = VALUE_MAPPING[kind]
     return unless mapping
 

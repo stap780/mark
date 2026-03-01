@@ -54,7 +54,7 @@
         <% when 'change_status' %>
           <%= ff.select :value,
               options_for_select(
-                Incase.statuses.keys.map { |k| [t("automation_conditions.values.incase_status.#{k}", default: k.humanize), k] },
+                automation_rule.account.incase_statuses.ordered.map { |s| [s.name, s.key] },
                 automation_action.value
               ),
               { include_blank: "Выберите статус" },

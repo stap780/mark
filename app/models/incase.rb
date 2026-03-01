@@ -3,37 +3,23 @@ class Incase < ApplicationRecord
   belongs_to :account
   belongs_to :webform
   belongs_to :client
+  belongs_to :incase_status
 
   has_many :items, dependent: :destroy
   accepts_nested_attributes_for :items, allow_destroy: true
   has_many :automation_messages
 
-  enum :status, {
-    new: "new",
-    in_progress: "in_progress",
-    done: "done",
-    canceled: "canceled",
-    closed: "closed"
-  }, prefix: true
+  validates :incase_status_id, presence: true
 
-  validates :status, presence: true
+  delegate :key, :name, :color, to: :incase_status, prefix: false
 
-  # Возвращает цвет для статуса (Tailwind CSS классы)
+  # Для обратной совместимости: status возвращает key (new, in_progress, done, canceled, closed)
+  def status
+    incase_status&.key
+  end
+
   def status_color
-    case status
-    when 'new'
-      'bg-blue-100 text-blue-800'
-    when 'in_progress'
-      'bg-yellow-100 text-yellow-800'
-    when 'done'
-      'bg-green-100 text-green-800'
-    when 'canceled'
-      'bg-red-100 text-red-800'
-    when 'closed'
-      'bg-gray-100 text-gray-800'
-    else
-      'bg-gray-100 text-gray-800'
-    end
+    incase_status&.color || "bg-gray-100 text-gray-800"
   end
 
   # Генерируем порядковый номер для отображения пользователю
@@ -47,7 +33,7 @@ class Incase < ApplicationRecord
   end
 
   def self.ransackable_associations(auth_object = nil)
-    %w[webform client]
+    %w[webform client incase_status]
   end
 
   # Проверяет, есть ли у клиента заказ с такими же позициями

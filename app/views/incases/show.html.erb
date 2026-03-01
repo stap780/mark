@@ -6,7 +6,7 @@
       <%= form_with url: update_status_account_incase_path(current_account, @incase), method: :patch, local: false, data: { turbo: true }, class: "inline-flex items-center" do |f| %>
         <%= f.select :status, 
             options_for_select(
-              Incase.statuses.keys.map { |k| [t("incases.status.#{k}"), k] },
+              current_account.incase_statuses.ordered.map { |s| [s.name, s.key] },
               @incase.status
             ),{},
             { 

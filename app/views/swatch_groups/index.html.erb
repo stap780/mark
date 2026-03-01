@@ -1,6 +1,8 @@
 <div class="flex items-center justify-between mb-4">
-  <h1 class="text-xl font-semibold"><%= t("swatch_groups.index.heading") %> <small class="text-sm text-gray-500"><%= @swatch_groups.count %></small></h1>
-
+  <div class="flex space-x-2">
+    <h1 class="text-xl font-semibold"><%= t("swatch_groups.index.heading") %> <small class="text-sm text-gray-500"><%= @swatch_groups.count %></small></h1>
+    <%= link_to_info info_account_swatch_groups_path(current_account) %>
+  </div>
   <div class="flex space-x-2">
     <%= search_form_for @search, url: account_swatch_groups_path(current_account), method: :get, html: { class: "flex items-center space-x-2" } do |f| %>      
       <%= f.label :name_cont, t(:search_by_name), class: "sr-only" %>

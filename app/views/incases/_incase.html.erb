@@ -3,7 +3,7 @@
   <div><%= l incase.created_at, format: :short %></div>
   <div>
     <span class="px-2 py-1 text-xs font-medium rounded-full <%= incase.status_color %>">
-      <%= t("incases.status.#{incase.status}") %>
+      <%= incase.incase_status&.name || incase.status %>
     </span>
   </div>
   <div><%= incase.webform&.title %> (<%= incase.webform&.kind %>)</div>

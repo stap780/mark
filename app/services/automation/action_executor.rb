@@ -402,12 +402,15 @@ module Automation
     end
 
     def change_status
-      new_status = @action.status
+      status_key = @action.status
       incase = @context['incase']
-      return unless incase && new_status.present?
+      return unless incase && status_key.present?
 
-      incase.update!(status: new_status)
-      Rails.logger.info "Changed incase ##{incase.id} status to #{new_status}"
+      incase_status = incase.account.incase_statuses.find_by(key: status_key)
+      return unless incase_status
+
+      incase.update!(incase_status: incase_status)
+      Rails.logger.info "Changed incase ##{incase.id} status to #{status_key}"
     end
 
     def render_liquid(content, liquid_context)

@@ -1,5 +1,6 @@
-# Создаёт заявку (Incase) типа order из данных в формате InSales (order_lines, client, number).
-# Используется webhook'ом insales_order и rake-задачей incase:create_order.
+# Создаёт или обновляет заявку (Incase) типа order из данных в формате InSales (order_lines, client, number).
+# Используется webhook'ами insales_order (orders/create и orders/update) и rake-задачей incase:create_order.
+# При наличии number ищет существующую заявку и обновляет её (upsert).
 class InsalesOrderIncaseCreator
   class Error < StandardError; end
 
@@ -34,19 +35,28 @@ class InsalesOrderIncaseCreator
     end
 
     number = @order_data[:number].to_s if @order_data[:number].present?
-    incase_attrs = { webform_id: webform.id, client_id: client.id, status: 'new', number: number, items_attributes: items_attributes }
-    incase = @account.incases.create!(incase_attrs)
+    incase = find_existing_incase(webform, number)
 
-    Automation::Engine.call(
-      account: @account,
-      event: "incase.created",
-      object: incase
-    )
+    if incase
+      incase.items.destroy_all
+      incase.update!(client_id: client.id, number: number, items_attributes: items_attributes)
+      Automation::Engine.call(account: @account, event: "incase.updated", object: incase)
+    else
+      default_status = @account.incase_statuses.find_by(key: "new") || @account.incase_statuses.first
+      incase_attrs = { webform_id: webform.id, client_id: client.id, incase_status_id: default_status&.id, number: number, items_attributes: items_attributes }
+      incase = @account.incases.create!(incase_attrs)
+      Automation::Engine.call(account: @account, event: "incase.created", object: incase)
+    end
 
     incase
   end
 
   private
+
+  def find_existing_incase(webform, number)
+    return nil if number.blank?
+    @account.incases.find_by(webform: webform, number: number)
+  end
 
   def resolve_client!(client_params)
     external_client_id = client_params&.dig(:id)

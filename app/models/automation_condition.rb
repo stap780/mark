@@ -37,8 +37,13 @@ class AutomationCondition < ApplicationRecord
     when "boolean"
       I18n.t("automation_conditions.values.boolean.#{value}", default: value.to_s)
     when "enum"
-      key = "automation_conditions.values.#{field&.gsub('.', '_')&.gsub('?', '')}.#{value}"
-      I18n.t(key, default: value.to_s.humanize)
+      # Для incase.status — имя из account.incase_statuses
+      if field.in?(["incase.status", "automation_message.incase.status"]) && rule&.account
+        rule.account.incase_statuses.find_by(key: value)&.name || value.to_s.humanize
+      else
+        key = "automation_conditions.values.#{field&.gsub('.', '_')&.gsub('?', '')}.#{value}"
+        I18n.t(key, default: value.to_s.humanize)
+      end
     else
       value.presence || "—"
     end
@@ -54,10 +59,23 @@ class AutomationCondition < ApplicationRecord
     when "boolean"
       I18n.t("automation_conditions.values.boolean.#{value}", default: value.to_s)
     when "enum"
-      key = "automation_conditions.values.#{field&.gsub('.', '_')&.gsub('?', '')}.#{value}"
-      I18n.t(key, default: value.to_s.humanize)
+      if field.in?(["incase.status", "automation_message.incase.status"]) && rule&.account
+        rule.account.incase_statuses.find_by(key: value)&.name || value.to_s.humanize
+      else
+        key = "automation_conditions.values.#{field&.gsub('.', '_')&.gsub('?', '')}.#{value}"
+        I18n.t(key, default: value.to_s.humanize)
+      end
     else
       value.to_s
+    end
+  end
+
+  def valid_enum_values_for_field(field_mapping)
+    return field_mapping[:values] if field_mapping[:values].present?
+
+    # Динамические значения из account (incase.status)
+    if field.in?(["incase.status", "automation_message.incase.status"]) && rule&.account
+      rule.account.incase_statuses.ordered.pluck(:key)
     end
   end
 
@@ -93,10 +111,11 @@ class AutomationCondition < ApplicationRecord
         when 'boolean'
           self.value = ['true', 'false'].include?(value) ? value : 'false'
         when 'enum'
-          if field_mapping[:values] && field_mapping[:values].include?(value)
+          valid_values = valid_enum_values_for_field(field_mapping)
+          if valid_values && valid_values.include?(value)
             self.value = value
-          elsif field_mapping[:values] && field_mapping[:values].any?
-            self.value = field_mapping[:values].first
+          elsif valid_values && valid_values.any?
+            self.value = valid_values.first
           else
             self.value = nil
           end
@@ -122,8 +141,9 @@ class AutomationCondition < ApplicationRecord
           self.value = 'false'
         end
       when 'enum'
-        if field_mapping[:values] && !field_mapping[:values].include?(value)
-          self.value = field_mapping[:values].first if field_mapping[:values].any?
+        valid_values = valid_enum_values_for_field(field_mapping)
+        if valid_values && !valid_values.include?(value)
+          self.value = valid_values.first if valid_values.any?
         end
       when 'number'
         unless value.to_s.match?(/^\d+$/)
@@ -170,7 +190,8 @@ class AutomationCondition < ApplicationRecord
           errors.add(:value, "должно быть true или false")
         end
       elsif field_mapping[:type] == 'enum'
-        unless field_mapping[:values] && field_mapping[:values].include?(value)
+        valid_values = valid_enum_values_for_field(field_mapping)
+        unless valid_values && valid_values.include?(value)
           errors.add(:value, "должно быть одним из допустимых значений")
         end
       end

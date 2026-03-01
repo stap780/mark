@@ -27,7 +27,8 @@ class Api::IncasesController < ApplicationController
     end
 
     # Подготавливаем атрибуты для создания заявки
-    incase_attrs = { webform: webform, client: client, status: 'new' }
+    default_status = account.incase_statuses.find_by(key: "new") || account.incase_statuses.first
+    incase_attrs = { webform: webform, client: client, incase_status: default_status }
     incase_attrs[:number] = incase_params[:number] if incase_params[:number].present?
     incase_attrs[:custom_fields] = incase_params[:custom_fields] if incase_params[:custom_fields].present?
 

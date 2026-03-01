@@ -65,6 +65,8 @@ class SwatchGroupsController < ApplicationController
     redirect_to account_swatch_groups_path(current_account), notice: t("controllers.swatch_groups.toggle_status.success")
   end
 
+  def info; end
+
   def regenerate_json
     SwatchJsonGeneratorJob.perform_later(current_account.id)
     redirect_to account_swatch_groups_path(current_account), notice: t("controllers.swatch_groups.regenerate_json.success")

@@ -67,6 +67,7 @@ Rails.application.routes.draw do
       member do
         get :check
         get :add_order_webhook
+        get :add_order_update_webhook
       end
       collection do
         post :order
@@ -130,6 +131,7 @@ Rails.application.routes.draw do
         get :search
       end
       collection do
+        get :info
         post :regenerate_json
         get :style_selector
         post :pick_style
@@ -182,6 +184,7 @@ Rails.application.routes.draw do
         patch :sort
       end
     end
+    resources :incase_statuses
     resources :incases do
       member do
         patch :update_status

@@ -8,7 +8,7 @@
       <%= f.label :field, t('automation_conditions.select_field'), class: "block text-sm font-medium text-gray-700" if @automation_condition.new_record? %>
       <%= f.select :field,
           options_for_select(
-            (@automation_rule.event ? available_fields_for_event(@automation_rule.event).map { |fn| [fn[:label], fn[:key]] } : []),
+            (@automation_rule.event ? available_fields_for_event(@automation_rule.event, account: @automation_rule.account).map { |fn| [fn[:label], fn[:key]] } : []),
             @automation_condition.field
           ),
           { include_blank: false },
@@ -16,7 +16,7 @@
     </div>
     <div>
       <%= f.label :operator, t('automation_conditions.select_operator'), class: "block text-sm font-medium text-gray-700" if @automation_condition.new_record? %>
-      <% field_info = (@automation_rule.event ? available_fields_for_event(@automation_rule.event).find { |fn| fn[:key] == @automation_condition.field } : nil) %>
+      <% field_info = (@automation_rule.event ? available_fields_for_event(@automation_rule.event, account: @automation_rule.account).find { |fn| fn[:key] == @automation_condition.field } : nil) %>
       <% available_ops = field_info ? available_operators_for_field(field_info) : available_operators %>
       <%= f.select :operator,
           options_for_select(available_ops.map { |op| [op[:label], op[:key]] }, @automation_condition.operator),
@@ -25,7 +25,7 @@
     </div>
     <div>
       <%= f.label :value, t('automation_conditions.select_value'), class: "block text-sm font-medium text-gray-700" if @automation_condition.new_record? %>
-      <% field_info = (@automation_rule.event ? available_fields_for_event(@automation_rule.event).find { |fn| fn[:key] == @automation_condition.field } : nil) %>
+      <% field_info = (@automation_rule.event ? available_fields_for_event(@automation_rule.event, account: @automation_rule.account).find { |fn| fn[:key] == @automation_condition.field } : nil) %>
       <% input_type = input_type_for_condition(field_info, @automation_condition.operator) %>
       <% if input_type == 'select' && field_info %>
         <% select_options = select_options_for_condition(field_info, @automation_condition.operator) %>

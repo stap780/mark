@@ -59,6 +59,7 @@ ru:
     lists: "Списки"
     swatches: "Группы"
     webforms: "Веб-формы"
+    incase_statuses: "Статусы заявок"
     insales: "InSales"
     stock_check_schedule: "Проверка остатков"
     email_settings: "Настройки Email"
@@ -231,6 +232,7 @@ ru:
   check_integration: "Проверить интеграцию"
   set_products_xml: "Настроить XML товаров"
   add_order_webhook: "Добавить webhook заказа"
+  add_order_update_webhook: "Добавить webhook обновления заказа"
 
   activerecord:
     models:
@@ -378,6 +380,8 @@ ru:
     errors:
       format: "%{attribute} %{message}"
       models:
+        automation_action:
+          invalid_status: "неверный статус заявки"
         account_user:
           attributes:
             role:
@@ -694,6 +698,26 @@ ru:
         has_automation_messages: "Не удалось удалить заявку: она связана с сообщениями автоматизации"
       update_status:
         success: "Статус заявки обновлен."
+    incase_statuses:
+      index:
+        title: "Статусы заявок"
+        key: "Ключ"
+        name: "Название"
+        color: "Цвет"
+      new:
+        title: "Новый статус"
+      edit:
+        title: "Редактировать статус"
+      create:
+        success: "Статус создан."
+      update:
+        success: "Статус обновлён."
+      destroy:
+        success: "Статус удалён."
+        confirm: "Удалить этот статус? Нельзя удалить статус, если есть заявки с этим статусом."
+        has_incases: "Нельзя удалить статус: есть заявки с этим статусом"
+      form:
+        key_hint: "Латинские буквы и подчёркивание (new, in_progress, done)"
     swatch_groups:
       create:
         success: "Группа успешно создана."
@@ -890,6 +914,9 @@ ru:
     create:
       success: "Заявка создана."
     index:
+      all: "Все"
+      chart_title: "Заявки по дням"
+      chart_label: "Заявок"
       search_placeholder: "Поиск по клиенту"
       search: "Поиск"
       clear: "Очистить"
@@ -998,6 +1025,8 @@ ru:
       success: "API работает."
     add_order_webhook:
       success: "Webhook заказа добавлен."
+    add_order_update_webhook:
+      success: "Webhook обновления заказа добавлен."
     generate_products_xml:
       success: "XML товаров сгенерирован."
     save_products_xml_link:
@@ -1031,6 +1060,17 @@ ru:
     send_test: "Отправить тестовое письмо"
     test_email_label: "Тестовое письмо"
     already_exists: "Настройки Email уже существуют"
+
+  incase_statuses:
+    index:
+      title: "Статусы заявок"
+      key: "Ключ"
+      name: "Название"
+      color: "Цвет"
+    new:
+      title: "Новый статус"
+    edit:
+      title: "Редактировать статус"
 
   stock_check_schedules:
     index:

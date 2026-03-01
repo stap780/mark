@@ -10,6 +10,7 @@ class Account < ApplicationRecord
   has_many :clients, dependent: :destroy
   has_many :discounts, dependent: :destroy
   has_many :webforms, dependent: :destroy
+  has_many :incase_statuses, dependent: :destroy
   has_many :incases, dependent: :destroy
   has_many :automation_rules, dependent: :destroy
   has_many :message_templates, dependent: :destroy
@@ -26,6 +27,7 @@ class Account < ApplicationRecord
   validates :name, presence: true
 
   after_create :create_subscription
+  after_create :ensure_incase_statuses
 
   # Set current account context
   def self.current
@@ -134,6 +136,10 @@ class Account < ApplicationRecord
   end
 
   private
+
+  def ensure_incase_statuses
+    IncaseStatus.ensure_defaults_for(self)
+  end
 
   # Создает пробную подписку на 30 дней при создании аккаунта
   def create_subscription

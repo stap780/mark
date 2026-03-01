@@ -1,0 +1,15 @@
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-xl font-semibold"><%= t(".title") %></h1>
+  <%= link_to_new new_account_incase_status_path(current_account), data: { turbo_frame: :offcanvas } %>
+</div>
+
+<%= turbo_frame_tag dom_id(current_account, :incase_statuses), class: "bg-white rounded-lg shadow divide-y" do %>
+  <div class="grid grid-cols-[80px_1fr_2fr_120px_150px] gap-4 p-4 font-medium text-gray-700">
+    <div>#</div>
+    <div><%= t(".key") %></div>
+    <div><%= t(".name") %></div>
+    <div><%= t(".color") %></div>
+    <div></div>
+  </div>
+  <%= render @incase_statuses %>
+<% end %>

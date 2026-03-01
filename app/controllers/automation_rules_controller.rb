@@ -255,7 +255,7 @@ class AutomationRulesController < ApplicationController
     case kind
     when 'change_status'
       # Первый статус из списка
-      Incase.statuses.keys.first
+      @automation_rule.account.incase_statuses.ordered.first&.key
     when 'send_email', 'send_email_to_users'
       # Первый доступный шаблон email
       @automation_rule.account.message_templates.email.first&.id&.to_s

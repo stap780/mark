@@ -67,7 +67,7 @@
                   { class: "block w-full rounded-md border-gray-300 shadow-sm px-3 py-2", data: { "auto-submit-ignore": true } } %>
             <% when "change_status" %>
               <%= af.select :value,
-                  options_for_select(Incase.statuses.keys.map { |k| [t("automation_conditions.values.incase_status.#{k}"), k] }, step.automation_action.value),
+                  options_for_select(automation_rule.account.incase_statuses.ordered.map { |s| [s.name, s.key] }, step.automation_action.value),
                   { include_blank: "Выберите статус" },
                   { class: "block w-full rounded-md border-gray-300 shadow-sm px-3 py-2", data: { "auto-submit-ignore": true } } %>
             <% else %>

@@ -7,7 +7,7 @@
       <div>
         <%= ff.select :field,
             options_for_select(
-              (automation_rule.event ? available_fields_for_event(automation_rule.event).map { |f| [f[:label], f[:key]] } : []),
+              (automation_rule.event ? available_fields_for_event(automation_rule.event, account: automation_rule.account).map { |f| [f[:label], f[:key]] } : []),
               automation_condition.field
             ),
             { include_blank: t('automation_conditions.select_field') },
@@ -18,7 +18,7 @@
 
       <!-- Operator select -->
       <div>
-        <% field_info = (automation_rule.event ? available_fields_for_event(automation_rule.event).find { |f| f[:key] == automation_condition.field } : nil) %>
+        <% field_info = (automation_rule.event ? available_fields_for_event(automation_rule.event, account: automation_rule.account).find { |f| f[:key] == automation_condition.field } : nil) %>
         <% available_ops = field_info ? available_operators_for_field(field_info) : available_operators %>
         <%= ff.select :operator,
             options_for_select(
@@ -34,7 +34,7 @@
       <!-- Value input -->
       <div>
         <% 
-          field_info = (automation_rule.event ? available_fields_for_event(automation_rule.event).find { |f| f[:key] == automation_condition.field } : nil)
+          field_info = (automation_rule.event ? available_fields_for_event(automation_rule.event, account: automation_rule.account).find { |f| f[:key] == automation_condition.field } : nil)
           operator = automation_condition.operator
           input_type = input_type_for_condition(field_info, operator)
         %>

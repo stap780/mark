@@ -1,0 +1,5 @@
+<%= render "shared/offcanvas_inner", title: t(".title"), width: "32rem" do %>
+  <div id="<%= dom_id(@incase_status, :form) %>">
+    <%= render "form", incase_status: @incase_status %>
+  </div>
+<% end %>

@@ -4,7 +4,7 @@ module AutomationRulesHelper
     "incase.status" => {
       type: "enum",
       operators: ["equals", "not_equals"],
-      values: ["new", "in_progress", "done", "canceled", "closed"]
+      values: nil  # dynamic: from account.incase_statuses
     },
     "incase.webform.kind" => {
       type: "enum",
@@ -54,7 +54,7 @@ module AutomationRulesHelper
     "automation_message.incase.status" => {
       type: "enum",
       operators: ["equals", "not_equals"],
-      values: ["new", "in_progress", "done", "canceled", "closed"]
+      values: nil  # dynamic: from account.incase_statuses
     },
     "automation_message.client.email" => {
       type: "string",
@@ -64,26 +64,31 @@ module AutomationRulesHelper
   }.freeze
 
   # Получить информацию о поле из маппинга
-  def field_info_by_key(field_key)
+  def field_info_by_key(field_key, account: nil)
     mapping = FIELD_MAPPING[field_key]
     return nil unless mapping
+
+    values = mapping[:values]
+    if values.nil? && account && field_key.in?(["incase.status", "automation_message.incase.status"])
+      values = account.incase_statuses.ordered.map { |s| [s.name, s.key] }
+    end
 
     {
       key: field_key,
       type: mapping[:type],
       operators: mapping[:operators],
-      values: mapping[:values]
+      values: values
     }
   end
 
-  def available_fields_for_event(event)
+  def available_fields_for_event(event, account: nil)
     return [] unless event.present?
 
     # Используем маппинг для получения полей
     case event.to_s
     when /^incase\.(created|updated)/
       fields = [
-        field_info_by_key("incase.status"),
+        field_info_by_key("incase.status", account: account),
         field_info_by_key("incase.webform.kind"),
         field_info_by_key("incase.webform.title"),
         field_info_by_key("client.email"),
@@ -104,7 +109,7 @@ module AutomationRulesHelper
       [
         field_info_by_key("variant.quantity"),
         field_info_by_key("incase.webform.kind"),
-        field_info_by_key("incase.status")
+        field_info_by_key("incase.status", account: account)
       ].compact.map do |field|
         {
           key: field[:key],
@@ -117,7 +122,7 @@ module AutomationRulesHelper
       fields = [
         field_info_by_key("automation_message.channel"),
         field_info_by_key("automation_message.status"),
-        field_info_by_key("automation_message.incase.status"),
+        field_info_by_key("automation_message.incase.status", account: account),
         field_info_by_key("automation_message.client.email"),
         field_info_by_key("client.email"),
         field_info_by_key("client.phone")
@@ -242,10 +247,17 @@ module AutomationRulesHelper
         [I18n.t('automation_conditions.values.boolean.false'), "false"]
       ]
     when 'enum'
-      field_info[:values].map do |v|
-        translation_key = "automation_conditions.values.#{field_key&.gsub('.', '_')&.gsub('?', '')}.#{v}"
-        label = I18n.t(translation_key, default: v.humanize)
-        [label, v]
+      vals = field_info[:values]
+      return [] if vals.blank?
+      # values может быть [[label, key], ...] (динамические из account) или ["new", "in_progress", ...] (статические)
+      if vals.first.is_a?(Array)
+        vals
+      else
+        vals.map do |v|
+          translation_key = "automation_conditions.values.#{field_key&.gsub('.', '_')&.gsub('?', '')}.#{v}"
+          label = I18n.t(translation_key, default: v.humanize)
+          [label, v]
+        end
       end
     else
       []

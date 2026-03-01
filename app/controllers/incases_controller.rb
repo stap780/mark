@@ -4,13 +4,15 @@ class IncasesController < ApplicationController
   before_action :set_incase, only: [:show, :update_status, :destroy]
 
   def new
-    @incase = current_account.incases.build(client_id: params[:client_id], status: :new)
+    default_status = current_account.incase_statuses.find_by(key: "new") || current_account.incase_statuses.first
+    @incase = current_account.incases.build(client_id: params[:client_id], incase_status: default_status)
     @active_webforms = current_account.webforms.status_active.order(:title)
     @client = current_account.clients.find_by(id: params[:client_id])
   end
 
   def create
-    @incase = current_account.incases.build(incase_params.merge(status: :new))
+    default_status = current_account.incase_statuses.find_by(key: "new") || current_account.incase_statuses.first
+    @incase = current_account.incases.build(incase_params.merge(incase_status: default_status))
     if @incase.save
       flash.now[:notice] = t('.success')
       respond_to do |format|
@@ -32,17 +34,24 @@ class IncasesController < ApplicationController
   end
 
   def index
-    @search = current_account.incases.includes(:client, :webform).ransack(params[:q])
+    @search = current_account.incases.includes(:client, :webform, :incase_status).ransack(params[:q])
     @search.sorts = "created_at desc" if @search.sorts.empty?
     @incases = @search.result(distinct: true).paginate(page: params[:page], per_page: 50)
     @webforms = current_account.webforms.order(:title)
+
+    days_count = (params[:chart_days] || 14).to_i.clamp(7, 30)
+    base_scope = current_account.incases
+    base_scope = base_scope.where(webform_id: params.dig(:q, :webform_id_eq)) if params.dig(:q, :webform_id_eq).present?
+    @chart_data = build_chart_data(base_scope, days_count)
   end
 
   def show; end
 
   def update_status
+    new_status = current_account.incase_statuses.find_by(key: params.require(:status)) ||
+                 current_account.incase_statuses.find_by(id: params.require(:status))
     respond_to do |format|
-      if @incase.update(status: params.require(:status))
+      if new_status && @incase.update(incase_status: new_status)
         format.turbo_stream do
           flash.now[:success] = t('.success')
           render turbo_stream: [
@@ -94,10 +103,26 @@ class IncasesController < ApplicationController
   end
 
   def incase_params
-    params.require(:incase).permit(:status, :webform_id, :client_id, :number, :display_number, custom_fields: {}, 
-    items_attributes: %i[id quantity price product_id variant_id _destroy])
+    params.require(:incase).permit(:incase_status_id, :webform_id, :client_id, :number, :display_number, custom_fields: {},
+      items_attributes: %i[id quantity price product_id variant_id _destroy])
   end
-  
+
+  def build_chart_data(scope, days)
+    labels = days.downto(0).map { |i| (Date.current - i).strftime("%d.%m") }
+    data = days.downto(0).map do |i|
+      date = Date.current - i
+      scope.where(created_at: date.beginning_of_day..date.end_of_day).count
+    end
+    {
+      labels: labels,
+      datasets: [{
+        label: t('incases.index.chart_label', default: 'Заявок'),
+        backgroundColor: 'rgba(139, 92, 246, 0.2)',
+        borderColor: '#7c3aed',
+        data: data
+      }]
+    }
+  end
 end
 
 

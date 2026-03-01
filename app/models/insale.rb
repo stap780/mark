@@ -106,6 +106,48 @@ class Insale < ApplicationRecord
     message.size.positive? ? [false, message] : [true, ""]
   end
 
+  # Add webhook for orders/update for the current account (same endpoint as orders/create)
+  def add_order_update_webhook(address: nil)
+    return [false, ["API not working"]] unless api_work?
+
+    webh_list = InsalesApi::Webhook.all
+    target_address = address || "https://app.teletri.ru/api/accounts/#{account.id}/incases/insales_order"
+    check_present = webh_list.any? { |w| w.topic == "orders/update" && w.address == target_address }
+
+    if check_present
+      message = "Webhook already exists. OK"
+      return [true, message]
+    end
+
+    data_webhook = {
+      address: target_address,
+      topic: "orders/update",
+      format_type: "json"
+    }
+
+    message = []
+    webhook = InsalesApi::Webhook.new(webhook: data_webhook)
+    begin
+      webhook.save
+    rescue SocketError
+      message << "SocketError Check Key,Password,Domain"
+    rescue ActiveResource::ResourceNotFound
+      message << "not_found 404"
+    rescue ActiveResource::ResourceConflict, ActiveResource::ResourceInvalid
+      message << "ActiveResource::ResourceConflict, ActiveResource::ResourceInvalid"
+    rescue ActiveResource::UnauthorizedAccess
+      message << "Failed.  Response code = 401.  Response message = Unauthorized"
+    rescue ActiveResource::ForbiddenAccess
+      message << "Failed.  Response code = 403.  Response message = Forbidden."
+    rescue StandardError => e
+      message << "StandardError #{e}"
+    else
+      webhook
+    end
+
+    message.size.positive? ? [false, message] : [true, ""]
+  end
+
   # Ask Insales API to create a marketplace feed and save its URL to product_xml
   # @param account [Account, nil] Optional account to use. If not provided, uses Current.account
   def self.create_xml(account: nil)
