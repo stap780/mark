@@ -10,7 +10,7 @@ pin "sortablejs" # @1.15.7
 
 # Coloris color picker
 pin "@melloware/coloris", to: "@melloware--coloris.js" # @0.25.0
-pin "chart.js" # @4.5.1
+pin "chart.js", to: "https://esm.sh/chart.js@4.5.1", preload: true
 pin "@kurkle/color", to: "@kurkle--color.js" # @0.3.4
 pin "@stimulus-components/chartjs", to: "@stimulus-components--chartjs.js" # @6.0.1
 

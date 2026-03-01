@@ -74,6 +74,6 @@ class IncaseStatusesController < ApplicationController
   end
 
   def incase_status_params
-    params.require(:incase_status).permit(:key, :name, :color, :position)
+    params.require(:incase_status).permit(:name, :color, :position)
   end
 end
