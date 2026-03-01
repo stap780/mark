@@ -2,11 +2,13 @@
 <div class="flex flex-wrap gap-2 mb-4">
   <%= link_to t('incases.index.all', default: 'Все'),
       account_incases_path(current_account),
-      class: "px-3 py-1 rounded-md #{current_webform_id.blank? ? 'bg-violet-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}" %>
+      class: "px-3 py-1 rounded-md #{current_webform_id.blank? ? 'bg-violet-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}",
+      data: { turbo: false } %>
   <% @webforms.each do |wf| %>
     <%= link_to wf.title,
         account_incases_path(current_account, webform_id: wf.id),
-        class: "px-3 py-1 rounded-md #{current_webform_id.to_s == wf.id.to_s ? 'bg-violet-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}" %>
+        class: "px-3 py-1 rounded-md #{current_webform_id.to_s == wf.id.to_s ? 'bg-violet-600 text-white' : 'bg-gray-200 hover:bg-gray-300'},
+        data: { turbo: false } %>
   <% end %>
 </div>
 
