@@ -184,7 +184,11 @@ Rails.application.routes.draw do
         patch :sort
       end
     end
-    resources :incase_statuses
+    resources :incase_statuses do
+      member do
+        patch :sort
+      end
+    end
     resources :incases do
       member do
         patch :update_status

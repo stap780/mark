@@ -586,6 +586,7 @@ en:
     index:
       all: "All"
       chart_title: "Incases by day"
+      chart_title_by_status: "Incases by day and status"
       chart_label: "Incases"
       search_placeholder: "Search by webform, client"
       search: "Search"
@@ -801,6 +802,7 @@ en:
   incase_statuses:
     index:
       title: "Incase Statuses"
+      position: "Pos"
       key: "Key"
       name: "Name"
       color: "Color"

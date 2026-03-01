@@ -37,15 +37,30 @@
   </div>
 </div>
 
-<div class="mb-6 bg-white rounded-lg shadow p-4">
-  <h3 class="text-sm font-medium text-gray-700 mb-3"><%= t('incases.index.chart_title', default: 'Заявки по дням') %></h3>
-  <div class="h-64">
-    <canvas
-      data-controller="chartjs"
-      data-chartjs-data-value="<%= @chart_data.to_json %>"
-      data-chartjs-type-value="bar"
-      data-chartjs-options-value='{"scales":{"y":{"beginAtZero":true}}}'
-    ></canvas>
+<div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div class="bg-white rounded-lg shadow p-4">
+    <h3 class="text-sm font-medium text-gray-700 mb-3"><%= t('incases.index.chart_title') %></h3>
+    <div class="h-64">
+      <canvas
+        id="chart-by-day"
+        data-controller="chartjs"
+        data-chartjs-data-value="<%= @chart_data.to_json %>"
+        data-chartjs-type-value="bar"
+        data-chartjs-options-value='{"scales":{"y":{"beginAtZero":true}}}'
+      ></canvas>
+    </div>
+  </div>
+  <div class="bg-white rounded-lg shadow p-4">
+    <h3 class="text-sm font-medium text-gray-700 mb-3"><%= t('incases.index.chart_title_by_status') %></h3>
+    <div class="h-64">
+      <canvas
+        id="chart-by-status"
+        data-controller="chartjs"
+        data-chartjs-data-value="<%= @chart_data_by_status.to_json %>"
+        data-chartjs-type-value="bar"
+        data-chartjs-options-value='{"scales":{"x":{"stacked":true},"y":{"stacked":true,"beginAtZero":true}}}'
+      ></canvas>
+    </div>
   </div>
 </div>
 

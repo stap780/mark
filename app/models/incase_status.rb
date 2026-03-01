@@ -4,11 +4,13 @@ class IncaseStatus < ApplicationRecord
   belongs_to :account
   has_many :incases, dependent: :restrict_with_error
 
+  acts_as_list scope: :account_id, column: :position
+
   validates :key, presence: true, uniqueness: { scope: :account_id }
   validates :key, format: { with: /\A[a-z0-9_]+\z/, message: "должен содержать только латинские буквы, цифры и подчеркивания" }, allow_blank: true
   validates :name, presence: true
   validates :color, presence: true
-  validates :position, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :position, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
 
   scope :ordered, -> { order(:position, :id) }
 

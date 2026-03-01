@@ -916,6 +916,7 @@ ru:
     index:
       all: "Все"
       chart_title: "Заявки по дням"
+      chart_title_by_status: "Заявки по дням и статусам"
       chart_label: "Заявок"
       search_placeholder: "Поиск по клиенту"
       search: "Поиск"
@@ -1064,6 +1065,7 @@ ru:
   incase_statuses:
     index:
       title: "Статусы заявок"
+      position: "Поз"
       key: "Ключ"
       name: "Название"
       color: "Цвет"

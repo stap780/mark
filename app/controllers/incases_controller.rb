@@ -47,6 +47,7 @@ class IncasesController < ApplicationController
     effective_webform_id = params[:webform_id].presence || params.dig(:q, :webform_id_eq)
     base_scope = base_scope.where(webform_id: effective_webform_id) if effective_webform_id.present?
     @chart_data = build_chart_data(base_scope, days_count)
+    @chart_data_by_status = build_chart_data_by_status(base_scope, days_count)
   end
 
   def show; end
@@ -126,6 +127,36 @@ class IncasesController < ApplicationController
         data: data
       }]
     }
+  end
+
+  STATUS_CHART_COLORS = {
+    "bg-blue-100" => ["rgba(59, 130, 246, 0.8)", "#3b82f6"],
+    "bg-yellow-100" => ["rgba(234, 179, 8, 0.8)", "#eab308"],
+    "bg-green-100" => ["rgba(34, 197, 94, 0.8)", "#22c55e"],
+    "bg-red-100" => ["rgba(239, 68, 68, 0.8)", "#ef4444"],
+    "bg-gray-100" => ["rgba(107, 114, 128, 0.8)", "#6b7280"]
+  }.freeze
+
+  def build_chart_data_by_status(scope, days)
+    labels = days.downto(0).map { |i| (Date.current - i).strftime("%d.%m") }
+    statuses = current_account.incase_statuses.ordered
+    datasets = statuses.map do |status|
+      data = days.downto(0).map do |i|
+        date = Date.current - i
+        scope.where(incase_status_id: status.id)
+             .where(created_at: date.beginning_of_day..date.end_of_day)
+             .count
+      end
+      bg_class = status.color.to_s.split.first
+      bg_color, border_color = STATUS_CHART_COLORS[bg_class] || ["rgba(139, 92, 246, 0.6)", "#7c3aed"]
+      {
+        label: status.name,
+        backgroundColor: bg_color,
+        borderColor: border_color,
+        data: data
+      }
+    end
+    { labels: labels, datasets: datasets }
   end
 end
 
