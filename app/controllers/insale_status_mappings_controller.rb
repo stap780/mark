@@ -6,6 +6,7 @@ class InsaleStatusMappingsController < ApplicationController
 
   before_action :set_insale
   before_action :set_insale_status_mapping, only: %i[edit update destroy]
+  before_action :set_custom_statuses, only: %i[new edit create update]
 
   def index
     @insale_status_mappings = @insale.insale_status_mappings.order(:insales_custom_status_permalink, :insales_financial_status)
@@ -79,6 +80,14 @@ class InsaleStatusMappingsController < ApplicationController
 
   def set_insale_status_mapping
     @insale_status_mapping = @insale.insale_status_mappings.find(params[:id])
+  end
+
+  def set_custom_statuses
+    @insale.api_init
+    @custom_statuses = InsalesApi::CustomStatus.find(:all)
+  rescue StandardError => e
+    Rails.logger.warn("InsaleStatusMappings: CustomStatus fetch failed: #{e.message}")
+    @custom_statuses = []
   end
 
   def insale_status_mapping_params

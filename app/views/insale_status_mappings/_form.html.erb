@@ -3,18 +3,26 @@
 
   <div>
     <%= f.label :insales_custom_status_permalink, class: "block text-sm font-medium text-gray-700" %>
-    <%= f.text_field :insales_custom_status_permalink, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500", placeholder: "novyy" %>
-    <p class="mt-1 text-sm text-gray-500"><%= t(".custom_status_hint", default: "permalink из custom_status заказа InSales") %></p>
+    <% if @custom_statuses.present? %>
+      <%= f.select :insales_custom_status_permalink,
+          options_from_collection_for_select(@custom_statuses, :permalink, :title),
+          { include_blank: true },
+          class: "h-8 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500" %>
+    <% else %>
+      <%= f.text_field :insales_custom_status_permalink, class: "h-8 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500", placeholder: "novyy" %>
+      <p class="mt-1 text-sm text-amber-600"><%= t(".custom_status_api_unavailable") %></p>
+    <% end %>
+    <p class="mt-1 text-sm text-gray-500"><%= t(".custom_status_hint") %></p>
   </div>
 
   <div>
     <%= f.label :insales_financial_status, class: "block text-sm font-medium text-gray-700" %>
-    <%= f.select :insales_financial_status, InsaleStatusMapping::FINANCIAL_STATUSES.map { |s| [t("insale_status_mappings.financial_statuses.#{s}", default: s), s] }, { include_blank: true }, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500" %>
+    <%= f.select :insales_financial_status, InsaleStatusMapping::FINANCIAL_STATUSES.map { |s| [t("insale_status_mappings.financial_statuses.#{s}", default: s), s] }, { include_blank: true }, class: "h-8 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500" %>
   </div>
 
   <div>
     <%= f.label :incase_status_id, class: "block text-sm font-medium text-gray-700" %>
-    <%= f.collection_select :incase_status_id, current_account.incase_statuses.ordered, :id, :name, {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500" %>
+    <%= f.collection_select :incase_status_id, current_account.incase_statuses.ordered, :id, :name, {}, class: "h-8 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500" %>
   </div>
 
   <div class="pt-2">

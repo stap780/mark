@@ -90,7 +90,7 @@
                 </div>
               <% end %>
 
-              <% active_settings = ['/insales', '/stock_check_schedules', '/users', '/subscription', '/payments', '/email_setups', '/mailganers', '/idgtls', '/moizvonkis', '/telegram_setups'].any? { |path| request.path.include?(path) } %>
+              <% active_settings = ['/insales','/stock_check_schedules','/users','/subscription','/payments','/email_setups','/mailganers','/idgtls','/moizvonkis','/telegram_setups','/insale_status_mappings','/incase_statuses'].any? { |path| request.path.include?(path) } %>
               <div data-controller="accordion"
                   data-accordion-open-value="<%= active_settings %>">
                 <button type="button" data-action="click->accordion#toggle"

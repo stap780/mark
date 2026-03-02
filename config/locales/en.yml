@@ -446,6 +446,7 @@ en:
         success: "Mapping deleted successfully."
       form:
         custom_status_hint: "permalink from order custom_status in InSales"
+        custom_status_api_unavailable: "API unavailable — enter permalink manually"
     incase_statuses:
       index:
         title: "Incase Statuses"
@@ -814,6 +815,7 @@ en:
       title: "Edit status mapping"
     form:
       custom_status_hint: "permalink from order custom_status in InSales"
+      custom_status_api_unavailable: "API unavailable — enter permalink manually"
     create:
       success: "Mapping created successfully."
     update:

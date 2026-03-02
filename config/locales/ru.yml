@@ -716,6 +716,7 @@ ru:
         success: "Маппинг успешно удалён."
       form:
         custom_status_hint: "permalink из custom_status заказа InSales"
+        custom_status_api_unavailable: "API недоступен — введите permalink вручную"
     incase_statuses:
       index:
         title: "Статусы заявок"
@@ -1073,6 +1074,7 @@ ru:
       title: "Редактировать маппинг"
     form:
       custom_status_hint: "permalink из custom_status заказа InSales"
+      custom_status_api_unavailable: "API недоступен — введите permalink вручную"
     create:
       success: "Маппинг успешно создан."
     update:
