@@ -319,6 +319,10 @@ ru:
       incase:
         status: "Статус"
         number: "Номер"
+      insale_status_mapping:
+        insales_custom_status_permalink: "Статус InSales"
+        insales_financial_status: "Статус оплаты"
+        incase_status_id: "Статус заявки"
       variant:
         barcode: "Штрихкод"
         sku: "Артикул"
@@ -1054,9 +1058,12 @@ ru:
     set_product_xml:
       success: "Ссылка на XML товаров сохранена."
     sync_product_xml_button: "Обновить индекс"
+    sync_running: "Запустили"
+    sync_started: "Синхронизация запущена"
+    last_synced_at: "Завершено %{time}"
     sync_product_xml_warning: "Перед первым поиском или генерацией Swatch JSON выполните синхронизацию."
     sync_product_xml:
-      sync_success: "Индекс обновлён: %{offers} офферов, %{variants} вариантов, %{incases} заявок"
+      sync_success: "Индекс обновлён: %{offers} офферов"
 
   insale_status_mappings:
     menu: "Маппинг статусов"

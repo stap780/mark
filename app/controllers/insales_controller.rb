@@ -150,31 +150,34 @@ class InsalesController < ApplicationController
     render partial: 'insales/xml_source', layout: false
   end
 
-  # Ручная синхронизация product_xml_offers и StockCheck
+  # Ручная синхронизация product_xml_offers (только индекс) — ставит Job, сразу показывает «Запустили»
   def sync_product_xml
     account = current_account
-    sync_success, sync_result = ProductXmlSync.new(account).call
+    insale = account.insales.first
 
-    unless sync_success
+    unless insale&.product_xml.present?
+      msg = insale ? "No product_xml URL configured" : "No Insale configuration"
       respond_to do |format|
-        flash.now[:error] = sync_result
+        flash.now[:error] = msg
         format.turbo_stream { render turbo_stream: render_turbo_flash }
-        format.html { redirect_to account_insales_path(account), alert: sync_result }
-        format.json { render json: { ok: false, message: sync_result }, status: :unprocessable_entity }
+        format.html { redirect_to account_insales_path(account), alert: msg }
+        format.json { render json: { ok: false, message: msg }, status: :unprocessable_entity }
       end
       return
     end
 
-    stock_success, stock_result = StockCheck.new(account).call
-    variants = stock_result.is_a?(Hash) ? stock_result[:variants_count] : 0
-    incases = stock_result.is_a?(Hash) ? stock_result[:incases_count] : 0
-    message = t("insales.sync_product_xml.sync_success", offers: sync_result[:offers_count], variants: variants, incases: incases)
+    ProductXmlSyncJob.perform_later(account.id)
 
     respond_to do |format|
-      flash.now[:success] = message
-      format.turbo_stream { render turbo_stream: render_turbo_flash }
-      format.html { redirect_to account_insales_path(account), notice: message }
-      format.json { render json: { ok: true, message: message, sync: sync_result, stock: stock_result } }
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          dom_id(insale, :sync_section),
+          partial: "insales/sync_section",
+          locals: { insale: insale, loading: true }
+        )
+      end
+      format.html { redirect_to account_insales_path(account), notice: t("insales.sync_started") }
+      format.json { render json: { ok: true, message: t("insales.sync_started") } }
     end
   end
 
@@ -213,6 +216,6 @@ class InsalesController < ApplicationController
   end
 
   def insale_params
-    params.require(:insale).permit(:api_key, :api_password, :api_link, :swatch_file)
+    params.require(:insale).permit(:api_key, :api_password, :api_link, :swatch_file, :product_xml, :last_synced_at)
   end
 end

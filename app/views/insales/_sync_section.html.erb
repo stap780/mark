@@ -1,0 +1,10 @@
+<%= turbo_frame_tag dom_id(insale, :sync_section) do %>
+  <% if local_assigns[:loading] %>
+    <span class="ml-2 px-3 py-1 bg-gray-400 text-white rounded-md text-sm cursor-not-allowed"><%= t("insales.sync_running") %></span>
+  <% else %>
+    <%= button_to t("insales.sync_product_xml_button"), sync_product_xml_account_insales_path(insale.account), method: :post, class: "ml-2 px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700 text-sm" %>
+    <% if insale.last_synced_at.present? %>
+      <span class="ml-2 text-xs text-gray-500"><%= t("insales.last_synced_at", time: l(insale.last_synced_at, format: :short)) %></span>
+    <% end %>
+  <% end %>
+<% end %>

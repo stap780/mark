@@ -241,6 +241,10 @@ en:
       incase:
         status: "Status"
         number: "Number"
+      insale_status_mapping:
+        insales_custom_status_permalink: "InSales status"
+        insales_financial_status: "Financial status"
+        incase_status_id: "Incase status"
       variant:
         barcode: "Barcode"
         sku: "SKU"
@@ -795,9 +799,12 @@ en:
     set_product_xml:
       success: "Products XML link saved."
     sync_product_xml_button: "Update index"
+    sync_running: "Running"
+    sync_started: "Sync started"
+    last_synced_at: "Completed %{time}"
     sync_product_xml_warning: "Run sync before first search or Swatch JSON generation."
     sync_product_xml:
-      sync_success: "Index updated: %{offers} offers, %{variants} variants, %{incases} incases"
+      sync_success: "Index updated: %{offers} offers"
 
   insale_status_mappings:
     menu: "Status mapping"

@@ -285,6 +285,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_02_151006) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "product_xml"
+    t.datetime "last_synced_at"
     t.index ["account_id"], name: "index_insales_on_account_id", unique: true
   end
 

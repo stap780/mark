@@ -19,6 +19,7 @@ class ProductXmlSync
       return [false, "Failed to download XML file"] unless temp_file
 
       count = parse_and_save(temp_file)
+      @insale.update_column(:last_synced_at, Time.current)
       [true, { offers_count: count }]
     rescue => e
       Rails.logger.error("ProductXmlSync error: #{e.class}: #{e.message}")
