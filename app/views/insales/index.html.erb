@@ -17,10 +17,16 @@
   <%= render @insales %>
 
     <div class="max-w mx-auto my-6 bg-gray-50 rounded-lg shadow border border-gray-200">
-      <div class="p-4 border-b border-gray-100 flex items-center gap-4">
-        <span class="text-gray-600 font-medium">XML <%= t('menu.products') %>:</span>
+      <div class="p-4 border-b border-gray-100 flex flex-col gap-2">
+        <div class="flex items-center gap-4">
+          <span class="text-gray-600 font-medium">XML <%= t('menu.products') %>:</span>
+          <% if current_account&.insales&.first&.product_xml.present? %>
+            <%= link_to current_account.insales.first.product_xml, current_account.insales.first.product_xml, target: "_blank", rel: "noopener", class: "text-violet-700 hover:underline break-all text-sm" %>
+            <%= button_to t("insales.sync_product_xml_button"), sync_product_xml_account_insales_path(current_account), method: :post, class: "ml-2 px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700 text-sm" %>
+          <% end %>
+        </div>
         <% if current_account&.insales&.first&.product_xml.present? %>
-          <%= link_to current_account.insales.first.product_xml, current_account.insales.first.product_xml, target: "_blank", rel: "noopener", class: "text-violet-700 hover:underline break-all text-sm" %>
+          <p class="text-xs text-amber-600"><%= t("insales.sync_product_xml_warning") %></p>
         <% end %>
       </div>
 

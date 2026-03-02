@@ -22,7 +22,7 @@
   <% if @stock_check_schedules.empty? %>
     <div class="p-4 text-gray-500">
       <%= t('.no_schedules') %>
-      <%= tag.p 'Добавьте ссылку на xml файл в настройках InSales' unless current_account&.insales&.first&.product_xml.present? %>
+      <%= tag.p t('stock_check_schedules.index.no_xml_hint') unless current_account&.insales&.first&.product_xml.present? %>
     </div>
   <% end %>
 <% end %>

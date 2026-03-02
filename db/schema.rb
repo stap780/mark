@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_01_120000) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_02_151006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -265,6 +265,18 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_01_120000) do
     t.index ["webform_id"], name: "index_incases_on_webform_id"
   end
 
+  create_table "insale_status_mappings", force: :cascade do |t|
+    t.bigint "insale_id", null: false
+    t.string "insales_custom_status_permalink", null: false
+    t.string "insales_financial_status", null: false
+    t.bigint "incase_status_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["incase_status_id"], name: "index_insale_status_mappings_on_incase_status_id"
+    t.index ["insale_id", "insales_custom_status_permalink", "insales_financial_status"], name: "index_insale_status_mappings_unique", unique: true
+    t.index ["insale_id"], name: "index_insale_status_mappings_on_insale_id"
+  end
+
   create_table "insales", force: :cascade do |t|
     t.string "api_key"
     t.string "api_password"
@@ -424,6 +436,24 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_01_120000) do
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_plans_on_active"
     t.index ["name"], name: "index_plans_on_name", unique: true
+  end
+
+  create_table "product_xml_offers", force: :cascade do |t|
+    t.bigint "insale_id", null: false
+    t.string "offer_id", null: false
+    t.string "group_id"
+    t.string "model"
+    t.string "vendor_code"
+    t.string "picture"
+    t.jsonb "pictures", default: []
+    t.string "url"
+    t.decimal "price", precision: 12, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["insale_id", "model"], name: "index_product_xml_offers_on_insale_id_and_model"
+    t.index ["insale_id", "offer_id"], name: "index_product_xml_offers_on_insale_id_and_offer_id"
+    t.index ["insale_id", "vendor_code"], name: "index_product_xml_offers_on_insale_id_and_vendor_code"
+    t.index ["insale_id"], name: "index_product_xml_offers_on_insale_id"
   end
 
   create_table "products", force: :cascade do |t|
@@ -620,6 +650,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_01_120000) do
   add_foreign_key "incases", "clients"
   add_foreign_key "incases", "incase_statuses"
   add_foreign_key "incases", "webforms"
+  add_foreign_key "insale_status_mappings", "incase_statuses"
+  add_foreign_key "insale_status_mappings", "insales"
   add_foreign_key "insales", "accounts"
   add_foreign_key "insnotifies", "users"
   add_foreign_key "inswatches", "users"
@@ -637,6 +669,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_01_120000) do
   add_foreign_key "messages", "users"
   add_foreign_key "moizvonkis", "accounts"
   add_foreign_key "payments", "subscriptions"
+  add_foreign_key "product_xml_offers", "insales"
   add_foreign_key "products", "accounts"
   add_foreign_key "sessions", "users"
   add_foreign_key "stock_check_schedules", "accounts"

@@ -1,5 +1,8 @@
 class Incase < ApplicationRecord
   include AccountScoped
+  include ActionView::RecordIdentifier
+  include Varbindable
+
   belongs_to :account
   belongs_to :webform
   belongs_to :client
@@ -34,6 +37,18 @@ class Incase < ApplicationRecord
 
   def self.ransackable_associations(auth_object = nil)
     %w[webform client incase_status]
+  end
+
+  def broadcast_target_for_varbinds
+    [account, [self, :varbinds]]
+  end
+
+  def broadcast_target_id_for_varbinds
+    dom_id(account, dom_id(self, :varbinds))
+  end
+
+  def broadcast_locals_for_varbind(varbind)
+    { incase: self, varbind: varbind }
   end
 
   # Проверяет, есть ли у клиента заказ с такими же позициями

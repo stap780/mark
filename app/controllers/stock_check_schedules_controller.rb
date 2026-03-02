@@ -77,7 +77,7 @@ class StockCheckSchedulesController < ApplicationController
 
   def run
     # Запускаем фонового джоба для немедленной проверки остатков по расписанию
-    StockCheckScheduleJob.perform_later(@stock_check_schedule, Time.zone.now)
+    StockCheckScheduleJob.perform_later(@stock_check_schedule, nil)
 
     respond_to do |format|
       message = t('.success', default: 'Проверка остатков запущена')

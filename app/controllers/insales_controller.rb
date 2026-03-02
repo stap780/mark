@@ -150,6 +150,34 @@ class InsalesController < ApplicationController
     render partial: 'insales/xml_source', layout: false
   end
 
+  # Ручная синхронизация product_xml_offers и StockCheck
+  def sync_product_xml
+    account = current_account
+    sync_success, sync_result = ProductXmlSync.new(account).call
+
+    unless sync_success
+      respond_to do |format|
+        flash.now[:error] = sync_result
+        format.turbo_stream { render turbo_stream: render_turbo_flash }
+        format.html { redirect_to account_insales_path(account), alert: sync_result }
+        format.json { render json: { ok: false, message: sync_result }, status: :unprocessable_entity }
+      end
+      return
+    end
+
+    stock_success, stock_result = StockCheck.new(account).call
+    variants = stock_result.is_a?(Hash) ? stock_result[:variants_count] : 0
+    incases = stock_result.is_a?(Hash) ? stock_result[:incases_count] : 0
+    message = t("insales.sync_product_xml.sync_success", offers: sync_result[:offers_count], variants: variants, incases: incases)
+
+    respond_to do |format|
+      flash.now[:success] = message
+      format.turbo_stream { render turbo_stream: render_turbo_flash }
+      format.html { redirect_to account_insales_path(account), notice: message }
+      format.json { render json: { ok: true, message: message, sync: sync_result, stock: stock_result } }
+    end
+  end
+
   # Save a custom XML URL provided by the user
   def set_product_xml
     rec = current_account&.insales&.first

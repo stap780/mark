@@ -4,7 +4,6 @@ class Variant < ApplicationRecord
 
   belongs_to :product
   has_many :list_items, as: :item
-  has_many :varbinds, as: :record, dependent: :destroy
   has_many :items
 
   before_destroy :check_list_items_dependency

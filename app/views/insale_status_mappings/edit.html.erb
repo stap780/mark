@@ -1,0 +1,5 @@
+<%= render "shared/offcanvas_inner", title: t(".title"), width: "32rem" do %>
+  <div id="<%= dom_id(@insale_status_mapping, :form) %>">
+    <%= render "form", insale_status_mapping: @insale_status_mapping %>
+  </div>
+<% end %>

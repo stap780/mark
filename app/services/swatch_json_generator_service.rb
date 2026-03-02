@@ -1,7 +1,4 @@
 class SwatchJsonGeneratorService
-  require "nokogiri"
-  require "open-uri"
-
   def initialize(account_id)
     @account = Account.find(account_id)
     @offers = {}
@@ -110,47 +107,17 @@ class SwatchJsonGeneratorService
 
   def create_offers_hash
     rec = @account.insales.first
-    return {} unless rec&.product_xml.present?
+    return {} unless rec
 
-    xml_content = read_product_xml_content(rec.product_xml)
-    return {} if xml_content.blank?
-
-    begin
-      doc = Nokogiri::XML(xml_content)
-      lookup = {}
-      doc.xpath('//offer').each do |offer|
-        offer_id = offer['id'] || offer.at('id')&.text
-        group_id = offer['group_id'] || offer.at('group_id')&.text
-        pictures = offer.xpath('picture').map { |p| p.text }.compact.uniq
-        url = offer.at('url')&.text
-        entry = {}
-        entry[:images] = pictures if pictures.any?
-        entry[:url] = url if url.present?
-        entry[:group_id] = group_id if group_id.present?
-        lookup[offer_id] = entry if entry.any?
-      end
-      @offers = lookup
-    rescue StandardError => e
-      Rails.logger.error("Swatch JSON lookup parse error: #{e.message}")
-      @offers = {}
+    lookup = {}
+    rec.product_xml_offers.find_each do |offer|
+      entry = {}
+      entry[:images] = offer.pictures.presence || (offer.picture.present? ? [offer.picture] : [])
+      entry[:url] = offer.url if offer.url.present?
+      entry[:group_id] = offer.group_id if offer.group_id.present?
+      lookup[offer.offer_id] = entry if entry.any?
     end
-  end
-
-  def read_product_xml_content(link)
-    # if link.start_with?('/')
-    #   file_path = Rails.root.join("public", link.sub(%r{^/}, ""))
-    #   return File.read(file_path) if File.exist?(file_path)
-    #   return nil
-    # end
-
-    if link =~ %r{^https?://}
-      begin
-        URI.parse(link).open(read_timeout: 10).read
-      rescue StandardError => e
-        Rails.logger.error("Swatch JSON fetch error: #{e.message}")
-        nil
-      end
-    end
+    @offers = lookup
   end
 
   def s3_file_key

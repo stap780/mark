@@ -1,0 +1,23 @@
+<%= form_with model: [current_account, @insale, insale_status_mapping], class: "space-y-4" do |f| %>
+  <%= render "shared/errors", object: insale_status_mapping %>
+
+  <div>
+    <%= f.label :insales_custom_status_permalink, class: "block text-sm font-medium text-gray-700" %>
+    <%= f.text_field :insales_custom_status_permalink, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500", placeholder: "novyy" %>
+    <p class="mt-1 text-sm text-gray-500"><%= t(".custom_status_hint", default: "permalink из custom_status заказа InSales") %></p>
+  </div>
+
+  <div>
+    <%= f.label :insales_financial_status, class: "block text-sm font-medium text-gray-700" %>
+    <%= f.select :insales_financial_status, InsaleStatusMapping::FINANCIAL_STATUSES.map { |s| [t("insale_status_mappings.financial_statuses.#{s}", default: s), s] }, { include_blank: true }, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500" %>
+  </div>
+
+  <div>
+    <%= f.label :incase_status_id, class: "block text-sm font-medium text-gray-700" %>
+    <%= f.collection_select :incase_status_id, current_account.incase_statuses.ordered, :id, :name, {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500" %>
+  </div>
+
+  <div class="pt-2">
+    <%= f.submit t("save", default: "Сохранить"), class: "px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+  </div>
+<% end %>

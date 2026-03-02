@@ -1,4 +1,11 @@
 <%= turbo_frame_tag :picker_results do %>
+  <% if @index_empty %>
+    <div class="p-3 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+      <%= t("swatch_groups.search.index_empty_warning_html", link: link_to(t("menu.insales"), account_insales_path(current_account), class: "underline font-medium")).html_safe %>
+    </div>
+  <% elsif @items.empty? %>
+    <div class="text-xs text-gray-500 py-2"><%= t(:type_to_search) %></div>
+  <% else %>
   <div class="space-y-2">
     <% @items.each do |i| %>
       <div class="flex items-center justify-between p-2 border rounded">
@@ -24,4 +31,5 @@
       </div>
     <% end %>
   </div>
+  <% end %>
 <% end %>

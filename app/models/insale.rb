@@ -13,7 +13,10 @@ class Insale < ApplicationRecord
 
   # Keep exactly one record per account
   validates :account_id, uniqueness: true
- 
+
+  has_many :insale_status_mappings, dependent: :destroy
+  has_many :product_xml_offers, dependent: :destroy
+
   include ActionView::RecordIdentifier
   after_destroy_commit { broadcast_remove_to [account, "insales"], target: dom_id(self) }
 

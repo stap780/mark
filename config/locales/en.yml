@@ -428,6 +428,24 @@ en:
         has_automation_messages: "Cannot delete incase: it is referenced by automation messages"
       update_status:
         success: "Incase status updated."
+    insale_status_mappings:
+      index:
+        title: "InSales → Incase status mapping"
+        custom_status: "Custom status (permalink)"
+        financial_status: "Financial status"
+        incase_status: "Incase status"
+      new:
+        title: "New status mapping"
+      edit:
+        title: "Edit status mapping"
+      create:
+        success: "Mapping created successfully."
+      update:
+        success: "Mapping updated successfully."
+      destroy:
+        success: "Mapping deleted successfully."
+      form:
+        custom_status_hint: "permalink from order custom_status in InSales"
     incase_statuses:
       index:
         title: "Incase Statuses"
@@ -566,6 +584,8 @@ en:
   swatch_groups:
     index:
       heading: "Swatch Groups"
+    search:
+      index_empty_warning_html: "Index is empty. Run sync in %{link} settings."
     new:
       heading: "New Swatch Group"
     edit:
@@ -771,6 +791,35 @@ en:
       success: "Products XML generated."
     save_products_xml_link:
       success: "Products XML link saved."
+    set_product_xml:
+      success: "Products XML link saved."
+    sync_product_xml_button: "Update index"
+    sync_product_xml_warning: "Run sync before first search or Swatch JSON generation."
+    sync_product_xml:
+      sync_success: "Index updated: %{offers} offers, %{variants} variants, %{incases} incases"
+
+  insale_status_mappings:
+    menu: "Status mapping"
+    financial_statuses:
+      pending: "Not paid"
+      paid: "Paid"
+    index:
+      title: "InSales → Incase status mapping"
+      custom_status: "Custom status (permalink)"
+      financial_status: "Financial status"
+      incase_status: "Incase status"
+    new:
+      title: "New status mapping"
+    edit:
+      title: "Edit status mapping"
+    form:
+      custom_status_hint: "permalink from order custom_status in InSales"
+    create:
+      success: "Mapping created successfully."
+    update:
+      success: "Mapping updated successfully."
+    destroy:
+      success: "Mapping deleted successfully."
 
   email_setups:
     new:
@@ -815,6 +864,7 @@ en:
     index:
       heading: "Stock Check"
       no_schedules: "No stock check schedules created"
+      no_xml_hint: "Add XML link in InSales settings and run sync."
       active: "Enabled"
       recurrence: "Interval"
       time: "Time"
@@ -965,10 +1015,6 @@ en:
       update_user: "Update User"
       create_user: "Create User"
       cancel: "Cancel"
-
-  insales:
-    set_product_xml:
-      success: "Products XML link saved."
 
   products:
     index:

@@ -16,9 +16,18 @@ class StockCheckScheduleJob < ApplicationJob
     account = stock_check_schedule.account
     Account.switch_to(account.id)
 
-    Rails.logger.info "StockCheckScheduleJob: Starting stock check for Account ##{account.id} at #{Time.current}"
+    Rails.logger.info "StockCheckScheduleJob: Starting for Account ##{account.id} at #{Time.current}"
 
-    # Этап 1: Запускаем сервис StockCheck
+    # Этап 1: Синхронизация product_xml_offers
+    sync_success, sync_result = ProductXmlSync.new(account).call
+    unless sync_success
+      Rails.logger.error "StockCheckScheduleJob: ProductXmlSync failed for Account ##{account.id}: #{sync_result}"
+      stock_check_schedule.enqueue_next_run!(from_time: Time.zone.now)
+      return
+    end
+    Rails.logger.info "StockCheckScheduleJob: Synced #{sync_result[:offers_count]} offers for Account ##{account.id}"
+
+    # Этап 2: StockCheck — обновление Variant и incase
     success, result = StockCheck.new(account).call
 
     if success

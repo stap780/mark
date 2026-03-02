@@ -35,16 +35,31 @@ class InsalesOrderIncaseCreator
     end
 
     number = @order_data[:number].to_s if @order_data[:number].present?
-    incase = find_existing_incase(webform, number)
+    order_id = @order_data[:id].to_s if @order_data[:id].present?
+    incase = find_existing_incase(webform, number, order_id)
+
+    incase_status_id = resolve_incase_status_id
 
     if incase
       incase.items.destroy_all
-      incase.update!(client_id: client.id, number: number, items_attributes: items_attributes)
+      incase.update!(
+        client_id: client.id,
+        number: number,
+        incase_status_id: incase_status_id,
+        items_attributes: items_attributes
+      )
+      save_order_id_varbind!(incase, order_id)
       Automation::Engine.call(account: @account, event: "incase.updated", object: incase)
     else
-      default_status = @account.incase_statuses.find_by(key: "new") || @account.incase_statuses.first
-      incase_attrs = { webform_id: webform.id, client_id: client.id, incase_status_id: default_status&.id, number: number, items_attributes: items_attributes }
+      incase_attrs = {
+        webform_id: webform.id,
+        client_id: client.id,
+        incase_status_id: incase_status_id,
+        number: number,
+        items_attributes: items_attributes
+      }
       incase = @account.incases.create!(incase_attrs)
+      save_order_id_varbind!(incase, order_id)
       Automation::Engine.call(account: @account, event: "incase.created", object: incase)
     end
 
@@ -53,9 +68,55 @@ class InsalesOrderIncaseCreator
 
   private
 
-  def find_existing_incase(webform, number)
+  def find_existing_incase(webform, number, order_id)
+    insale = @account.insales.first
+
+    if insale && order_id.present?
+      varbind = Varbind.find_by(
+        varbindable: insale,
+        record_type: "Incase",
+        value: order_id
+      )
+      return varbind&.record if varbind
+    end
+
     return nil if number.blank?
     @account.incases.find_by(webform: webform, number: number)
+  end
+
+  def resolve_incase_status_id
+    insale = @account.insales.first
+    return default_incase_status_id unless insale
+
+    permalink = @order_data.dig(:custom_status, :permalink).to_s.presence
+    financial_status = @order_data[:financial_status].to_s.presence
+
+    return default_incase_status_id if permalink.blank? || financial_status.blank?
+
+    mapping = insale.insale_status_mappings.find_by(
+      insales_custom_status_permalink: permalink,
+      insales_financial_status: financial_status
+    )
+
+    mapping&.incase_status_id || default_incase_status_id
+  end
+
+  def default_incase_status_id
+    @account.incase_statuses.find_by(key: "new")&.id || @account.incase_statuses.first&.id
+  end
+
+  def save_order_id_varbind!(incase, order_id)
+    return if order_id.blank?
+
+    insale = @account.insales.first
+    return unless insale
+
+    Varbind.find_or_create_by!(
+      record: incase,
+      varbindable: insale,
+      record_type: "Incase",
+      value: order_id
+    )
   end
 
   def resolve_client!(client_params)

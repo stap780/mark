@@ -75,7 +75,7 @@ class VarbindsController < ApplicationController
   private
 
   def set_record
-    # Support multiple record types: Client, Product, Variant
+    # Support multiple record types: Client, Product, Variant, Incase
     if params[:client_id]
       @record = current_account.clients.find(params[:client_id])
     elsif params[:product_id]
@@ -83,6 +83,8 @@ class VarbindsController < ApplicationController
       if params[:variant_id]
         @record = @record.variants.find(params[:variant_id])
       end
+    elsif params[:incase_id]
+      @record = current_account.incases.find(params[:incase_id])
     else
       head :not_found
     end

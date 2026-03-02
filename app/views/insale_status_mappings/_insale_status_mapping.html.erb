@@ -1,0 +1,13 @@
+<%= turbo_frame_tag dom_id(insale_status_mapping), class: "grid grid-cols-[1fr_1fr_2fr_120px] gap-4 p-4 items-center hover:bg-gray-50" do %>
+  <div class="text-sm font-mono"><%= insale_status_mapping.insales_custom_status_permalink %></div>
+  <div class="text-sm"><%= insale_status_mapping.insales_financial_status %></div>
+  <div>
+    <span class="px-2 py-1 text-xs font-medium rounded-full <%= insale_status_mapping.incase_status.color %>">
+      <%= insale_status_mapping.incase_status.name %>
+    </span>
+  </div>
+  <div class="flex justify-end space-x-2">
+    <%= link_to_edit edit_account_insale_insale_status_mapping_path(current_account, @insale, insale_status_mapping), data: { turbo_frame: :offcanvas } %>
+    <%= link_to_delete account_insale_insale_status_mapping_path(current_account, @insale, insale_status_mapping), data: { turbo_confirm: t("delete_confirm", default: "Удалить?") } %>
+  </div>
+<% end %>

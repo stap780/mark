@@ -96,34 +96,36 @@ class SwatchGroupsController < ApplicationController
 
   # Account-level items picker offcanvas
   def items_picker
-    # puts "items_picker params => #{params.inspect}"
-    # puts "items_picker @swatch_group => #{@swatch_group.inspect}"
+    rec = current_account&.insales&.first
+    @index_empty = rec.present? && rec.product_xml_offers.empty?
   end
 
-  # Turbo search endpoint replacing InsalesController#products_search
+  # Turbo search endpoint — ищет в product_xml_offers
   def search
-    require 'open-uri'
     query = params[:q].to_s.strip.downcase
     rec = current_account&.insales&.first
     @items = []
-    if rec&.product_xml.present?
-      doc = Nokogiri::XML(URI.open(rec.product_xml))
-      doc.xpath('//offer').each do |node|
-        offer_id = node['id'] || node.at('id')&.text
-        title = node.at('model')&.text.to_s
-        vendor_code = node.at('vendorCode')&.text.to_s
-        image = node.at('picture')&.text
-        group_id = node.at('group_id')&.text || node['group_id']
-        price_text = node.at('price')&.text
-        price_value = price_text.to_s.strip
-        price = price_value.present? ? price_value.to_d : nil
-        next if title.blank?
-        if query.present?
-          title_match = title.downcase.include?(query)
-          vendor_code_match = vendor_code.downcase.include?(query)
-          next unless title_match || vendor_code_match
-        end
-        @items << { offer_id: offer_id, group_id: group_id, title: title, image_link: image, price: price, vendor_code: vendor_code }
+    @index_empty = rec.present? && rec.product_xml_offers.empty?
+
+    if rec
+      scope = rec.product_xml_offers.where.not(model: [nil, ""])
+      if query.present?
+        pattern = "%#{ProductXmlOffer.sanitize_sql_like(query)}%"
+        scope = scope.where(
+          "LOWER(model) LIKE :q OR LOWER(vendor_code) LIKE :q",
+          q: pattern
+        )
+      end
+
+      scope.limit(500).find_each do |offer|
+        @items << {
+          offer_id: offer.offer_id,
+          group_id: offer.group_id,
+          title: offer.model,
+          image_link: offer.picture,
+          price: offer.price,
+          vendor_code: offer.vendor_code
+        }
         @items.uniq! { |item| item[:group_id] }
         break if @items.size >= 30
       end

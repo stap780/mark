@@ -74,7 +74,9 @@ Rails.application.routes.draw do
         post :create_xml
         get :xml_source
         patch :set_product_xml
+        post :sync_product_xml
       end
+      resources :insale_status_mappings
     end
     resources :stock_check_schedules do
       member do
@@ -193,6 +195,7 @@ Rails.application.routes.draw do
       member do
         patch :update_status
       end
+      resources :varbinds
     end
     resources :webforms do
       member do

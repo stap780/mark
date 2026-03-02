@@ -698,6 +698,24 @@ ru:
         has_automation_messages: "Не удалось удалить заявку: она связана с сообщениями автоматизации"
       update_status:
         success: "Статус заявки обновлен."
+    insale_status_mappings:
+      index:
+        title: "Маппинг статусов InSales → Заявки"
+        custom_status: "Custom status (permalink)"
+        financial_status: "Статус оплаты"
+        incase_status: "Статус заявки"
+      new:
+        title: "Новый маппинг статусов"
+      edit:
+        title: "Редактировать маппинг"
+      create:
+        success: "Маппинг успешно создан."
+      update:
+        success: "Маппинг успешно обновлён."
+      destroy:
+        success: "Маппинг успешно удалён."
+      form:
+        custom_status_hint: "permalink из custom_status заказа InSales"
     incase_statuses:
       index:
         title: "Статусы заявок"
@@ -1034,6 +1052,33 @@ ru:
       success: "Ссылка на XML товаров сохранена."
     set_product_xml:
       success: "Ссылка на XML товаров сохранена."
+    sync_product_xml_button: "Обновить индекс"
+    sync_product_xml_warning: "Перед первым поиском или генерацией Swatch JSON выполните синхронизацию."
+    sync_product_xml:
+      sync_success: "Индекс обновлён: %{offers} офферов, %{variants} вариантов, %{incases} заявок"
+
+  insale_status_mappings:
+    menu: "Маппинг статусов"
+    financial_statuses:
+      pending: "Не оплачен"
+      paid: "Оплачен"
+    index:
+      title: "Маппинг статусов InSales → Заявки"
+      custom_status: "Custom status (permalink)"
+      financial_status: "Статус оплаты"
+      incase_status: "Статус заявки"
+    new:
+      title: "Новый маппинг статусов"
+    edit:
+      title: "Редактировать маппинг"
+    form:
+      custom_status_hint: "permalink из custom_status заказа InSales"
+    create:
+      success: "Маппинг успешно создан."
+    update:
+      success: "Маппинг успешно обновлён."
+    destroy:
+      success: "Маппинг успешно удалён."
 
   email_setups:
     new:
@@ -1078,6 +1123,7 @@ ru:
     index:
       heading: "Проверка остатков"
       no_schedules: "Настройки проверки остатков не созданы"
+      no_xml_hint: "Добавьте ссылку на XML в настройках InSales и выполните синхронизацию."
       active: "Включено"
       recurrence: "Интервал"
       time: "Время"
@@ -1273,6 +1319,8 @@ ru:
   swatch_groups:
     index:
       heading: "Группы"
+    search:
+      index_empty_warning_html: "Индекс пуст. Выполните синхронизацию в настройках %{link}."
     new:
       heading: "Новая группа"
     edit:
