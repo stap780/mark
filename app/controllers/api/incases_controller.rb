@@ -33,35 +33,22 @@ class Api::IncasesController < ApplicationController
     incase_attrs[:custom_fields] = incase_params[:custom_fields] if incase_params[:custom_fields].present?
 
     # Проверяем существующую заявку по number для всех типов форм
-    if incase_attrs[:number].present?
-      incase = account.incases.find_by(number: incase_attrs[:number], webform: webform)
-      
-      if incase
-        # Обновляем существующую заявку: удаляем старые items и создаем новые
-        incase.items.destroy_all
-        update_attrs = {}
-        update_attrs[:client] = client if client != incase.client
-        update_attrs[:custom_fields] = incase_attrs[:custom_fields] if incase_attrs[:custom_fields].present?
-        incase.update!(update_attrs) if update_attrs.any?
-      else
-        # Создаем новую заявку с number
-        incase = account.incases.create!(incase_attrs)
-      end
+    incase = incase_attrs[:number].present? ? account.incases.find_by(number: incase_attrs[:number], webform: webform) : nil
+
+    items_attrs = build_items_attributes(account, webform, params[:items])
+
+    if incase
+      # Обновляем существующую заявку: удаляем старые items и создаем новые
+      incase.items.destroy_all
+      update_attrs = { items_attributes: items_attrs }
+      update_attrs[:client] = client if client != incase.client
+      update_attrs[:custom_fields] = incase_attrs[:custom_fields] if incase_attrs[:custom_fields].present?
+      incase.update!(update_attrs)
     else
-      # Если number не передан, создаем новую заявку без number
+      # Создаем новую заявку с items (automation вызовется через after_create_commit)
+      incase_attrs[:items_attributes] = items_attrs
       incase = account.incases.create!(incase_attrs)
     end
-
-    items = Array(params[:items]).map do |it|
-      resolve_item!(incase, account, it, from_insales: false)
-    end
-
-    # Запускаем автоматику после того, как заявка и все позиции созданы
-    Automation::Engine.call(
-      account: account,
-      event: "incase.created",
-      object: incase
-    )
 
     render json: { incase: { id: incase.id, status: incase.status, webform_id: webform.id, client_id: client.id } }, status: :created
   rescue ActiveRecord::RecordInvalid => e
@@ -195,6 +182,14 @@ class Api::IncasesController < ApplicationController
     client
   end
 
+  def build_items_attributes(account, webform, items_params)
+    Array(items_params).each_with_index.to_h do |it, idx|
+      attrs = resolve_item_attributes!(account, it, from_insales: false)
+      Variant.find(attrs[:variant_id]).update_column(:quantity, 0) if webform.kind == 'notify'
+      [idx.to_s, attrs]
+    end
+  end
+
   # Возвращает хеш атрибутов для Item (для nested attributes). Не создаёт запись.
   def resolve_item_attributes!(account, item_params, from_insales: false)
     variant_id_param = item_params[:id] || item_params[:variant_id]
@@ -277,17 +272,4 @@ class Api::IncasesController < ApplicationController
       price: price
     }
   end
-
-  def resolve_item!(incase, account, item_params, from_insales: false)
-    attrs = resolve_item_attributes!(account, item_params, from_insales: from_insales)
-
-    # Для заявок типа "notify" устанавливаем quantity = 0 у варианта
-    if incase.webform.kind == 'notify'
-      Variant.find(attrs[:variant_id]).update_column(:quantity, 0)
-    end
-
-    incase.items.create!(attrs)
-  end
-
-  
 end

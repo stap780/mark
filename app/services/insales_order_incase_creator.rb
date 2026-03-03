@@ -49,7 +49,6 @@ class InsalesOrderIncaseCreator
         items_attributes: items_attributes
       )
       save_order_id_varbind!(incase, order_id)
-      Automation::Engine.call(account: @account, event: "incase.updated", object: incase)
     else
       incase_attrs = {
         webform_id: webform.id,
@@ -60,7 +59,6 @@ class InsalesOrderIncaseCreator
       }
       incase = @account.incases.create!(incase_attrs)
       save_order_id_varbind!(incase, order_id)
-      Automation::Engine.call(account: @account, event: "incase.created", object: incase)
     end
 
     incase

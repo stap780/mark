@@ -29,6 +29,7 @@ class Incase < ApplicationRecord
   # (number используется для номеров из API/InSales и может быть строковым)
   before_create :generate_display_number, unless: :display_number?
   before_destroy :check_automation_messages_dependency
+  after_create_commit :trigger_create_events
   after_update_commit :trigger_update_events
 
   def self.ransackable_attributes(auth_object = nil)
@@ -104,13 +105,12 @@ class Incase < ApplicationRecord
     end
   end
 
+  def trigger_create_events
+    Automation::Engine.call(account: account, event: "incase.created", object: self)
+  end
+
   def trigger_update_events
-    # Вызываем incase.updated при любом обновлении заявки
-    Automation::Engine.call(
-      account: account,
-      event: "incase.updated",
-      object: self
-    )
+    Automation::Engine.call(account: account, event: "incase.updated", object: self)
   end
 end
 

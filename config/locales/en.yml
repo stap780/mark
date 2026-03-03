@@ -868,6 +868,12 @@ en:
       title: "New Status"
     edit:
       title: "Edit Status"
+    create:
+      success: "Status created."
+    update:
+      success: "Status updated."
+    destroy:
+      success: "Status deleted."
 
   stock_check_schedules:
     index:

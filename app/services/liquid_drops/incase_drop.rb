@@ -8,6 +8,14 @@ module LiquidDrops
       @incase&.display_number
     end
 
+    def display_number
+      @incase&.display_number
+    end
+
+    def number
+      @incase&.number
+    end
+
     def status
       @incase.respond_to?(:status) ? @incase.status : nil
     end
