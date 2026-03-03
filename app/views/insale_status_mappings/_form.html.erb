@@ -4,9 +4,7 @@
   <div>
     <%= f.label :insales_custom_status_permalink, class: "block text-sm font-medium text-gray-700" %>
     <% if @custom_statuses.present? %>
-      <%= f.select :insales_custom_status_permalink,
-          options_from_collection_for_select(@custom_statuses, :permalink, :title),
-          { include_blank: true },
+      <%= f.collection_select :insales_custom_status_permalink, @custom_statuses, :permalink, :title, { include_blank: true },
           class: "h-8 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500" %>
     <% else %>
       <%= f.text_field :insales_custom_status_permalink, class: "h-8 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500", placeholder: "novyy" %>
