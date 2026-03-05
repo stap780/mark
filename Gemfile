@@ -58,7 +58,8 @@ gem "will_paginate"
 gem 'acts_as_list'
 gem 'receipts'
 
-gem "mailganer-client"
+# gem "mailganer-client"
+gem "mailganer-client", github: "stap780/mailganer_client"
 
 # HTTP client for microservice communication
 gem "faraday"

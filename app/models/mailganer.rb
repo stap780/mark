@@ -92,11 +92,15 @@ class Mailganer < ApplicationRecord
       client = MailganerClient::Client.new
     end
 
-    response = client.status_email_delivery(
+    # response = client.status_email_delivery(
+    #   message_id: message_id.presence,
+    #   x_track_id: x_track_id.presence
+    # )
+
+    response = client.status_extended(
       message_id: message_id.presence,
       x_track_id: x_track_id.presence
     )
-
     # Формат ответа Mailganer:
     # {
     #   status: "ok",

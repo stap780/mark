@@ -41,7 +41,8 @@ class AutomationMessage < ApplicationRecord
     'fbl' => 'email_fbl',
     'unsubscribe' => 'email_unsubscribe',
     'open' => 'email_open',
-    'click' => 'email_click'
+    'click' => 'email_click',
+    'duplicate'   => 'email_duplicate'
   }.freeze
 
   # Проверяет статус доставки этого сообщения.

@@ -18,6 +18,10 @@ class AutomationRuleStep < ApplicationRecord
   scope :ordered, -> { order(:position, :id) }
 
   def summary
+    if step_type == "action" && automation_rule.nil?
+      Rails.logger.warn "AutomationRuleStep##{id}: automation_rule is nil (automation_rule_id=#{automation_rule_id}, Account.current=#{Account.current&.id})"
+    end
+       
     case step_type
     when "condition"
       if automation_conditions.any?

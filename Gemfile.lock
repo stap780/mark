@@ -6,6 +6,14 @@ GIT
       activeresource (>= 3.0.0)
       activesupport (>= 3.0.0)
 
+GIT
+  remote: https://github.com/stap780/mailganer_client.git
+  revision: 43366d65bd235d6a80c2ebd4b5492d315566b51b
+  specs:
+    mailganer-client (0.1.3)
+      json
+      net-http
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -225,9 +233,6 @@ GEM
       net-imap
       net-pop
       net-smtp
-    mailganer-client (0.1.3)
-      json
-      net-http
     marcel (1.1.0)
     matrix (0.4.3)
     mini_magick (5.3.1)
@@ -512,7 +517,7 @@ DEPENDENCIES
   jbuilder
   kamal
   liquid
-  mailganer-client
+  mailganer-client!
   mission_control-jobs
   nokogiri
   pg (~> 1.1)
