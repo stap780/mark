@@ -92,12 +92,7 @@ class Mailganer < ApplicationRecord
       client = MailganerClient::Client.new
     end
 
-    # response = client.status_email_delivery(
-    #   message_id: message_id.presence,
-    #   x_track_id: x_track_id.presence
-    # )
-
-    response = client.status_extended(
+    response = client.status_email_delivery(
       message_id: message_id.presence,
       x_track_id: x_track_id.presence
     )
@@ -115,6 +110,8 @@ class Mailganer < ApplicationRecord
     #     ...
     #   ]
     # }
+
+
     messages = Array(response[:messages])
 
     message_entry =
@@ -146,6 +143,65 @@ class Mailganer < ApplicationRecord
     [true, result]
   rescue => e
     [false, { text: "Ошибка проверки статуса доставки: #{e.message}" }]
+  end
+
+  # Класс-метод: проверяет расширенный статус доставки (ext_status).
+  # Формат ответа status_extended: raw.messages[].ext_status — массив статусов по времени.
+  # Возвращает последний (наиболее свежий) статус из ext_status.
+  #
+  # @param account [Account,nil]
+  # @param message_id [String,nil]
+  # @param x_track_id [String,nil]
+  # @return [Array(Boolean, Hash)]
+  def self.check_extended_delivery_status_for(account:, message_id:, x_track_id: nil)
+    if account&.mailganer
+      client = MailganerClient::Client.new(
+        api_key: account.mailganer.api_key,
+        smtp_login: account.mailganer.smtp_login,
+        api_key_web_portal: account.mailganer.api_key_web_portal
+      )
+    else
+      client = MailganerClient::Client.new
+    end
+
+    response = client.status_extended(
+      message_id: message_id.presence,
+      x_track_id: x_track_id.presence
+    )
+
+    raw = response.is_a?(Hash) && response.key?(:raw) ? response[:raw] : response
+    messages = Array(raw&.dig(:messages) || raw&.dig("messages"))
+
+    message_entry =
+      messages.find { |m| m[:message_id].to_s == message_id.to_s || m["message_id"].to_s == message_id.to_s } ||
+      messages.find { |m| x_track_id.present? && (m[:x_track_id].to_s == x_track_id.to_s || m["x_track_id"].to_s == x_track_id.to_s) } ||
+      messages.first
+
+    unless message_entry
+      return [true, { status: "", reason: nil, created_at: nil, raw: response }]
+    end
+
+    ext_status = Array(message_entry[:ext_status] || message_entry["ext_status"])
+    last_entry = ext_status.max_by { |e| (e[:created_at] || e["created_at"]).to_i }
+
+    unless last_entry
+      return [true, { status: "", reason: nil, created_at: nil, raw: response }]
+    end
+
+    status = (last_entry[:status] || last_entry["status"]).to_s
+    created_at_ts = (last_entry[:created_at] || last_entry["created_at"]).to_i
+    created_at = created_at_ts.positive? ? (Time.zone ? Time.zone.at(created_at_ts) : Time.at(created_at_ts)) : nil
+
+    result = {
+      status: status,
+      reason: nil,
+      created_at: created_at,
+      raw: response
+    }
+
+    [true, result]
+  rescue => e
+    [false, { text: "Ошибка проверки расширенного статуса: #{e.message}" }]
   end
 
 end
