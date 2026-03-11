@@ -1,9 +1,24 @@
 <%# Содержимое turbo_frame :steps — дерево от корня с ветвлением «Да»/«Нет». %>
+<% layout ||= {} %>
 <% root_step = automation_rule.automation_rule_steps.ordered.first %>
 <% if root_step %>
   <%= render "automation_rule_steps/step_with_branches",
       step: root_step,
       automation_rule: automation_rule,
       current_account: current_account,
-      parent_step: nil %>
+      parent_step: nil,
+      layout: layout %>
+<% else %>
+  <%# Пустой canvas: кнопка добавить первый шаг %>
+  <% root_slot = layout[:slot_positions]&.dig(:root, nil) %>
+  <% if root_slot %>
+    <div class="absolute" style="left: <%= root_slot[:x] %>px; top: <%= root_slot[:y] %>px;">
+      <%= link_to add_block_account_automation_rule_path(current_account, automation_rule, insert_after_step_id: nil),
+          data: { turbo_frame: :offcanvas, turbo_prefetch: false },
+          class: "inline-flex items-center justify-center w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow",
+          title: t("automation_rules.chain.add_block_modal_title") do %>
+        <span class="text-xl font-medium leading-none flex items-center justify-center" aria-hidden="true">+</span>
+      <% end %>
+    </div>
+  <% end %>
 <% end %>

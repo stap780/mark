@@ -31,7 +31,7 @@ class AutomationConditionsController < ApplicationController
       streams = [
         render_turbo_flash,
         turbo_stream.append(dom_id(@step, :condition_content), partial: "automation_conditions/condition_row", locals: { step: @step, automation_rule: @automation_rule, automation_condition: @automation_condition, current_account: current_account }),
-        turbo_stream.replace(step_card_frame_id, partial: "automation_rule_steps/step", locals: { step: @step, automation_rule: @automation_rule, current_account: current_account })
+        turbo_stream.replace(step_card_frame_id, partial: "automation_rule_steps/step", locals: { step: @step, automation_rule: @automation_rule, current_account: current_account, layout: helpers.canvas_layout(@automation_rule, current_account) })
       ]
       streams.insert(1, turbo_stream.remove(dom_id(@step, :conditions_empty))) if @step.automation_conditions.count == 1
       respond_to do |format|
@@ -60,7 +60,7 @@ class AutomationConditionsController < ApplicationController
               dom_id(@step, dom_id(@automation_condition)),
               params[:commit].present? ? render_to_string(partial: "automation_conditions/condition_row", locals: { step: @step, automation_rule: @automation_rule, automation_condition: @automation_condition, current_account: current_account }) : render_to_string(template: "automation_conditions/edit", layout: false)
             ),
-            turbo_stream.replace(step_card_frame_id, partial: "automation_rule_steps/step", locals: { step: @step, automation_rule: @automation_rule, current_account: current_account })
+            turbo_stream.replace(step_card_frame_id, partial: "automation_rule_steps/step", locals: { step: @step, automation_rule: @automation_rule, current_account: current_account, layout: helpers.canvas_layout(@automation_rule, current_account) })
           ]
           render turbo_stream: streams
         end
@@ -82,7 +82,7 @@ class AutomationConditionsController < ApplicationController
     flash.now[:success] = t('.success')
     streams = [
       turbo_stream.remove(dom_id(@step, dom_id(@automation_condition))),
-      turbo_stream.replace(step_card_frame_id, partial: "automation_rule_steps/step", locals: { step: @step, automation_rule: @automation_rule, current_account: current_account }),
+      turbo_stream.replace(step_card_frame_id, partial: "automation_rule_steps/step", locals: { step: @step, automation_rule: @automation_rule, current_account: current_account, layout: helpers.canvas_layout(@automation_rule, current_account) }),
       render_turbo_flash
     ]
     if @step.automation_conditions.reload.empty?

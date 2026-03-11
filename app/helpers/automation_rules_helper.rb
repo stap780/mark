@@ -283,5 +283,100 @@ module AutomationRulesHelper
     automation_rule.automation_rule_steps.exists?(next_step_id: step.id) ||
       automation_rule.automation_rule_steps.exists?(next_step_when_false_id: step.id)
   end
+
+  # Раскладка canvas: позиции блоков, пустых слотов и связи для линий.
+  # Возвращает { positions:, slot_positions:, connections:, canvas_size:, block_w:, block_h: }
+  def canvas_layout(automation_rule, _account)
+    positions = {}
+    slot_positions = {} # { parent_id => { "false" => {x,y}, "true" => {x,y} } } или для линейного { parent_id => { nil => {x,y} } }
+    branch_labels = {} # { step_id => { "false" => {x,y}, "true" => {x,y} } } — позиции подписей Да/Нет
+    condition_add_buttons = {} # { step_id => { "false" => {x,y}, "true" => {x,y} } } — кнопки + при условии
+    connections = []
+    block_w = 350
+    block_h = 100
+    gap_x = 48
+    gap_y = 36
+
+    root = automation_rule.automation_rule_steps.ordered.first
+    if root
+      next_proc = ->(s, ar) { next_step_in_ordered(s, ar) }
+      canvas_layout_place_step(root, automation_rule, gap_x, gap_y, positions, slot_positions, branch_labels, condition_add_buttons, connections, block_w, block_h, gap_x, gap_y, next_proc)
+    else
+      cw = block_w + gap_x * 2
+      ch = block_h + gap_y * 2
+      slot_positions[:root] = { nil => { x: (cw / 2) - 20, y: (ch / 2) - 20 } }
+    end
+
+    if positions.any?
+      max_x = positions.values.map { |p| p[:x] + block_w }.max + gap_x
+      max_y = positions.values.map { |p| p[:y] + block_h }.max + gap_y
+    else
+      max_x = block_w + gap_x * 2
+      max_y = block_h + gap_y * 2
+    end
+    canvas_w = max_x
+    canvas_h = max_y
+
+    { positions: positions, slot_positions: slot_positions, branch_labels: branch_labels, condition_add_buttons: condition_add_buttons, connections: connections, canvas_size: { w: canvas_w, h: canvas_h }, block_w: block_w, block_h: block_h }
+  end
+
+  private
+
+  def canvas_layout_place_step(step, automation_rule, x, y, positions, slot_positions, branch_labels, condition_add_buttons, connections, block_w, block_h, gap_x, gap_y, next_proc)
+    if step
+      # Используем сохранённую позицию при перетаскивании, иначе вычисленную
+      pos_x = step.canvas_x.present? ? step.canvas_x : x
+      pos_y = step.canvas_y.present? ? step.canvas_y : y
+      positions[step.id] = { x: pos_x, y: pos_y }
+    end
+
+    if step&.condition?
+      no_step = step.next_step_when_false
+      yes_step = step.next_step
+      slot_x_no = x
+      slot_y_no = y + block_h + gap_y
+      slot_y_yes = y + block_h + gap_y
+
+      no_result = canvas_layout_place_step(no_step, automation_rule, slot_x_no, slot_y_no, positions, slot_positions, branch_labels, condition_add_buttons, connections, block_w, block_h, gap_x, gap_y, next_proc)
+      slot_x_yes = x + (block_w + gap_x) + no_result[:width]
+      slot_positions[step.id] ||= {}
+      slot_positions[step.id]["false"] = { x: slot_x_no + (block_w / 2) - 20, y: slot_y_no + 8 } unless no_step
+      slot_positions[step.id]["true"] = { x: slot_x_yes + (block_w / 2) - 20, y: slot_y_yes + 8 } unless yes_step
+
+      # Подписи Да/Нет между блоком условия и ветками
+      label_y = y + block_h + (gap_y / 2) - 8
+      branch_labels[step.id] = {
+        "false" => { x: slot_x_no + (block_w / 2) - 12, y: label_y },
+        "true" => { x: slot_x_yes + (block_w / 2) - 8, y: label_y }
+      }
+
+      # Кнопки + при условии — слева и справа в углах родительского блока
+      condition_add_buttons[step.id] = {
+        "false" => { x: x + 4, y: y + block_h + 4 },
+        "true" => { x: x + block_w - 44, y: y + block_h + 4 }
+      }
+
+      yes_result = canvas_layout_place_step(yes_step, automation_rule, slot_x_yes, slot_y_yes, positions, slot_positions, branch_labels, condition_add_buttons, connections, block_w, block_h, gap_x, gap_y, next_proc)
+
+      connections << { from: step.id, to: no_step.id, branch: "false" } if no_step
+      connections << { from: step.id, to: yes_step.id, branch: "true" } if yes_step
+
+      { width: no_result[:width] + (block_w + gap_x) + yes_result[:width] }
+    elsif step
+      next_step = step.next_step || next_proc.call(step, automation_rule)
+      slot_x = x
+      slot_y = y + block_h + gap_y
+      if next_step
+        connections << { from: step.id, to: next_step.id, branch: nil }
+        canvas_layout_place_step(next_step, automation_rule, slot_x, slot_y, positions, slot_positions, branch_labels, condition_add_buttons, connections, block_w, block_h, gap_x, gap_y, next_proc)
+      else
+        slot_positions[step.id] ||= {}
+        slot_positions[step.id][nil] = { x: slot_x + (block_w / 2) - 20, y: slot_y + 8 }  # по центру под блоком
+      end
+      { width: block_w + gap_x }
+    else
+      { width: 0 }
+    end
+  end
 end
 

@@ -2,59 +2,96 @@
 <% step ||= nil %>
 <% parent_step ||= nil %>
 <% branch = local_assigns[:branch] %>
+<% layout = local_assigns[:layout] || {} %>
 <% add_after_id = parent_step&.id %>
 <% add_block_params = { insert_after_step_id: add_after_id }.merge(branch.present? ? { branch: branch } : {}) %>
+<% positions = layout[:positions] || {} %>
+<% slot_positions = layout[:slot_positions] || {} %>
+<% branch_labels = layout[:branch_labels] || {} %>
+<% condition_add_buttons = layout[:condition_add_buttons] || {} %>
+<% block_w = layout[:block_w] || 300 %>
+<% block_h = layout[:block_h] || 100 %>
 
 <% if step.nil? %>
-  <%# Пустой слот: плейсхолдер и кнопка «+» %>
-  <div class="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 min-h-[80px] flex flex-col items-center justify-center p-4">
-    <%= link_to add_block_account_automation_rule_path(current_account, automation_rule, add_block_params),
-        data: { turbo_frame: :offcanvas },
-        class: "inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors",
-        title: t("automation_rules.chain.add_block_modal_title") do %>
-      <span class="text-xl leading-none" aria-hidden="true">+</span>
-    <% end %>
-  </div>
-<% else %>
-  <div class="space-y-4">
-    <%= render "automation_rule_steps/step", step: step, automation_rule: automation_rule, current_account: current_account %>
-
-    <% if step.condition? %>
-      <%# Ветвление: два столбца «Нет» и «Да» %>
-      <div class="grid grid-cols-2 gap-6 mt-2">
-        <div class="space-y-2">
-          <p class="text-xs font-medium text-gray-500 uppercase tracking-wide text-center my-2">Нет</p>
-          <div class="">
-            <%= render "automation_rule_steps/step_with_branches",
-                step: step.next_step_when_false,
-                automation_rule: automation_rule,
-                current_account: current_account,
-                parent_step: step,
-                branch: "false" %>
-          </div>
-        </div>
-        <div class="space-y-2">
-          <p class="text-xs font-medium text-gray-500 uppercase tracking-wide text-center my-2">Да</p>
-          <div class="">
-            <%= render "automation_rule_steps/step_with_branches",
-                step: step.next_step,
-                automation_rule: automation_rule,
-                current_account: current_account,
-                parent_step: step,
-                branch: "true" %>
-          </div>
-        </div>
-      </div>
-    <% else %>
-      <%# Пауза или действие: «+» уже в _step под карточкой, ниже — следующий шаг %>
-      <% display_next = step.next_step || next_step_in_ordered(step, automation_rule) %>
-      <% if display_next %>
-        <%= render "automation_rule_steps/step_with_branches",
-            step: display_next,
-            automation_rule: automation_rule,
-            current_account: current_account,
-            parent_step: step %>
+  <%# Пустой слот: кнопка «+» в canvas (для условия + примыкают к блоку, не в слоте) %>
+  <% slot_pos = (parent_step&.condition? ? nil : (parent_step ? slot_positions[parent_step.id]&.dig(branch || nil) : slot_positions[:root]&.dig(nil))) %>
+  <% if slot_pos %>
+    <div class="absolute" style="left: <%= slot_pos[:x] %>px; top: <%= slot_pos[:y] %>px;">
+      <%= link_to add_block_account_automation_rule_path(current_account, automation_rule, add_block_params),
+          data: { turbo_frame: :offcanvas },
+          class: "inline-flex items-center justify-center w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow",
+          title: t("automation_rules.chain.add_block_modal_title") do %>
+        <span class="text-xl font-medium leading-none flex items-center justify-center" aria-hidden="true">+</span>
       <% end %>
+    </div>
+  <% end %>
+<% else %>
+  <% pos = positions[step.id] %>
+  <% display_next = step.next_step || next_step_in_ordered(step, automation_rule) %>
+  <% if pos %>
+    <div class="absolute cursor-grab" style="left: <%= pos[:x] %>px; top: <%= pos[:y] %>px; width: <%= block_w %>px;" data-step-id="<%= step.id %>" data-controller="flowchart-draggable" data-flowchart-draggable-step-id-value="<%= step.id %>" data-flowchart-draggable-update-url-value="<%= update_position_account_automation_rule_automation_rule_step_path(current_account, automation_rule, step) %>" title="<%= t('automation_rules.chain.drag_hint', default: 'Перетащите для перемещения') %>">
+      <%= render "automation_rule_steps/step", step: step, automation_rule: automation_rule, current_account: current_account, layout: layout %>
+      <%# Кнопки + привязаны к блоку — перетаскиваются вместе с ним %>
+      <% if step.condition? %>
+        <%# Кнопки с подписями Да/Нет внутри %>
+        <div class="absolute left-1 bottom-0 translate-y-full">
+          <%= link_to add_block_account_automation_rule_path(current_account, automation_rule, insert_after_step_id: step.id, branch: "false"),
+              data: { turbo_frame: :offcanvas, turbo_prefetch: false },
+              class: "inline-flex items-center gap-1 px-3 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow text-sm font-semibold",
+              title: t("automation_rules.chain.add_block_modal_title") do %>
+            <span>Нет</span>
+            <span class="text-lg leading-none">+</span>
+          <% end %>
+        </div>
+        <div class="absolute right-1 bottom-0 translate-y-full">
+          <%= link_to add_block_account_automation_rule_path(current_account, automation_rule, insert_after_step_id: step.id, branch: "true"),
+              data: { turbo_frame: :offcanvas, turbo_prefetch: false },
+              class: "inline-flex items-center gap-1 px-3 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow text-sm font-semibold",
+              title: t("automation_rules.chain.add_block_modal_title") do %>
+            <span>Да</span>
+            <span class="text-lg leading-none">+</span>
+          <% end %>
+        </div>
+      <% elsif !display_next %>
+        <div class="absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-full">
+          <%= link_to add_block_account_automation_rule_path(current_account, automation_rule, insert_after_step_id: step.id),
+              data: { turbo_frame: :offcanvas, turbo_prefetch: false },
+              class: "inline-flex items-center justify-center w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow",
+              title: t("automation_rules.chain.add_block_modal_title") do %>
+            <span class="text-xl font-medium leading-none flex items-center justify-center" aria-hidden="true">+</span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if step.condition? %>
+    <%# Подписи Да/Нет теперь внутри блока %>
+    <%= render "automation_rule_steps/step_with_branches",
+        step: step.next_step_when_false,
+        automation_rule: automation_rule,
+        current_account: current_account,
+        parent_step: step,
+        branch: "false",
+        layout: layout %>
+    <%= render "automation_rule_steps/step_with_branches",
+        step: step.next_step,
+        automation_rule: automation_rule,
+        current_account: current_account,
+        parent_step: step,
+        branch: "true",
+        layout: layout %>
+  <% else %>
+    <% display_next = step.next_step || next_step_in_ordered(step, automation_rule) %>
+    <% if display_next %>
+      <%= render "automation_rule_steps/step_with_branches",
+          step: display_next,
+          automation_rule: automation_rule,
+          current_account: current_account,
+          parent_step: step,
+          layout: layout %>
+    <% else %>
+      <%# Кнопка + теперь внутри блока %>
     <% end %>
-  </div>
+  <% end %>
 <% end %>

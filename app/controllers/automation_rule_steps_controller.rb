@@ -5,7 +5,7 @@ class AutomationRuleStepsController < ApplicationController
   include OffcanvasResponder
 
   before_action :set_automation_rule
-  before_action :set_step, only: [:show, :edit, :update, :destroy]
+  before_action :set_step, only: [:show, :edit, :update, :update_position, :destroy]
 
   def show
     render layout: false if turbo_frame_request?
@@ -28,15 +28,17 @@ class AutomationRuleStepsController < ApplicationController
     if @step.save
       link_previous_step_to_new_one
       flash.now[:success] = t("automation_rule_steps.created")
-      steps_frame_id = dom_id(current_account, dom_id(@automation_rule, :steps))
-      tree_content = render_to_string(
-        partial: "automation_rules/steps_tree",
-        locals: { automation_rule: @automation_rule, current_account: current_account }
+      flowchart_frame_id = dom_id(current_account, dom_id(@automation_rule, :flowchart))
+      layout = helpers.canvas_layout(@automation_rule, current_account)
+      flowchart_content = render_to_string(
+        partial: "automation_rules/flowchart_frame",
+        locals: { automation_rule: @automation_rule, current_account: current_account, layout: layout },
+        formats: [:html]
       )
       respond_to do |format|
         format.turbo_stream do
           render turbo_stream: turbo_close_offcanvas_flash + [
-            turbo_stream.update(steps_frame_id, tree_content)
+            turbo_stream.replace(flowchart_frame_id, flowchart_content)
           ]
         end
         format.html { redirect_to chain_account_automation_rule_path(current_account, @automation_rule) }
@@ -61,13 +63,14 @@ class AutomationRuleStepsController < ApplicationController
           offcanvas_stream = if @step.action? && params[:commit].blank?
             turbo_stream.replace(
               dom_id(current_account, dom_id(@step, :step_form)),
-              render_to_string(partial: "automation_rule_steps/action_form_frame", locals: { step: @step, automation_rule: @automation_rule, current_account: current_account })
+              render_to_string(partial: "automation_rule_steps/action_form_frame", locals: { step: @step, automation_rule: @automation_rule, current_account: current_account }, formats: [:html])
             )
           else
             turbo_stream.update(:offcanvas, "")
           end
+          layout = helpers.canvas_layout(@automation_rule, current_account)
           render turbo_stream: [
-            turbo_stream.replace(dom_id(current_account, dom_id(@automation_rule, dom_id(@step))), partial: "automation_rule_steps/step", locals: { step: @step, automation_rule: @automation_rule, current_account: current_account }),
+            turbo_stream.replace(dom_id(current_account, dom_id(@automation_rule, dom_id(@step))), partial: "automation_rule_steps/step", locals: { step: @step, automation_rule: @automation_rule, current_account: current_account, layout: layout }),
             offcanvas_stream,
             render_turbo_flash
           ]
@@ -82,18 +85,41 @@ class AutomationRuleStepsController < ApplicationController
     end
   end
 
+  def update_position
+    if @step.update(canvas_x: params[:canvas_x], canvas_y: params[:canvas_y])
+      layout = helpers.canvas_layout(@automation_rule, current_account)
+      tree_content = render_to_string(
+        partial: "automation_rules/steps_tree",
+        locals: { automation_rule: @automation_rule, current_account: current_account, layout: layout },
+        formats: [:html]
+      )
+      steps_frame_id = dom_id(current_account, dom_id(@automation_rule, :steps))
+      respond_to do |format|
+        format.turbo_stream { render turbo_stream: turbo_stream.update(steps_frame_id, tree_content) }
+        format.json { render json: { ok: true } }
+      end
+    else
+      respond_to do |format|
+        format.turbo_stream { render turbo_stream: render_turbo_flash, status: :unprocessable_entity }
+        format.json { render json: { errors: @step.errors }, status: :unprocessable_entity }
+      end
+    end
+  end
+
   def destroy
     nullify_references_to_step
     @step.destroy
-    steps_frame_id = dom_id(current_account, dom_id(@automation_rule, :steps))
-    tree_content = render_to_string(
-      partial: "automation_rules/steps_tree",
-      locals: { automation_rule: @automation_rule, current_account: current_account }
+    flowchart_frame_id = dom_id(current_account, dom_id(@automation_rule, :flowchart))
+    layout = helpers.canvas_layout(@automation_rule, current_account)
+    flowchart_content = render_to_string(
+      partial: "automation_rules/flowchart_frame",
+      locals: { automation_rule: @automation_rule, current_account: current_account, layout: layout },
+      formats: [:html]
     )
     respond_to do |format|
       format.turbo_stream do
         render turbo_stream: [
-          turbo_stream.update(steps_frame_id, tree_content),
+          turbo_stream.replace(flowchart_frame_id, flowchart_content),
           render_turbo_flash
         ]
       end
@@ -114,6 +140,7 @@ class AutomationRuleStepsController < ApplicationController
   def step_params
     params.require(:automation_rule_step).permit(
       :step_type, :position, :delay_seconds, :next_step_id, :next_step_when_false_id,
+      :canvas_x, :canvas_y,
       automation_action_attributes: [:id, :kind, :value]
     )
   end

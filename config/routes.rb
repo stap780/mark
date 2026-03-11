@@ -230,6 +230,9 @@ Rails.application.routes.draw do
       end
       resources :automation_actions, only: [:new, :create, :destroy]
       resources :automation_rule_steps, only: [:create, :show, :edit, :update, :destroy] do
+        member do
+          patch :update_position
+        end
         resources :automation_conditions
       end
     end

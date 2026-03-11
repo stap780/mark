@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_02_151006) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_10_152446) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -135,6 +135,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_02_151006) do
     t.bigint "next_step_when_false_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "canvas_x"
+    t.integer "canvas_y"
     t.index ["automation_action_id"], name: "index_automation_rule_steps_on_automation_action_id"
     t.index ["automation_rule_id", "position"], name: "index_automation_rule_steps_on_automation_rule_id_and_position"
     t.index ["automation_rule_id"], name: "index_automation_rule_steps_on_automation_rule_id"
