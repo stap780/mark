@@ -1,7 +1,6 @@
 <div class="bg-white rounded-lg shadow p-6">
   <div class="flex items-center justify-between gap-4 mb-6">
-    <%= link_to t('back'), account_clients_path(current_account), data: { turbo: false },
-      class: "inline-flex items-center px-3 py-1 bg-white text-violet-600 border border-violet-500 rounded-md hover:bg-violet-50" %>
+    <%= link_to_back account_clients_path(current_account), data: { turbo: false } %>
     <div class="flex gap-2">
       <%= link_to t('clients.client.conv_title'), conversations_account_client_path(current_account, @client),
           data: { turbo_frame: "offcanvas", turbo_prefetch: false },

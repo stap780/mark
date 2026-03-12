@@ -178,6 +178,12 @@ module ApplicationHelper
     end
   end
 
+  def link_to_back(path, text: nil, **options)
+    text ||= t(:back)
+    options[:class] ||= "inline-flex items-center px-3 py-1 bg-white text-violet-600 border border-violet-500 rounded-md hover:bg-violet-50 cursor-pointer"
+    link_to text, path, options
+  end
+
   def link_to_new(path, text: nil, **options)
     text ||= t(:new)
     # Стандартный класс для кнопки "New"

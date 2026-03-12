@@ -26,7 +26,7 @@
     </div>
         
     <div class="space-x-2 pt-2">
-      <%= link_to t('back', default: 'Back'), account_email_setups_path(account_id: current_account), class: "inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200" %>
+      <%= link_to_back account_email_setups_path(account_id: current_account) %>
       <%= link_to t('email_setups.test_email_label'), test_email_form_account_email_setup_path(current_account, @email_setup), data: { turbo_frame: 'offcanvas' }, class: "inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm" %>
     </div>
   </div>

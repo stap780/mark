@@ -1,7 +1,6 @@
 <div class="bg-white rounded-lg shadow p-4">
   <div class="inline-flex items-center gap-4 mb-4">
-    <%= link_to t('back'), account_automation_rules_path(current_account), data: { turbo: false },
-      class: "inline-flex items-center px-3 py-1 bg-white text-violet-600 border border-violet-500 rounded-md hover:bg-violet-50" %>
+    <%= link_to_back account_automation_rules_path(current_account), data: { turbo: false } %>
   </div>
 
   <%# Блок Триггер — начальное событие, его нельзя удалить %>

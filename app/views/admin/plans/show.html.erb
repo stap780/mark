@@ -1,6 +1,5 @@
 <div class="max-w-2xl mx-auto">
-  <%= link_to t('admin.plans.back_to_plans'), admin_plans_path,
-        class: "inline-flex items-center text-sm text-violet-600 hover:text-violet-900 mb-4" %>
+  <%= link_to_back admin_plans_path, text: t('admin.plans.back_to_plans') %>
 
   <div class="bg-white rounded-lg shadow p-6">
     <h1 class="text-2xl font-bold mb-6"><%= @plan.name %></h1>
