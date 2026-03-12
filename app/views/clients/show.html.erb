@@ -1,69 +1,149 @@
-<%= render 'shared/offcanvas_inner', title: t('.heading', name: @client.name) do %>
-  <div class="space-y-6">
-    <%# Списки товаров %>
+<div class="bg-white rounded-lg shadow p-6">
+  <div class="flex items-center justify-between gap-4 mb-6">
+    <%= link_to t('back'), account_clients_path(current_account), data: { turbo: false },
+      class: "inline-flex items-center px-3 py-1 bg-white text-violet-600 border border-violet-500 rounded-md hover:bg-violet-50" %>
+    <div class="flex gap-2">
+      <%= link_to t('clients.client.conv_title'), conversations_account_client_path(current_account, @client),
+          data: { turbo_frame: "offcanvas", turbo_prefetch: false },
+          class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+      <%= link_to t('incases.new.heading'), new_account_incase_path(current_account, client_id: @client.id),
+          data: { turbo_frame: :offcanvas, turbo_prefetch: false },
+          class: "inline-flex items-center px-3 py-1 border border-violet-600 text-violet-600 rounded-md hover:bg-violet-50" %>
+      <%= link_to_edit edit_account_client_path(current_account, @client), data: { turbo_frame: :offcanvas, turbo_prefetch: false } %>
+    </div>
+  </div>
+
+  <div class="mb-6 pb-6 border-b">
+    <h1 class="text-2xl font-semibold text-gray-900"><%= @client.name %> <%= @client.surname %></h1>
+    <div class="flex flex-wrap gap-4 mt-2 text-sm text-gray-600">
+      <% if @client.email.present? %>
+        <span><span class="font-medium">Email:</span> <%= @client.email %></span>
+      <% end %>
+      <% if @client.phone.present? %>
+        <span><span class="font-medium">Телефон:</span> <%= @client.phone %></span>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="space-y-8">
+    <%# Переписка %>
     <div>
-      <h3 class="text-lg font-semibold mb-3">Товары в списках</h3>
-      <%# Load list items grouped by list %>
-      <% list_items = (defined?(@client.list_items) ? @client.list_items : ListItem.where(client: @client)).includes(:list, :item) %>
+      <h2 class="text-lg font-semibold mb-3">Переписка</h2>
+      <% if @conversation %>
+        <%= turbo_stream_from dom_id(current_account, dom_id(@conversation, :messages)) %>
+        <div class="border rounded-lg p-4 bg-gray-50 max-h-80 overflow-y-auto mb-4" data-controller="scroll-to-bottom">
+          <%= render 'conversations/conversation_timeline', conversation: @conversation, messages: @messages, current_account: current_account %>
+        </div>
+        <%= render 'conversations/send_message_form', conversation: @conversation, current_account: current_account %>
+      <% else %>
+        <p class="text-gray-500 mb-2">Нет активного диалога.</p>
+        <%= link_to "Начать диалог", conversation_account_client_path(current_account, @client),
+            data: { turbo_frame: "offcanvas", turbo_prefetch: false },
+            class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+      <% end %>
+    </div>
+
+    <%# Заявки %>
+    <div>
+      <h2 class="text-lg font-semibold mb-3">Заявки</h2>
+      <% if @incases.any? %>
+        <div class="border rounded-lg divide-y">
+          <% @incases.each do |incase| %>
+            <div class="p-4 hover:bg-gray-50 flex items-center justify-between gap-4">
+              <div class="flex-1 min-w-0">
+                <%= link_to incase.display_number, account_incase_path(current_account, incase), class: "text-violet-600 hover:text-violet-800 font-medium", data: { turbo: false } %>
+                <span class="text-sm text-gray-500 ml-2"><%= l incase.created_at, format: :short %></span>
+                <span class="px-2 py-0.5 text-xs font-medium rounded-full <%= incase.status_color %> ml-2"><%= incase.incase_status&.name %></span>
+              </div>
+              <div class="text-sm text-gray-600"><%= incase.webform&.title %></div>
+            </div>
+          <% end %>
+        </div>
+        <%= link_to "Все заявки клиента →", account_incases_path(current_account, q: { client_id_eq: @client.id }), class: "text-sm text-violet-600 hover:text-violet-800 mt-2 inline-block", data: { turbo: false } %>
+      <% else %>
+        <p class="text-gray-500">Нет заявок</p>
+      <% end %>
+    </div>
+
+    <%# Уведомления (automation messages) %>
+    <div>
+      <h2 class="text-lg font-semibold mb-3">Отправленные уведомления</h2>
+      <% if @automation_messages.any? %>
+        <div class="border rounded-lg divide-y">
+          <% @automation_messages.each do |msg| %>
+            <div class="p-4 hover:bg-gray-50 text-sm">
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <span class="font-medium">
+                  <%= case msg.channel
+                      when 'email' then '✉️ Email'
+                      when 'sms' then '💬 SMS'
+                      when 'telegram' then '📱 Telegram'
+                      else msg.channel
+                      end %>
+                </span>
+                <span class="text-gray-500"><%= l msg.created_at, format: :short %></span>
+              </div>
+              <p class="text-gray-600 truncate"><%= msg.subject.presence || msg.content&.truncate(100) %></p>
+              <span class="text-xs <%= msg.sent? ? 'text-green-600' : msg.failed? ? 'text-red-600' : 'text-gray-500' %>"><%= msg.status %></span>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-gray-500">Нет отправленных уведомлений</p>
+      <% end %>
+    </div>
+
+    <%# Товары в списках %>
+    <div>
+      <h2 class="text-lg font-semibold mb-3">Товары в списках</h2>
+      <% list_items = @client.list_items.includes(:list, :item) %>
       <% grouped = list_items.group_by(&:list) %>
 
       <% if grouped.blank? %>
-        <div><%= t('.no_list_items') %></div>
+        <div class="text-gray-500"><%= t('.no_list_items') %></div>
       <% else %>
         <% grouped.each do |list, items| %>
-          <div>
-            <h3 style="margin:0 0 8px 0; font-weight:600;"><%= t('.list') %>: <%= list&.name || t('.unnamed_list') %> (<%= items.size %>)</h3>
-            <table style="width:100%; border-collapse:collapse; border:1px solid #e5e7eb;">
-              <thead>
-                <tr style="background:#f9fafb;">
-                  <th style="padding:12px; text-align:left; border-bottom:1px solid #e5e7eb; font-weight:600;"><%= t('.image') %></th>
-                  <th style="padding:12px; text-align:left; border-bottom:1px solid #e5e7eb; font-weight:600;"><%= t('.product_title') %></th>
-                  <th style="padding:12px; text-align:right; border-bottom:1px solid #e5e7eb; font-weight:600;"><%= t('.price') %></th>
-                </tr>
-              </thead>
-              <tbody>
-                <% items.each do |li| %>
-                  <% raw_item = li.item %>
-                  <% product = if raw_item.is_a?(Product)
-                    raw_item
-                  elsif raw_item.respond_to?(:product)
-                    raw_item.product
-                  else
-                    nil
-                  end %>
-
-                  <% title = product&.title || (raw_item.respond_to?(:title) ? raw_item.title : "Item ##{li.item_id}") %>
-                  <% first_variant = product&.variants&.first || (raw_item.respond_to?(:image_link) ? raw_item : nil) %>
-                  <% image_link = first_variant&.respond_to?(:image_link) ? first_variant.image_link : nil %>
-                  <% price = first_variant&.respond_to?(:price) ? first_variant.price : nil %>
-
-                  <tr style="border-bottom:1px solid #f3f4f6;">
-                    <td style="padding:12px; border-bottom:1px solid #f3f4f6;">
-                      <div style="width:60px; height:60px; border-radius:6px; overflow:hidden; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
-                        <% if image_link.present? %>
-                          <img src="<%= image_link %>" alt="<%= title %>" style="width:100%; height:100%; object-fit:cover; display:block;" />
-                        <% else %>
-                          <span style="font-size:10px; color:#9ca3af;"><%= t('.no_image') %></span>
-                        <% end %>
-                      </div>
-                    </td>
-                    <td style="padding:12px; border-bottom:1px solid #f3f4f6; font-weight:500;">
-                      <%= title %>
-                    </td>
-                    <td style="padding:12px; border-bottom:1px solid #f3f4f6; text-align:right;">
-                      <% if price.present? %>
-                        <%= number_to_currency(price, unit: "₽", separator: ",", delimiter: " ", format: "%n %u") %>
-                      <% else %>
-                        <span style="color:#9ca3af;">—</span>
-                      <% end %>
-                    </td>
+          <div class="mb-4">
+            <h3 class="font-medium mb-2"><%= t('.list') %>: <%= list&.name || t('.unnamed_list') %> (<%= items.size %>)</h3>
+            <div class="border rounded-lg overflow-hidden">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"><%= t('.image') %></th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"><%= t('.product_title') %></th>
+                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"><%= t('.price') %></th>
                   </tr>
-                <% end %>
-              </tbody>
-            </table>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <% items.each do |li| %>
+                    <% raw_item = li.item %>
+                    <% product = raw_item.is_a?(Product) ? raw_item : (raw_item.respond_to?(:product) ? raw_item.product : nil) %>
+                    <% title = product&.title || (raw_item.respond_to?(:title) ? raw_item.title : "Item ##{li.item_id}") %>
+                    <% first_variant = product&.variants&.first || (raw_item.respond_to?(:image_link) ? raw_item : nil) %>
+                    <% image_link = first_variant&.respond_to?(:image_link) ? first_variant.image_link : nil %>
+                    <% price = first_variant&.respond_to?(:price) ? first_variant.price : nil %>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-4 py-2">
+                        <div class="w-12 h-12 rounded overflow-hidden bg-gray-100 flex items-center justify-center">
+                          <% if image_link.present? %>
+                            <img src="<%= image_link %>" alt="<%= title %>" class="w-full h-full object-cover" />
+                          <% else %>
+                            <span class="text-xs text-gray-400"><%= t('.no_image') %></span>
+                          <% end %>
+                        </div>
+                      </td>
+                      <td class="px-4 py-2 font-medium text-gray-900"><%= title %></td>
+                      <td class="px-4 py-2 text-right text-gray-600">
+                        <%= price.present? ? number_to_currency(price, unit: "₽", separator: ",", delimiter: " ", format: "%n %u") : "—" %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
           </div>
         <% end %>
       <% end %>
     </div>
   </div>
-<% end %>
+</div>
