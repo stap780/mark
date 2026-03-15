@@ -1110,4 +1110,8 @@ en:
       title: "Send Test Email via Mailganer"
       email_label: "Recipient email"
       description: "Mailganer will send a simple test email using current API settings."
+      email_blank: "Please enter recipient email."
+      success: "Test email sent successfully."
+      failed: "Failed to send test email."
+      error: "Failed to send test email: %{msg}"
     test_email_label: "Send Test Email"
