@@ -3,9 +3,11 @@
     <ul class="divide-y divide-gray-200">
       <% @conversations.each do |conv| %>
         <li>
-          <%= link_to conversations_account_client_path(current_account, @client, conversation_id: conv.id),
+          <%# link_to conversations_account_client_path(current_account, @client, conversation_id: conv.id),
               data: { turbo_frame: "offcanvas" },
               class: "block py-3 px-2 -mx-2 rounded hover:bg-gray-50" do %>
+          <%= link_to account_conversation_path(current_account, conv),
+            data: { turbo: false }, class: "block py-3 px-2 -mx-2 rounded hover:bg-gray-50" do %>
             <div class="flex items-center justify-between gap-2">
               <span class="text-sm font-medium text-gray-900">
                 <%= t("conversations.status.#{conv.status}") %>

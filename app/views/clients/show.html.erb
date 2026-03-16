@@ -29,10 +29,8 @@
               data: { turbo_frame: "offcanvas", turbo_prefetch: false },
               class: "inline-flex items-center px-3 py-1 border border-violet-600 text-violet-600 rounded-md hover:bg-violet-50" %>
         </div>
-        <div class="border rounded-lg p-4 bg-gray-50 max-h-80 overflow-y-auto mb-4" data-controller="scroll-to-bottom">
-          <%= render 'conversations/conversation_timeline', conversation: @conversation, messages: @messages, current_account: current_account %>
-        </div>
-        <%= render 'conversations/send_message_form', conversation: @conversation, current_account: current_account %>
+        <%# render 'conversations/conversation_timeline', conversation: @conversation, messages: @messages, current_account: current_account %>
+        <%# render 'conversations/send_message_form', conversation: @conversation, current_account: current_account %>
       <% else %>
         <div class="flex gap-2 mb-2">
           <%= link_to "Начать диалог", conversation_account_client_path(current_account, @client),
