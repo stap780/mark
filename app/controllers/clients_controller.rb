@@ -26,7 +26,8 @@ class ClientsController < ApplicationController
       @conversation = current_account.conversations.active.find_by(client: @client) ||
                       current_account.conversations.create!(client: @client, status: :active)
     end
-    @messages = @conversation.messages.order(created_at: :asc).last(50)
+    #@messages = @conversation.messages.order(created_at: :asc).last(50)
+    redirect_to account_conversations_path(current_account, conversation_id: @conversation.id, q: { status_eq: 'all' }), status: :see_other
   end
 
   def conversations

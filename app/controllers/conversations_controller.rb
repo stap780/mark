@@ -34,7 +34,7 @@ class ConversationsController < ApplicationController
   end
 
   def new
-    @clients = @account.clients.order(:name).limit(100)
+    @clients = @account.clients.order(:name)
   end
 
   def create
