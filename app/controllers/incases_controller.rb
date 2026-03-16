@@ -17,7 +17,7 @@ class IncasesController < ApplicationController
       flash.now[:notice] = t('.success')
       respond_to do |format|
         format.turbo_stream do
-          render turbo_stream: turbo_close_offcanvas_flash + [render_turbo_flash], status: :see_other
+          render turbo_stream: turbo_close_offcanvas_flash
         end
         format.html { redirect_to account_incase_path(current_account, @incase), notice: t('.success'), status: :see_other }
       end

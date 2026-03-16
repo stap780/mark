@@ -34,14 +34,14 @@ class Client < ApplicationRecord
   end
 
   after_update_commit do
-    broadcast_replace_to [dom_id(account), :clients],
+    broadcast_replace_to dom_id(account, :clients),
                         target: dom_id(self, dom_id(account)),
                         partial: "clients/client",
                         locals: { client: self, current_account: account }
   end
 
   after_destroy_commit do
-    broadcast_remove_to [dom_id(account), :clients], target: dom_id(self, dom_id(account))
+    broadcast_remove_to dom_id(account, :clients), target: dom_id(self, dom_id(account))
   end
 
 

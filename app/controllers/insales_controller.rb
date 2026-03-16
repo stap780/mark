@@ -39,7 +39,7 @@ class InsalesController < ApplicationController
               locals: { insale: @insale }
             ),
             turbo_stream.append(
-              "insales",
+              dom_id(current_account, :insales),
               partial: "insales/insale", 
               locals: { insale: @insale, current_account: current_account }
             ) 
@@ -64,7 +64,7 @@ class InsalesController < ApplicationController
             render_turbo_flash,
             turbo_stream.update(:offcanvas, ""),
             turbo_stream.replace(
-              dom_id(@insale),
+              dom_id(@insale, dom_id(current_account)),
               partial: "insales/insale",
               locals: { insale: @insale }
               )

@@ -17,6 +17,8 @@
 
   <div class="flex space-x-2">
     <%= search_form_for @search, url: account_incases_path(current_account), method: :get, html: { class: "flex items-center space-x-2" } do |f| %>
+      <%= f.date_field :created_at_datebegin, value: params.dig(:q, :created_at_datebegin), placeholder: t('products.index.created_from'), class: "h-8 px-2 border rounded text-sm leading-none cursor-pointer", autocomplete: "off" %>
+
       <%= f.search_field :client_name_or_client_email_cont,
           value: params.dig(:q, :client_name_or_client_email_cont),
           placeholder: t('incases.index.search_placeholder'),

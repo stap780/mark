@@ -54,7 +54,13 @@ class ClientsController < ApplicationController
       if @client.save
         flash.now[:success] = t('.success')
         format.turbo_stream {
-          render turbo_stream: turbo_close_offcanvas_flash
+          render turbo_stream: turbo_close_offcanvas_flash + [
+            turbo_stream.prepend(
+              dom_id(current_account, :clients), 
+              partial: "clients/client", 
+              locals: { client: @client, current_account: current_account }
+            )
+          ]
         }
         format.html { redirect_to account_client_path(current_account, @client), notice: t('.success') }
         format.json { render :show, status: :created, location: account_client_path(current_account, @client) }
@@ -85,6 +91,12 @@ class ClientsController < ApplicationController
     @client.destroy!
 
     respond_to do |format|
+      flash.now[:success] = t('.success')
+      format.turbo_stream do
+        render turbo_stream: [
+          render_turbo_flash
+        ]
+      end
       format.html { redirect_to account_clients_path(current_account), notice: t('.success'), status: :see_other }
       format.json { head :no_content }
     end
