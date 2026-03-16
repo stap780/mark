@@ -2,12 +2,6 @@
   <div class="flex items-center justify-between gap-4 mb-6">
     <%= link_to_back account_clients_path(current_account), data: { turbo: false } %>
     <div class="flex gap-2">
-      <%= link_to t('clients.client.conv_title'), conversations_account_client_path(current_account, @client),
-          data: { turbo_frame: "offcanvas", turbo_prefetch: false },
-          class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
-      <%= link_to t('incases.new.heading'), new_account_incase_path(current_account, client_id: @client.id),
-          data: { turbo_frame: :offcanvas, turbo_prefetch: false },
-          class: "inline-flex items-center px-3 py-1 border border-violet-600 text-violet-600 rounded-md hover:bg-violet-50" %>
       <%= link_to_edit edit_account_client_path(current_account, @client), data: { turbo_frame: :offcanvas, turbo_prefetch: false } %>
     </div>
   </div>
@@ -30,21 +24,35 @@
       <h2 class="text-lg font-semibold mb-3">Переписка</h2>
       <% if @conversation %>
         <%= turbo_stream_from dom_id(current_account, dom_id(@conversation, :messages)) %>
+        <div class="flex gap-2 mb-4">
+          <%= link_to t('clients.client.conv_title'), conversations_account_client_path(current_account, @client),
+              data: { turbo_frame: "offcanvas", turbo_prefetch: false },
+              class: "inline-flex items-center px-3 py-1 border border-violet-600 text-violet-600 rounded-md hover:bg-violet-50" %>
+        </div>
         <div class="border rounded-lg p-4 bg-gray-50 max-h-80 overflow-y-auto mb-4" data-controller="scroll-to-bottom">
           <%= render 'conversations/conversation_timeline', conversation: @conversation, messages: @messages, current_account: current_account %>
         </div>
         <%= render 'conversations/send_message_form', conversation: @conversation, current_account: current_account %>
       <% else %>
-        <p class="text-gray-500 mb-2">Нет активного диалога.</p>
-        <%= link_to "Начать диалог", conversation_account_client_path(current_account, @client),
-            data: { turbo_frame: "offcanvas", turbo_prefetch: false },
-            class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+        <div class="flex gap-2 mb-2">
+          <%= link_to "Начать диалог", conversation_account_client_path(current_account, @client),
+              data: { turbo_frame: "offcanvas", turbo_prefetch: false },
+              class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+          <% if @client.conversations.any? %>
+            <%= link_to t('clients.client.conv_title'), conversations_account_client_path(current_account, @client),
+                data: { turbo_frame: "offcanvas", turbo_prefetch: false },
+                class: "inline-flex items-center px-3 py-1 border border-violet-600 text-violet-600 rounded-md hover:bg-violet-50" %>
+          <% end %>
+        </div>
       <% end %>
     </div>
 
     <%# Заявки %>
     <div>
       <h2 class="text-lg font-semibold mb-3">Заявки</h2>
+      <%= link_to t('incases.new.heading'), new_account_incase_path(current_account, client_id: @client.id),
+          data: { turbo_frame: :offcanvas, turbo_prefetch: false },
+          class: "inline-flex items-center px-3 py-1 border border-violet-600 text-violet-600 rounded-md hover:bg-violet-50 mb-3" %>
       <% if @incases.any? %>
         <div class="border rounded-lg divide-y">
           <% @incases.each do |incase| %>
