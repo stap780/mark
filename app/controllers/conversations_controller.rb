@@ -15,6 +15,15 @@ class ConversationsController < ApplicationController
     @search = @account.conversations.includes(:client, :messages).ransack(q)
     @search.sorts = "last_message_at desc" if @search.sorts.empty?
     @conversations = @search.result(distinct: true).paginate(page: params[:page], per_page: 50)
+
+    if params[:conversation_id].present?
+      @conversation = @account.conversations.find_by(id: params[:conversation_id])
+      if @conversation
+        @conversation.mark_as_read!
+        @messages = @conversation.messages.order(created_at: :asc).last(50)
+        @client = @conversation.client
+      end
+    end
   end
 
   def show
