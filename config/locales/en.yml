@@ -1107,10 +1107,17 @@ en:
   mailganers:
     new:
       title: "Configure Mailganer"
+      already_exists: "Mailganer settings already exist"
+    create:
+      success: "Mailganer settings created successfully."
     edit:
       title: "Edit Mailganer Settings"
+    update:
+      success: "Mailganer settings updated successfully."
     show:
       title: "Mailganer Settings"
+    destroy:
+      success: "Mailganer settings deleted successfully."
     test_email:
       title: "Send Test Email via Mailganer"
       email_label: "Recipient email"

@@ -35,16 +35,13 @@ class ProcessIncomingTelegramMessageJob < ApplicationJob
     conversation = account.conversations.active.find_by(client: client) ||
                    account.conversations.create!(client: client, status: :active)
     
-    # Создаем входящее сообщение
-    message_record = conversation.messages.create!(
+    # Найти или создать и обновить: предотвращает дубликаты при повторной доставке и обновляет при редактировании
+    message_record = find_or_create_and_update_message(
+      conversation: conversation,
       account: account,
       client: client,
-      direction: 'incoming',
-      channel: 'telegram',
-      content: text,
       message_id: message_id&.to_s,
-      status: 'delivered',
-      delivered_at: Time.current
+      text: text
     )
     
     # Обновляем timestamps conversation
@@ -56,7 +53,8 @@ class ProcessIncomingTelegramMessageJob < ApplicationJob
       last_outgoing.update(status: 'delivered', delivered_at: Time.current)
     end
     
-    Rails.logger.info "[ProcessIncomingTelegramMessageJob] Saved incoming message ##{message_record.id} for client ##{client.id}"
+    action = message_record.previously_new_record? ? "Saved" : "Updated"
+    Rails.logger.info "[ProcessIncomingTelegramMessageJob] #{action} incoming message ##{message_record.id} for client ##{client.id}"
     
     message_record
   rescue => e
@@ -66,7 +64,30 @@ class ProcessIncomingTelegramMessageJob < ApplicationJob
   end
   
   private
-  
+
+  def find_or_create_and_update_message(conversation:, account:, client:, message_id:, text:)
+    scope = conversation.messages.incoming.by_channel('telegram')
+
+    if message_id.present?
+      existing = scope.find_by(message_id: message_id)
+      if existing
+        existing.update!(content: text, status: 'delivered', delivered_at: Time.current)
+        return existing
+      end
+    end
+
+    conversation.messages.create!(
+      account: account,
+      client: client,
+      direction: 'incoming',
+      channel: 'telegram',
+      content: text,
+      message_id: message_id.presence,
+      status: 'delivered',
+      delivered_at: Time.current
+    )
+  end
+
   def find_or_create_client(account:, telegram_user_id: nil, username: nil, phone: nil, chat_id: nil)
     # Собираем все возможные критерии поиска
     search_criteria = []

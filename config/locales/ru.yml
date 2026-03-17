@@ -1361,10 +1361,17 @@ ru:
   mailganers:
     new:
       title: "Настройка Mailganer"
+      already_exists: "Настройки Mailganer уже существуют"
+    create:
+      success: "Настройки Mailganer успешно созданы."
     edit:
       title: "Редактировать настройки Mailganer"
+    update:
+      success: "Настройки Mailganer успешно обновлены."
     show:
       title: "Настройки Mailganer"
+    destroy:
+      success: "Настройки Mailganer успешно удалены."
     test_email:
       title: "Отправить тестовое письмо через Mailganer"
       email_label: "Email получателя"
