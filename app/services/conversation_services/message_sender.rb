@@ -95,11 +95,7 @@ module ConversationServices
         api_key_web_portal: mailganer_settings.api_key_web_portal
       )
 
-      from_email = if mailganer_settings.respond_to?(:from_email)
-        mailganer_settings.from_email.presence || "info@teletri.ru"
-      else
-        "info@teletri.ru"
-      end
+      from_email = mailganer_settings.try(:from_email).presence || "info@teletri.ru"
 
       x_track_id = [
         mailganer_settings.smtp_login.presence || "mailganer",

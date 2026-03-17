@@ -110,11 +110,7 @@ module Automation
         )
 
         # Определяем from_email: если это объект Mailganer, используем его from_email, иначе дефолт
-        from_email = if mailganer_settings.respond_to?(:from_email)
-          mailganer_settings.from_email.presence || "info@teletri.ru"
-        else
-          "info@teletri.ru"
-        end
+        from_email = mailganer_settings.try(:from_email).presence || "info@teletri.ru"
 
         # Формируем x_track_id в формате "#{smtp_login}-#{Time.now.to_i}-#{automation_message.id}"
         x_track_id = [
