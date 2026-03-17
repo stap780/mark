@@ -127,7 +127,7 @@ class MailganersController < ApplicationController
   end
 
   def mailganer_params
-    params.require(:mailganer).permit(:api_key, :smtp_login, :api_key_web_portal)
+    params.require(:mailganer).permit(:api_key, :smtp_login, :api_key_web_portal, :from_email)
   end
 end
 

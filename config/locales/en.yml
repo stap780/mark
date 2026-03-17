@@ -292,6 +292,11 @@ en:
         recurrence: "Interval"
         time: "Time"
         active: "Enabled"
+      mailganer:
+        api_key: "API Key"
+        smtp_login: "SMTP Login"
+        api_key_web_portal: "API Key Web Portal"
+        from_email: "From email"
     enums:
       account_user:
         role:

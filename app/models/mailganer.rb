@@ -4,7 +4,7 @@ class Mailganer < ApplicationRecord
   belongs_to :account
 
   validates :account_id, uniqueness: true
-  validates :api_key, :smtp_login, :api_key_web_portal, presence: true
+  validates :api_key, :smtp_login, :api_key_web_portal, :from_email, presence: true
 
   # Отправка тестового письма. Вся логика и обработка ошибок находятся в модели.
   #
@@ -23,10 +23,14 @@ class Mailganer < ApplicationRecord
 
     x_track_id = "#{smtp_login}-#{Time.now.to_i}-test"
 
+    # domain = client.domains_list[:domains].first
+
+    # from = domain.present? ? "info@#{domain}" : "info@teletri.ru"
+
     response = client.send_email_smtp_v1(
       type: "body",
       to: to_email,
-      from: "info@teletri.ru",
+      from: from_email,
       subject: "Test email from Mailganer",
       body: "This is a test email from Mailganer settings for account ##{account_id}",
       x_track_id: x_track_id

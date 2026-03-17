@@ -376,6 +376,11 @@ ru:
         recurrence: "Интервал"
         time: "Время"
         active: "Включено"
+      mailganer:
+        api_key: "API ключ"
+        smtp_login: "SMTP логин"
+        api_key_web_portal: "API Key Web Portal"
+        from_email: "Email отправителя"
     enums:
       account_user:
         role:
