@@ -9,7 +9,7 @@
   <div><%= incase.webform&.title %> (<%= incase.webform&.kind %>)</div>
   <div>
     <% if incase.client %>
-      <span class="truncate"><%= incase.client.name %> <%= incase.client.email %></span>
+      <span class="truncate"><%= incase.client.name.presence || incase.client.email %></span>
       <%= link_to account_client_path(current_account, incase.client), class: "inline-block ml-2 text-violet-600 hover:text-violet-800", target: "_blank", data: { turbo: false, turbo_prefetch: false } do %>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline" viewBox="0 0 20 20" fill="currentColor">
           <path d="M10 2a6 6 0 100 12A6 6 0 0010 2zM2 16a8 8 0 1116 0H2z" />
