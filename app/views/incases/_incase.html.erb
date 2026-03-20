@@ -1,4 +1,4 @@
-<%= turbo_frame_tag dom_id(current_account, dom_id(incase)), class: "grid grid-cols-[80px_160px_120px_2fr_2fr_120px_120px] gap-4 p-4 hover:bg-gray-50 items-center" do %>
+<%= turbo_frame_tag dom_id(current_account, dom_id(incase)), class: "grid grid-cols-[80px_160px_120px_250px_250px_120px_2fr] gap-2 p-2 hover:bg-gray-50 items-center" do %>
   <div><%= link_to incase.display_number, account_incase_path(current_account, incase), class: "text-violet-600 hover:text-violet-800", data: { turbo: false } %></div>
   <div><%= l incase.created_at, format: :short %></div>
   <div>
@@ -9,7 +9,7 @@
   <div><%= incase.webform&.title %> (<%= incase.webform&.kind %>)</div>
   <div>
     <% if incase.client %>
-      <span class="truncate"><%= incase.client.name.presence || incase.client.email %></span>
+      <span class="truncate"><%= truncate(incase.client.name.presence || incase.client.email, length: 20) %></span>
       <%= link_to account_client_path(current_account, incase.client), class: "inline-block ml-2 text-violet-600 hover:text-violet-800", target: "_blank", data: { turbo: false, turbo_prefetch: false } do %>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline" viewBox="0 0 20 20" fill="currentColor">
           <path d="M10 2a6 6 0 100 12A6 6 0 0010 2zM2 16a8 8 0 1116 0H2z" />

@@ -867,6 +867,8 @@ ru:
   products:
     index:
       heading: "Товары"
+      created_from: "С"
+      created_to: "По"
       search_placeholder: "Поиск по названию, артикулу"
       search: "Поиск"
       clear: "Очистить"
@@ -922,6 +924,7 @@ ru:
       image: "Изображение"
       product_title: "Название товара"
       price: "Цена"
+      added_at: "Добавлено"
       no_image: "нет изображения"
     client:
       reload_from_insales: "Обновить из InSales"
@@ -993,6 +996,9 @@ ru:
   lists:
     index:
       title: "Списки"
+      name: "Название"
+      items: "Позиции"
+      color: "Цвет"
     new:
       title: "Новый список"
     edit:

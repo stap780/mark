@@ -684,6 +684,16 @@ en:
       name: "Name"
       email: "Email"
       phone: "Phone"
+    show:
+      heading: "Client: %{name}"
+      no_list_items: "No items in lists yet."
+      list: "List"
+      unnamed_list: "Unnamed"
+      image: "Image"
+      product_title: "Product"
+      price: "Price"
+      no_image: "no image"
+      added_at: "Added"
     create:
       success: "Client created successfully."
     update:
@@ -694,6 +704,9 @@ en:
   lists:
     index:
       title: "Lists"
+      name: "Name"
+      items: "Items"
+      color: "Color"
     new:
       title: "New list"
     edit:
@@ -1039,6 +1052,8 @@ en:
   products:
     index:
       heading: "Products"
+      created_from: "From"
+      created_to: "To"
       search_placeholder: "Search by title, SKU"
       search: "Search"
       clear: "Clear"
