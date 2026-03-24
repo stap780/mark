@@ -46,3 +46,6 @@
     <%= render "shared/paginate", f: @swatch_groups %>
   <% end %>
 </div>
+<% unless @swatch_groups %>
+  <%= render 'info' %>
+<% end %>

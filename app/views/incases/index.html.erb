@@ -29,7 +29,7 @@
           value: params.dig(:q, :client_name_or_client_email_cont),
           placeholder: t('incases.index.search_placeholder'),
           class: "h-8 px-2 border rounded text-sm leading-none",
-          style: "width: 350px;" %>
+          style: "width: 200px;" %>
       <%= f.select :webform_id_eq,
           @webforms.pluck(:title, :id),
           { prompt: t('incases.index.webform')},

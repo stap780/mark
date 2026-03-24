@@ -602,6 +602,9 @@ en:
       heading: "Edit Swatch Group"
     show:
       heading: "Swatch Group: %{name}"
+    info:
+      description: "Description"
+      text: "To configure swatch groups for products on the shop page, add the JavaScript code inside the <head> tag."
 
   incases:
     new:

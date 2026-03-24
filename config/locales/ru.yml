@@ -1353,6 +1353,9 @@ ru:
       heading: "Редактировать группу"
     show:
       heading: "Группа: %{name}"
+    info:
+      description: "Описание"
+      text: "Чтобы настроить группы переключателей (swatch) для товаров на странице магазина добавьте JS код внутрь тега <head>"
 
   message_templates:
     new:
