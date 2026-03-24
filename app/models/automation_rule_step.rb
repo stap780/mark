@@ -41,7 +41,7 @@ class AutomationRuleStep < ApplicationRecord
           "#{kind_label}: #{template.title}"
         when "change_status"
           kind_label = I18n.t("automation_actions.kinds.#{automation_action.kind}")
-          value_label = I18n.t("automation_conditions.values.incase_status.#{automation_action.value}")
+          value_label = status_summary_label
           "#{kind_label}: #{value_label}"
         end
       else
@@ -53,6 +53,16 @@ class AutomationRuleStep < ApplicationRecord
   end
 
   private
+
+  # Статусы задаются в БД (key/name); I18n не покрывает произвольные key.
+  def status_summary_label
+    return automation_action.value.to_s if automation_action.blank?
+
+    account = automation_rule&.account
+    return automation_action.value.to_s if account.blank?
+
+    account.incase_statuses.find_by(key: automation_action.value)&.name || automation_action.value.to_s
+  end
 
   def format_pause_duration(seconds)
     hours = seconds / 3600
