@@ -18,21 +18,26 @@ class ListItemsJsonGeneratorService
 
     io = StringIO.new(JSON.pretty_generate(payload))
 
-    if client.list_items_file.attached?
-      client.list_items_file.purge
-    end
+    # One regeneration at a time per client — shared fixed ActiveStorage blob key.
+    client.with_lock do
+      if client.list_items_file.attached?
+        client.list_items_file.purge
+      end
 
-    if ActiveStorage::Blob.unattached.any?
-      ActiveStorage::Blob.unattached.find_each(&:purge)
-    end
+      if ActiveStorage::Blob.unattached.any?
+        ActiveStorage::Blob.unattached.find_each(&:purge)
+      end
 
-    unless client.list_items_file.attached?
-      client.list_items_file.attach(
-        io: io,
-        filename: @file_name,
-        key: s3_file_key,
-        content_type: "application/json"
-      )
+      ActiveStorage::Blob.find_by(key: s3_file_key)&.purge
+
+      unless client.list_items_file.attached?
+        client.list_items_file.attach(
+          io: io,
+          filename: @file_name,
+          key: s3_file_key,
+          content_type: "application/json"
+        )
+      end
     end
   ensure
     Account.current = nil

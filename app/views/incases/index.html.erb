@@ -29,13 +29,11 @@
           value: params.dig(:q, :client_name_or_client_email_cont),
           placeholder: t('incases.index.search_placeholder'),
           class: "h-8 px-2 border rounded text-sm leading-none",
-          style: "width: 200px;" %>
-      <%= f.select :webform_id_eq,
-          @webforms.pluck(:title, :id),
+          style: "max-width: 200px;" %>
+      <%= f.select :webform_id_eq, @webforms.pluck(:title, :id),
           { prompt: t('incases.index.webform')},
-          { class: "h-8 px-2 border rounded text-sm leading-none" } %>
-      <%= f.select :incase_status_id_eq,
-          current_account.incase_statuses.ordered.map { |s| [s.name, s.id] },
+          { class: "h-8 px-2 border rounded text-sm leading-none", style: "max-width: 200px;" } %>
+      <%= f.select :incase_status_id_eq, current_account.incase_statuses.ordered.map { |s| [s.name, s.id] },
           { prompt: t('incases.index.status')},
           { class: "h-8 px-2 border rounded text-sm leading-none" } %>
 
