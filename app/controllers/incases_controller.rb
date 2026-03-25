@@ -42,9 +42,15 @@ class IncasesController < ApplicationController
 
     filtered_incases = @search.result(distinct: true)
     @incases = filtered_incases.paginate(page: params[:page], per_page: 50)
-    @incases_total_amount = Item
-      .where(incase_id: filtered_incases.select(:id))
-      .sum(Arel.sql("COALESCE(items.quantity, 0) * COALESCE(items.price, 0)"))
+    incase_ids = filtered_incases.pluck(:id)
+    @incases_total_amount =
+      if incase_ids.empty?
+        0
+      else
+        Item
+          .where(incase_id: incase_ids)
+          .sum(Arel.sql("COALESCE(items.quantity, 0) * COALESCE(items.price, 0)"))
+      end
 
     @webforms = current_account.webforms.order(:title)
 
