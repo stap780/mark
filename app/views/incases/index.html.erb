@@ -1,3 +1,5 @@
+<% content_for :title, "Заявки клиентов" %>
+
 <% current_webform_id = params[:webform_id].presence || params.dig(:q, :webform_id_eq) %>
 <div class="flex flex-wrap gap-2 mb-4">
   <%= link_to t('incases.index.all'),
@@ -13,7 +15,13 @@
 </div>
 
 <div class="flex items-center justify-between mb-4">
-  <h1 class="text-xl font-semibold"><%= t("incases.index.title") %> <small class="text-sm text-gray-500"><%= @incases.count %></small></h1>
+  <div>
+    <h1 class="text-xl font-semibold"><%= t("incases.index.title") %> <small class="text-sm text-gray-500"><%= @incases.total_entries %></small></h1>
+    <p class="text-sm text-gray-600 mt-1">
+      <%= t("incases.index.filter_total_label") %>:
+      <%= number_to_currency(@incases_total_amount, unit: "₽", separator: ",", delimiter: " ", format: "%n %u") %>
+    </p>
+  </div>
 
   <div class="flex space-x-2">
     <%= search_form_for @search, url: account_incases_path(current_account), method: :get, html: { class: "flex items-center space-x-2" } do |f| %>

@@ -39,7 +39,13 @@ class IncasesController < ApplicationController
 
     @search = current_account.incases.includes(:client, :webform, :incase_status).ransack(q_params)
     @search.sorts = "created_at desc" if @search.sorts.empty?
-    @incases = @search.result(distinct: true).paginate(page: params[:page], per_page: 50)
+
+    filtered_incases = @search.result(distinct: true)
+    @incases = filtered_incases.paginate(page: params[:page], per_page: 50)
+    @incases_total_amount = Item
+      .where(incase_id: filtered_incases.select(:id))
+      .sum(Arel.sql("COALESCE(items.quantity, 0) * COALESCE(items.price, 0)"))
+
     @webforms = current_account.webforms.order(:title)
 
     days_count = (params[:chart_days] || 14).to_i.clamp(7, 30)

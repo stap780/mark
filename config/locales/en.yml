@@ -627,6 +627,7 @@ en:
       all_statuses: "All statuses"
       all_webforms: "All webforms"
       title: "Incases"
+      filter_total_label: "Selection total"
       created_at: "Created"
       status: "Status"
       webform: "Webform"

@@ -1,3 +1,4 @@
+<% content_for :title, "Группа ##{@swatch_group.name}" %>
 <div class="bg-white rounded-lg shadow p-4">
   <div class="flex items-center justify-start gap-4 mb-4">
     <%= link_to_back account_swatch_groups_path(current_account), data: { turbo: false } %>

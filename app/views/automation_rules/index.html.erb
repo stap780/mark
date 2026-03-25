@@ -1,3 +1,4 @@
+<% content_for :title, "Правила автоматизации" %>
 <% app_type = current_account.settings.dig("apps")&.find { |app| app.start_with?('ins') } %>
 <div class="flex items-center justify-between mb-4">
   <div class="flex space-x-2 items-center">

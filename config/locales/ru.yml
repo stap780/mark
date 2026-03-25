@@ -955,6 +955,7 @@ ru:
       all_statuses: "Все статусы"
       all_webforms: "Все веб-формы"
       title: "Заявки"
+      filter_total_label: "Итого по выборке"
       created_at: "Дата создания"
       status: "Статус"
       webform: "Веб-форма"
