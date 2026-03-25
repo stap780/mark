@@ -42,7 +42,7 @@ class IncasesController < ApplicationController
 
     filtered_incases = @search.result(distinct: true)
     @incases = filtered_incases.paginate(page: params[:page], per_page: 50)
-    incase_ids = filtered_incases.pluck(:id)
+    incase_ids = filtered_incases.unscope(:order).pluck(:id)
     @incases_total_amount =
       if incase_ids.empty?
         0
