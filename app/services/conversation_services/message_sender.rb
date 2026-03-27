@@ -12,6 +12,10 @@ module ConversationServices
     end
 
     def call
+      if @client.blank?
+        return { ok: false, error: "Клиент не найден", message: nil }
+      end
+
       # Создаем запись Message с direction: 'outgoing'
       message = @conversation.messages.build(
         account: @account,

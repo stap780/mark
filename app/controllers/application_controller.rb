@@ -7,8 +7,10 @@ class ApplicationController < ActionController::Base
   before_action :set_locale
   before_action :load_session
   before_action :set_current_account, except: [:switch_locale]
+  before_action :sync_account_current_for_request, except: [:switch_locale]
   before_action :ensure_user_in_current_account, except: [:switch_locale]
   before_action :ensure_active_subscription, except: [:switch_locale]
+  after_action :clear_account_current, except: [:switch_locale]
   helper_method :current_account, :current_locale
   
   def switch_locale
@@ -38,6 +40,16 @@ class ApplicationController < ActionController::Base
       # Приоритет: первый аккаунт пользователя или админ-аккаунт
       Current.session.user.accounts.first || Account.where(admin: true).first
     end
+  end
+
+  # Выравнивает thread-local Account.current с Current.account для default_scope (AccountScoped).
+  # Сбрасывается в clear_account_current, чтобы поток Puma не таскал чужой tenant между запросами.
+  def sync_account_current_for_request
+    Account.current = Current.account
+  end
+
+  def clear_account_current
+    Account.current = nil
   end
 
   def ensure_user_in_current_account
