@@ -11,13 +11,14 @@ module TelegramProviders
     # при ошибке - fallback на персональный аккаунт
     # @param client [Client] Клиент для отправки
     # @param text [String] Текст сообщения
+    # @param reply_to_message_id [String, Integer, nil] Telegram message_id для ответа (Bot API)
     # @return [Hash] Результат отправки с message_id и каналом
-    def send(client:, text:)
+    def send(client:, text:, reply_to_message_id: nil)
       return error_result("Telegram не настроен для этого аккаунта") unless @telegram_setup
 
       # Если бот настроен и у клиента есть telegram_chat_id, пытаемся отправить через бота
       if bot_available? && client.telegram_chat_id.present?
-        bot_result = send_via_bot(client: client, text: text)
+        bot_result = send_via_bot(client: client, text: text, reply_to_message_id: reply_to_message_id)
         
         # Если отправка через бота успешна - возвращаем результат
         return bot_result if bot_result[:ok]
@@ -26,7 +27,7 @@ module TelegramProviders
         # пытаемся отправить через персональный аккаунт
         if should_fallback_to_personal?(bot_result) && personal_account_authorized?
           Rails.logger.info "Bot send failed for client ##{client.id}, falling back to personal account. Error: #{bot_result[:error]}"
-          return send_via_personal(client: client, text: text)
+          return send_via_personal(client: client, text: text, reply_to_message_id: reply_to_message_id)
         end
         
         # Если fallback не возможен, возвращаем ошибку бота
@@ -35,7 +36,7 @@ module TelegramProviders
       
       # Если бот не доступен или нет telegram_chat_id, используем персональный аккаунт
       if personal_account_authorized?
-        send_via_personal(client: client, text: text)
+        send_via_personal(client: client, text: text, reply_to_message_id: reply_to_message_id)
       else
         error_result("Бот не настроен и личный аккаунт не авторизован")
       end
@@ -84,11 +85,15 @@ module TelegramProviders
     end
 
     # Отправка через бота
-    def send_via_bot(client:, text:)
+    def send_via_bot(client:, text:, reply_to_message_id: nil)
       return error_result("У клиента нет telegram_chat_id") unless client.telegram_chat_id.present?
 
       bot_client = TelegramProviders::BotClient.new(token: @telegram_setup.bot_token)
-      result = bot_client.send_message(chat_id: client.telegram_chat_id, text: text)
+      result = bot_client.send_message(
+        chat_id: client.telegram_chat_id,
+        text: text,
+        reply_to_message_id: reply_to_message_id
+      )
 
       if result[:ok]
         {
@@ -114,7 +119,7 @@ module TelegramProviders
     end
 
     # Отправка через личный аккаунт
-    def send_via_personal(client:, text:)
+    def send_via_personal(client:, text:, reply_to_message_id: nil)
       # Определяем, отправлять по username или по телефону
       recipient = if client.telegram_username.present?
                     client.telegram_username
@@ -128,7 +133,7 @@ module TelegramProviders
 
       # Используем микросервис
       microservice = TelegramProviders::MicroserviceClient.new(account: @account)
-      result = microservice.send_message(recipient: recipient, text: text)
+      result = microservice.send_message(recipient: recipient, text: text, reply_to_message_id: reply_to_message_id)
       
       Rails.logger.info "Microservice result: ok=#{result[:ok]}, error=#{result[:error]}, data=#{result[:data].inspect}"
       

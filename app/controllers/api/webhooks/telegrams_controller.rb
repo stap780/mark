@@ -29,7 +29,9 @@ class Api::Webhooks::TelegramsController < ApplicationController
     chat_id = chat["id"].to_s
     user_id = from["id"].to_s
     username = from["username"]
-    text = message_data["text"]
+    text = message_data["text"] || message_data["caption"]
+    reply_to = message_data["reply_to_message"]
+    reply_to_message_id = reply_to.is_a?(Hash) ? reply_to["message_id"]&.to_s : nil
 
     # Преобразуем формат Telegram Bot API в формат, который понимает ProcessIncomingTelegramMessageJob
     normalized_message = {
@@ -39,6 +41,7 @@ class Api::Webhooks::TelegramsController < ApplicationController
       "chat_id" => chat_id,
       "message_id" => message_data["message_id"],
       "text" => text,
+      "reply_to_message_id" => reply_to_message_id,
       "date" => message_data["date"] ? Time.at(message_data["date"]).iso8601 : nil
     }
 

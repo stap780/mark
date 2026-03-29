@@ -12,9 +12,13 @@ class ProcessIncomingTelegramMessageJob < ApplicationJob
     from_id = message['from_id'] || message['from']['id'] rescue nil
     from_username = message['from_username'] || (message['from'] && message['from']['username']) rescue nil
     from_phone = message['from_phone'] || (message['from'] && message['from']['phone']) rescue nil
-    text = message['text'] || message['message'] || ''
+    text = extract_incoming_text(message)
     message_id = message['message_id'] || message['id']
     chat_id = message['chat_id'] || (message['chat'] && message['chat']['id']) rescue nil
+    reply_to_telegram_id = extract_reply_to_telegram_message_id(message)
+
+    # Пустой контент недопустим по валидации Message; подпись/текст уже в extract_incoming_text
+    text = '[Сообщение без текста]' if text.blank? && message_id.present?
     
     return unless from_id || from_username || from_phone
     
@@ -41,7 +45,8 @@ class ProcessIncomingTelegramMessageJob < ApplicationJob
       account: account,
       client: client,
       message_id: message_id&.to_s,
-      text: text
+      text: text,
+      replied_to_message_id: reply_to_telegram_id
     )
     
     # Обновляем timestamps conversation
@@ -65,13 +70,15 @@ class ProcessIncomingTelegramMessageJob < ApplicationJob
   
   private
 
-  def find_or_create_and_update_message(conversation:, account:, client:, message_id:, text:)
+  def find_or_create_and_update_message(conversation:, account:, client:, message_id:, text:, replied_to_message_id: nil)
     scope = conversation.messages.incoming.by_channel('telegram')
 
     if message_id.present?
       existing = scope.find_by(message_id: message_id)
       if existing
-        existing.update!(content: text, status: 'delivered', delivered_at: Time.current)
+        attrs = { content: text, status: 'delivered', delivered_at: Time.current }
+        attrs[:replied_to_message_id] = replied_to_message_id if replied_to_message_id.present?
+        existing.update!(attrs)
         return existing
       end
     end
@@ -83,9 +90,27 @@ class ProcessIncomingTelegramMessageJob < ApplicationJob
       channel: 'telegram',
       content: text,
       message_id: message_id.presence,
+      replied_to_message_id: replied_to_message_id.presence,
       status: 'delivered',
       delivered_at: Time.current
     )
+  end
+
+  def extract_incoming_text(message)
+    m = message.is_a?(Hash) ? message.stringify_keys : {}
+    (m['text'] || m['caption'] || m['message']).to_s
+  end
+
+  def extract_reply_to_telegram_message_id(message)
+    m = message.is_a?(Hash) ? message.stringify_keys : {}
+    direct = m['reply_to_message_id'].presence
+    return direct.to_s if direct.present?
+
+    reply = m['reply_to_message']
+    return nil unless reply
+
+    reply = reply.stringify_keys if reply.is_a?(Hash)
+    reply['message_id']&.to_s
   end
 
   def find_or_create_client(account:, telegram_user_id: nil, username: nil, phone: nil, chat_id: nil)

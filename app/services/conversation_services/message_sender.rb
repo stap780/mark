@@ -1,6 +1,6 @@
 module ConversationServices
   class MessageSender
-    def initialize(conversation:, channel:, content:, subject: nil, sms_provider: nil, user: nil)
+    def initialize(conversation:, channel:, content:, subject: nil, sms_provider: nil, user: nil, reply_to_message_id: nil)
       @conversation = conversation
       @account = conversation.account
       @client = conversation.client
@@ -9,12 +9,15 @@ module ConversationServices
       @subject = subject
       @sms_provider = sms_provider
       @user = user
+      @reply_to_message_id = reply_to_message_id
     end
 
     def call
       if @client.blank?
         return { ok: false, error: "Клиент не найден", message: nil }
       end
+
+      parent_telegram_message_id = @channel == 'telegram' ? resolve_reply_parent_telegram_id : nil
 
       # Создаем запись Message с direction: 'outgoing'
       message = @conversation.messages.build(
@@ -26,7 +29,8 @@ module ConversationServices
         subject: @subject,
         user: @user,
         status: 'sent',
-        sent_at: Time.current
+        sent_at: Time.current,
+        replied_to_message_id: parent_telegram_message_id
       )
 
       # Отправляем сообщение через соответствующий канал
@@ -63,11 +67,25 @@ module ConversationServices
 
     private
 
+    # Telegram Bot API: reply_to_message_id — id сообщения в чате (поле message_id у родителя)
+    def resolve_reply_parent_telegram_id
+      return nil if @reply_to_message_id.blank?
+
+      parent = @conversation.messages.find_by(id: @reply_to_message_id)
+      return nil unless parent&.telegram? && parent.message_id.present?
+
+      parent.message_id
+    end
+
     def send_telegram
       return { ok: false, error: "У клиента нет контакта в Telegram" } unless @client.telegram_chat_id.present? || @client.telegram_username.present? || @client.phone.present?
 
       sender = TelegramProviders::MessageSender.new(account: @account)
-      result = sender.send(client: @client, text: @content)
+      result = sender.send(
+        client: @client,
+        text: @content,
+        reply_to_message_id: resolve_reply_parent_telegram_id
+      )
 
       if result[:ok]
         {

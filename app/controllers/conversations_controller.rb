@@ -2,8 +2,8 @@ class ConversationsController < ApplicationController
   include ActionView::RecordIdentifier
 
   before_action :set_account
-  before_action :set_client, only: [:send_message], if: -> { params[:client_id].present? }
-  before_action :set_conversation, only: [:show, :send_message, :close, :reopen]
+  before_action :set_client, only: [:send_message, :reply_to], if: -> { params[:client_id].present? }
+  before_action :set_conversation, only: [:show, :send_message, :close, :reopen, :reply_to]
 
   def index
     q = (params[:q] || {}).stringify_keys
@@ -67,6 +67,31 @@ class ConversationsController < ApplicationController
     end
   end
 
+  def reply_to
+    @reply_to_message_id = nil
+    @reply_preview = nil
+
+    if params[:message_id].present?
+      msg = @conversation.messages.find_by(id: params[:message_id])
+      if msg&.telegram?
+        @reply_to_message_id = msg.id.to_s
+        @reply_preview = msg.content.to_s.truncate(72)
+      end
+    end
+
+    respond_to do |format|
+      format.html do
+        render partial: "conversations/send_message_form",
+               locals: {
+                 conversation: @conversation,
+                 current_account: @account,
+                 reply_to_message_id: @reply_to_message_id,
+                 reply_preview: @reply_preview
+               }
+      end
+    end
+  end
+
   def send_message
     channel_param = params[:channel]
     content = params[:content]
@@ -110,13 +135,20 @@ class ConversationsController < ApplicationController
         return
       end
 
+      reply_to_message_id = nil
+      if channel == 'telegram' && params[:reply_to_message_id].present?
+        parent = @conversation.messages.find_by(id: params[:reply_to_message_id])
+        reply_to_message_id = parent.id.to_s if parent&.telegram? && parent.message_id.present?
+      end
+
       result = ConversationServices::MessageSender.new(
         conversation: @conversation,
         channel: channel,
         content: content,
         subject: subject,
         sms_provider: sms_provider,
-        user: Current.user
+        user: Current.user,
+        reply_to_message_id: reply_to_message_id
       ).call
 
       # Всегда обновляем timeline, чтобы показать новое сообщение (даже если оно failed)

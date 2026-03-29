@@ -8,13 +8,14 @@
     '#'
   end
   form_frame_id = dom_id(current_account, dom_id(conversation, :send_message_form))
+  reply_to_message_id = local_assigns[:reply_to_message_id].presence
+  reply_preview = local_assigns[:reply_preview].presence
 %>
 <%= turbo_frame_tag form_frame_id, class: "space-y-4" do %>
 <%= form_with url: form_url,
               method: :post,
               data: { 
                 turbo_stream: true,
-                controller: "message-form",
                 action: "change->message-form#channelChanged"
               },
               class: "space-y-4" do |f| %>
@@ -65,6 +66,16 @@
     <%= f.text_field :subject,
         class: "w-full px-3 py-2 border border-gray-300 rounded-md text-sm",
         placeholder: "Введите тему письма" %>
+  </div>
+
+  <%= f.hidden_field :reply_to_message_id, value: reply_to_message_id || "" %>
+  <div class="text-sm text-violet-700 flex items-center justify-between gap-2 rounded-md border border-violet-200 bg-violet-50 px-3 py-2 <%= 'hidden' unless reply_to_message_id %>">
+    <span class="min-w-0 truncate"><%= reply_to_message_id ? "Ответ на: #{reply_preview}" : "" %></span>
+    <%= link_to "×",
+        conversation_reply_to_path(current_account, conversation, message_id: nil),
+        data: { turbo_frame: form_frame_id },
+        class: "shrink-0 text-violet-600 hover:text-violet-800 text-xs no-underline",
+        title: "Отменить ответ" %>
   </div>
 
   <div>

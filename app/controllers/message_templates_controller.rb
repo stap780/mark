@@ -127,6 +127,7 @@ class MessageTemplatesController < ApplicationController
     fake_incase = OpenStruct.new(
       id: 12345,
       display_number: 12345,
+      number: 'ORD-12345',
       status: 'in_progress',
       created_at: Time.current,
       items: [fake_item1, fake_item2]
@@ -158,6 +159,7 @@ class MessageTemplatesController < ApplicationController
     fake_incase2 = OpenStruct.new(
       id: 12346,
       display_number: 12346,
+      number: 'ORD-12346',
       status: 'in_progress',
       created_at: Time.current,
       items: [fake_item2]

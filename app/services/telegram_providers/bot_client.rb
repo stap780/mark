@@ -11,12 +11,12 @@ module TelegramProviders
     # telegram-bot-ruby возвращает Telegram::Bot::Types::Message, а не Hash с "result"
     # @param chat_id [String, Integer] ID чата
     # @param text [String] Текст сообщения
+    # @param reply_to_message_id [String, Integer, nil] Telegram message_id сообщения, на которое отвечаем
     # @return [Hash] Результат отправки с message_id
-    def send_message(chat_id:, text:)
-      response = @client.api.send_message(
-        chat_id: chat_id,
-        text: text
-      )
+    def send_message(chat_id:, text:, reply_to_message_id: nil)
+      params = { chat_id: chat_id, text: text }
+      params[:reply_to_message_id] = reply_to_message_id if reply_to_message_id.present?
+      response = @client.api.send_message(params)
       # Гем возвращает Telegram::Bot::Types::Message, у него есть message_id и chat.id
       {
         ok: true,

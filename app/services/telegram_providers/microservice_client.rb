@@ -40,15 +40,19 @@ module TelegramProviders
     end
 
     # Отправка сообщения
-    def send_message(recipient:, text:)
+    # @param reply_to_message_id [String, Integer, nil] опционально — если микросервис поддерживает ответ в чате
+    def send_message(recipient:, text:, reply_to_message_id: nil)
       Rails.logger.info "MicroserviceClient sending message to #{recipient} via #{base_url}/api/v1/messages/send"
       
+      body = {
+        recipient: recipient,
+        text: text
+      }
+      body[:reply_to_message_id] = reply_to_message_id if reply_to_message_id.present?
+
       response = @http_client.post('/api/v1/messages/send') do |req|
         req.headers['X-Account-Id'] = @account.id.to_s
-        req.body = {
-          recipient: recipient,
-          text: text
-        }
+        req.body = body
       end
       
       Rails.logger.info "MicroserviceClient response status: #{response.status}, body: #{response.body.inspect}"

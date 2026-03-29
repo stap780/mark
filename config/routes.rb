@@ -158,6 +158,7 @@ Rails.application.routes.draw do
 
     resources :conversations, only: [:index, :show, :new, :create] do
       member do
+        get :reply_to
         post :send_message
         patch :close
         patch :reopen
@@ -173,6 +174,7 @@ Rails.application.routes.draw do
       resources :varbinds
       resource :conversation, only: [:show], controller: 'conversations' do
         member do
+          get :reply_to
           post :send_message
         end
       end

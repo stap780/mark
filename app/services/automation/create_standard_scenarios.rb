@@ -29,7 +29,7 @@ module Automation
       template = find_or_create_template(
         title: "Сценарий 1: Подтверждение заказа",
         channel: "email",
-        subject: 'Ваш заказ #{{incase.display_number}} принят',
+        subject: 'Ваш заказ #{{incase.id}} принят',
         content: '<!DOCTYPE html>
 <html>
   <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif; font-size: 14px; color: #111827; margin: 0; padding: 0;">
@@ -37,7 +37,7 @@ module Automation
       <h1 style="font-size: 20px; margin: 0 0 16px; color: #111827;">Спасибо за ваш заказ</h1>
 
       <p style="margin: 0 0 12px;">Здравствуйте, {{ client.name }}!</p>
-      <p style="margin: 0 0 16px;">Ваш заказ №{{ incase.display_number }} принят в обработку. Ниже список товаров:</p>
+      <p style="margin: 0 0 16px;">Ваш заказ №{{ incase.id }} принят в обработку. Ниже список товаров:</p>
 
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
         <thead>
@@ -95,7 +95,7 @@ module Automation
       template = find_or_create_template(
         title: "Сценарий 2: Подтверждение предзаказа",
         channel: "email",
-        subject: 'Ваш предзаказ #{{incase.display_number}} принят',
+        subject: 'Ваш предзаказ #{{incase.id}} принят',
         content: '<!DOCTYPE html>
 <html>
   <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif; font-size: 14px; color: #111827; margin: 0; padding: 0;">
@@ -103,7 +103,7 @@ module Automation
       <h1 style="font-size: 20px; margin: 0 0 16px; color: #111827;">Спасибо за ваш предзаказ</h1>
 
       <p style="margin: 0 0 12px;">Здравствуйте, {{ client.name }}!</p>
-      <p style="margin: 0 0 16px;">Ваш предзаказ №{{ incase.display_number }} принят. Мы уведомим вас, когда товар появится в наличии. Ниже список товаров:</p>
+      <p style="margin: 0 0 16px;">Ваш предзаказ №{{ incase.id }} принят. Мы уведомим вас, когда товар появится в наличии. Ниже список товаров:</p>
 
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
         <thead>

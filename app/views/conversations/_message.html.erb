@@ -1,5 +1,15 @@
 <%= turbo_frame_tag dom_id(current_account, dom_id(conversation, dom_id(message))), class: "flex #{message.outgoing? ? 'justify-end' : 'justify-start'}" do %>
   <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg <%= message.outgoing? ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' %>">
+    <% if message.telegram? && message.replied_to_message_id.present? %>
+      <% parent_msg = conversation.messages.find_by(message_id: message.replied_to_message_id) %>
+      <div class="text-xs opacity-90 mb-2 border-l-2 border-current/40 pl-2">
+        <% if parent_msg %>
+          ↪ <%= truncate(parent_msg.content.to_s, length: 80) %>
+        <% else %>
+          ↪ Ответ
+        <% end %>
+      </div>
+    <% end %>
     <% if message.email? && message.subject.present? %>
       <div class="font-semibold mb-1 text-sm">
         <%= message.subject %>
@@ -8,7 +18,7 @@
     <div class="text-sm">
       <%= simple_format(message.content) %>
     </div>
-    <div class="flex items-center justify-between mt-2 text-xs opacity-75">
+    <div class="flex items-center justify-between mt-2 text-xs opacity-75 gap-2">
       <span>
         <%= case message.channel
             when 'telegram' then '📱 Telegram'
@@ -17,8 +27,19 @@
             else message.channel
             end %>
       </span>
-      <span class="ml-2">
+      <span class="flex items-center gap-1 shrink-0">
         <%= l(message.created_at, format: :short) %>
+        <% if message.telegram? %>
+          <%= link_to conversation_reply_to_path(current_account, conversation, message_id: message.id),
+              data: { turbo_frame: dom_id(current_account, dom_id(conversation, :send_message_form)) },
+              class: "p-1 rounded hover:bg-black/10 focus:outline-none focus:ring-1 focus:ring-current inline-flex",
+              title: "Ответить",
+              aria: { label: "Ответить" } do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/>
+            </svg>
+          <% end %>
+        <% end %>
       </span>
     </div>
     <% if message.status == 'failed' && message.error_message.present? %>

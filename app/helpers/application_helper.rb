@@ -227,6 +227,18 @@ module ApplicationHelper
   end
 
 
+  # Ссылка для Turbo Frame формы отправки: выбор/сброс ответа на сообщение (GET → HTML с тем же turbo_frame).
+  def conversation_reply_to_path(current_account, conversation, message_id: nil)
+    opts = message_id.present? ? { message_id: message_id } : {}
+    if conversation.persisted?
+      reply_to_account_conversation_path(current_account, conversation, **opts)
+    elsif conversation.client_id.present?
+      reply_to_account_client_conversation_path(current_account, conversation.client, **opts)
+    else
+      "#"
+    end
+  end
+
   # Change the default link renderer for will_paginate
   def will_paginate(collection_or_options = nil, options = {})
     if collection_or_options.is_a? Hash
