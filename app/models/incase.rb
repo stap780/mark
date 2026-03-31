@@ -106,11 +106,11 @@ class Incase < ApplicationRecord
   end
 
   def trigger_create_events
-    Automation::Engine.call(account: account, event: "incase.created", object: self)
+    AutomationIncaseEventJob.perform_later(account_id: account_id, incase_id: id, event: "incase.created")
   end
 
   def trigger_update_events
-    Automation::Engine.call(account: account, event: "incase.updated", object: self)
+    AutomationIncaseEventJob.perform_later(account_id: account_id, incase_id: id, event: "incase.updated")
   end
 end
 
