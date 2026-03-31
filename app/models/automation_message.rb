@@ -47,43 +47,35 @@ class AutomationMessage < ApplicationRecord
 
   # Проверяет статус доставки этого сообщения.
   # Обновляет статус AutomationMessage на основе ответа Mailganer.
+  #
+  # Сначала вызывается Mailganer.check_extended_delivery_status_for (status_extended + ext_status):
+  # из цепочки событий берётся самое позднее — чтобы «open»/«click» не терялись за первым «delivered».
+  # Если расширенный ответ пустой или с ошибкой — запасной вариант check_delivery_status_for.
   def check_delivery_status
     if email?
       if message_id.blank? && x_track_id.blank?
         return [false, "Для этого сообщения нет данных message_id / x_track_id"]
       end
 
-      success, result = Mailganer.check_delivery_status_for(
+      success, result = Mailganer.check_extended_delivery_status_for(
         account: account,
         message_id: message_id,
         x_track_id: x_track_id
       )
 
-      return [success, result] unless success
+      needs_fallback = !success || (result.is_a?(Hash) && result[:status].to_s.blank?)
 
-      # Обновляем статус AutomationMessage на основе статуса из Mailganer
-      if result.is_a?(Hash) && result[:status].present?
-        mailganer_status = result[:status].to_s.downcase
-        new_status = MAILGANER_STATUS_MAPPING[mailganer_status]
-        
-        if new_status && status != new_status
-          update_attrs = { status: new_status }
-          
-          # Устанавливаем sent_at при изменении статуса на 'sent'
-          if new_status == 'sent' && sent_at.nil?
-            update_attrs[:sent_at] = result[:created_at] || Time.current
-          end
-          
-          # Устанавливаем delivered_at при изменении статуса на 'delivered'
-          if new_status == 'delivered' && delivered_at.nil?
-            update_attrs[:delivered_at] = result[:created_at] || Time.current
-          end
-          
-          update_columns(update_attrs)
-        end
+      if needs_fallback
+        success, result = Mailganer.check_delivery_status_for(
+          account: account,
+          message_id: message_id,
+          x_track_id: x_track_id
+        )
+        return [success, result] unless success
       end
 
-      return [success, result]
+      apply_mailganer_status_from_result(result)
+      return [true, result]
     end
 
     if sms?
@@ -149,6 +141,30 @@ class AutomationMessage < ApplicationRecord
   end
 
   private
+
+  # result: { status:, reason:, created_at:, raw: } от Mailganer
+  def apply_mailganer_status_from_result(result)
+    return unless result.is_a?(Hash) && result[:status].present?
+
+    mailganer_status = result[:status].to_s.downcase
+    new_status = MAILGANER_STATUS_MAPPING[mailganer_status]
+    return unless new_status
+    return unless self.class.statuses.key?(new_status.to_s)
+
+    return if status == new_status
+
+    update_attrs = { status: new_status }
+
+    if new_status == "sent" && sent_at.nil?
+      update_attrs[:sent_at] = result[:created_at] || Time.current
+    end
+
+    if new_status == "delivered" && delivered_at.nil?
+      update_attrs[:delivered_at] = result[:created_at] || Time.current
+    end
+
+    update_columns(update_attrs)
+  end
 
   def trigger_automation_events
     # Генерируем событие только при переходе в финальные статусы
