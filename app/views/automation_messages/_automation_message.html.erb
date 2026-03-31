@@ -21,16 +21,7 @@
       <div class="text-sm flex items-center justify-between">
         <div><%= automation_message.channel.humanize %></div>
         <div class="mt-1">
-          <% case automation_message.status %>
-          <% when 'sent' %>
-            <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">Отправлено</span>
-          <% when 'failed' %>
-            <span class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded">Ошибка</span>
-          <% when 'pending' %>
-            <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">Ожидает</span>
-          <% when 'delivered' %>
-            <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">Доставлено</span>
-          <% end %>
+          <%= automation_message_status_badge(automation_message) %>
         </div>
         <% if automation_message.email? && (automation_message.message_id.present? || automation_message.x_track_id.present?) %>
           <%= link_to check_status_account_automation_message_path(current_account, automation_message), data: {turbo_stream: true, turbo_prefetch: false},
