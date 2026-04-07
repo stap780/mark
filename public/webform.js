@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.3.9
+ * Версия: 1.4.0
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.3.9";
+      this.version = "1.4.0";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -772,8 +772,12 @@
     showForm(webform, eventData = {}) {
       this.debugLog(`[showForm] Showing form for webform ${webform.id} (${webform.kind})`, eventData);
       const html = this.generateFormHTML(webform, eventData);
+      const settings = webform.settings || {};
+      const displayMode = (webform.display && webform.display.mode) || settings.display_mode || 'modal';
+      const isBar = displayMode === 'bar_top' || displayMode === 'bar_bottom';
+
       const overlay = document.createElement('div');
-      overlay.className = 'webform-overlay';
+      overlay.className = isBar ? 'twc-webform-bar-root' : 'webform-overlay';
       overlay.innerHTML = html;
       document.body.appendChild(overlay);
 
@@ -783,12 +787,14 @@
         closeBtn.addEventListener('click', () => overlay.remove());
       }
       const wrapper = overlay.querySelector('.webform-wrapper');
-      overlay.addEventListener('click', (e) => {
-        // Закрываем модальное окно, если клик был вне webform-wrapper
-        if (e.target === overlay || (wrapper && !wrapper.contains(e.target))) {
-          overlay.remove();
-        }
-      });
+      if (!isBar && wrapper) {
+        overlay.addEventListener('click', (e) => {
+          // Закрываем модальное окно, если клик был вне webform-wrapper
+          if (e.target === overlay || (wrapper && !wrapper.contains(e.target))) {
+            overlay.remove();
+          }
+        });
+      }
 
       // Применяем маску для полей телефона
       this.applyPhoneMasks(overlay);
@@ -1194,7 +1200,7 @@
         if (successMessage) {
           successMessage.style.display = 'block';
           form.reset();
-          if (overlay.classList.contains('webform-overlay')) {
+          if (overlay.classList.contains('webform-overlay') || overlay.classList.contains('twc-webform-bar-root')) {
             setTimeout(() => overlay.remove(), 2000);
           } else {
             setTimeout(() => { successMessage.style.display = 'none'; }, 5000);
@@ -1209,9 +1215,10 @@
       const inline = options.inline === true;
       const settings = webform.settings || {};
       const fields = webform.fields || [];
+      let displayMode = (webform.display && webform.display.mode) || settings.display_mode || 'modal';
 
       // Стили формы (значения уже содержат 'px' из schema)
-      const formStyles = {
+      let formStyles = {
         width: '100%',
         maxWidth: settings.width || '530px',
         fontSize: settings.font_size || '14px',
@@ -1338,11 +1345,24 @@
         // Обработка разных типов полей
         if (field.type === 'button') {
           const buttonStyle = `${styleString}; background: ${fieldSettings.background_color || '#ffffff'}`;
-          fieldsHTML += `
+          const behavior = fieldSettings.button_behavior || 'submit';
+          const href = (fieldSettings.button_href || '').trim();
+          const targetBlank = fieldSettings.button_link_target === '_blank';
+          const targetAttr = targetBlank ? ' target="_blank" rel="noopener noreferrer"' : '';
+          const linkBaseStyle = `${buttonStyle}; display: inline-block; text-align: center; text-decoration: none; box-sizing: border-box; cursor: pointer;`;
+          if (behavior === 'link' && href && !/^javascript:/i.test(href)) {
+            fieldsHTML += `
+            <a href="${href}"${targetAttr} class="twc-webform-link-button" style="${linkBaseStyle}">
+              ${field.label}
+            </a>
+          `;
+          } else {
+            fieldsHTML += `
             <button type="submit" name="${field.name}" style="${buttonStyle}">
               ${field.label}
             </button>
           `;
+          }
         } else if (field.type === 'text') {
           // Для типа 'text' используем input type="text"
           const placeholder = fieldSettings.placeholder || field.label;
@@ -1432,6 +1452,13 @@
       // Определяем grid стили для webform-container
       const hasLeft = leftImages.length > 0;
       const hasRight = rightImages.length > 0;
+      if ((displayMode === 'bar_top' || displayMode === 'bar_bottom') && (hasLeft || hasRight)) {
+        this.debugLog('[generateFormHTML] Bar mode with side column images is not supported; using modal.');
+        displayMode = 'modal';
+      }
+      if (displayMode === 'bar_top' || displayMode === 'bar_bottom') {
+        formStyles.maxWidth = '100%';
+      }
       let gridStyle = '';
       
       if (hasLeft || hasRight) {
@@ -1472,8 +1499,23 @@
         />
       `;
 
-      const closeButtonHTML = inline ? '' : `
-              <button class="webform-close" style="
+      const closeButtonHTML = inline ? '' : (
+        (displayMode === 'bar_top' || displayMode === 'bar_bottom')
+          ? `
+              <button type="button" class="webform-close" style="
+                position: absolute;
+                top: 6px;
+                right: 10px;
+                background: none;
+                border: none;
+                font-size: 20px;
+                line-height: 1;
+                cursor: pointer;
+                z-index: 2;
+              ">&times;</button>
+              `
+          : `
+              <button type="button" class="webform-close" style="
                 position: absolute;
                 top: 10px;
                 right: 10px;
@@ -1483,7 +1525,8 @@
                 cursor: pointer;
                 z-index: 2;
               ">&times;</button>
-              `;
+              `
+      );
 
       const previewDiv = `
             <div class="twc-webform-preview" style="
@@ -1520,6 +1563,37 @@
 
       if (inline) {
         return wrapperHTML;
+      }
+
+      if (displayMode === 'bar_top' || displayMode === 'bar_bottom') {
+        const isTop = displayMode === 'bar_top';
+        const barZ = (webform.display && webform.display.bar_z_index) || 10050;
+        const barPadY = settings.padding_y || '12px';
+        const barBg = settings.background_color || '#f5f5f5';
+        return `
+        <div class="twc-webform-bar-shell" style="
+          position: fixed;
+          ${isTop ? 'top: 0;' : 'bottom: 0;'}
+          left: 0;
+          right: 0;
+          z-index: ${barZ};
+          background: ${barBg};
+          padding: ${barPadY} 16px;
+          box-shadow: 0 ${isTop ? '2px' : '-2px'} 8px rgba(0,0,0,0.12);
+        ">
+          <div class="twc-webform-bar-row" style="
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+          ">
+            ${wrapperHTML}
+          </div>
+        </div>
+      `;
       }
 
       return `

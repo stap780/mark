@@ -25,9 +25,25 @@ module WebformSettings
     'image_object_fit' => 'cover'  # contain, cover, fill, none
   }.freeze
 
+  # Только для Webform (контейнер формы): режим модалки или полосы сверху/снизу
+  WEBFORM_DISPLAY_DEFAULTS = {
+    'display_mode' => 'modal',
+    'bar_z_index' => 10_050
+  }.freeze
+
+  # Поле типа button: отправка формы или ссылка
+  BUTTON_DEFAULT = {
+    'button_behavior' => 'submit',
+    'button_href' => '',
+    'button_link_target' => '_self'
+  }.freeze
+
   def default_settings
     settings = DEFAULT.dup
-    # Если это WebformField с типом image, добавляем специальные настройки
+    settings.merge!(WEBFORM_DISPLAY_DEFAULTS) if self.is_a?(Webform)
+    if self.is_a?(WebformField) && self.field_type == 'button'
+      settings.merge!(BUTTON_DEFAULT)
+    end
     if self.is_a?(WebformField) && self.field_type == 'image'
       settings.merge!(IMAGE_DEFAULT)
     end

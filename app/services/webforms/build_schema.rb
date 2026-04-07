@@ -13,13 +13,18 @@ module Webforms
 
     def call
       merged_settings = @webform.merge_with_defaults(@webform.settings)
-      
+      normalized = normalize_settings(merged_settings)
+
       {
         id: @webform.id,
         title: @webform.title,
         kind: @webform.kind,
         status: @webform.status,
-        settings: normalize_settings(merged_settings),
+        settings: normalized,
+        display: {
+          mode: normalized['display_mode'].presence || 'modal',
+          bar_z_index: (normalized['bar_z_index'] || 10_050).to_i
+        },
         fields: @webform.webform_fields.order(:position).map { |f| serialize_field(f) },
         # Настройки триггеров теперь берём из отдельных колонок webforms
         trigger: {
