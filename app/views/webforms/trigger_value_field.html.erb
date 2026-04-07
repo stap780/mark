@@ -18,9 +18,9 @@
     </div>
   <% elsif ['time_on_page', 'scroll_depth'].include?(@trigger_type) %>
     <div>
-      <%= label_tag "webform_settings_trigger_value", "Значение", class: "block text-sm font-medium text-gray-700" %>
-      <%= number_field_tag "webform[settings][trigger_value]",
-          @webform.settings&.dig('trigger_value'),
+      <%= label_tag "webform_trigger_value", "Значение", class: "block text-sm font-medium text-gray-700" %>
+      <%= number_field_tag "webform[trigger_value]",
+          @webform.trigger_value,
           placeholder: @trigger_type == 'time_on_page' ? '30 (секунды)' : '75 (проценты)',
           class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 px-3 py-2.5" %>
       <p class="mt-1 text-sm text-gray-500">
