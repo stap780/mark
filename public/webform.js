@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.4.0
+ * Версия: 1.5.0
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.4.0";
+      this.version = "1.5.0";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -538,15 +538,14 @@
       // Проверка cookie (для show_frequency_days)
       const cookieValue = this.getCookie(cookieName);
       if (cookieValue) {
-        // Если настроен лимит показов (max_shows) и мы его не достигли,
-        // НЕ блокируем показ по одной только cookie.
-        if (trigger.max_shows) {
+        // Если настроен лимит показов (max_shows > 0) и счётчик не достиг лимита — можно показать снова.
+        // max_shows === 0 («Без ограничений») — лимита по счётчику нет: любая сохранённая cookie блокирует.
+        if (trigger.max_shows > 0) {
           const count = this.getShowCount(cookieValue);
           if (count >= trigger.max_shows) {
             this.debugLog(`[shouldShowForm] Max shows reached (${count}/${trigger.max_shows}) for form ${webform.id}`);
             return true;
           } else {
-            // Можно показывать ещё раз
             return false;
           }
         }
@@ -559,10 +558,16 @@
     showFormWithDelay(webform, trigger) {
       const delay = trigger.show_delay || 0;
       this.debugLog(`[showFormWithDelay] Showing form ${webform.id} with delay ${delay}ms`);
-      
+      const deferSaveUntilAction =
+        trigger.type === 'time_on_page' || trigger.type === 'scroll_depth';
+
       setTimeout(() => {
-        this.showForm(webform, {});
-        this.saveFormShown(webform, trigger);
+        if (deferSaveUntilAction) {
+          this.showForm(webform, { deferSaveShownUntilAction: true, trigger });
+        } else {
+          this.showForm(webform, {});
+          this.saveFormShown(webform, trigger);
+        }
       }, delay);
     }
     
@@ -583,11 +588,21 @@
       if (trigger.show_frequency_days) {
         const expires = new Date(Date.now() + trigger.show_frequency_days * 24 * 60 * 60 * 1000);
         document.cookie = `${cookieName}=${value}; expires=${expires.toUTCString()}; path=/`;
-      } else if (!trigger.show_once_per_session || trigger.max_shows) {
-        // Если нет ограничений по дням, но есть show_times или выключен show_once_per_session,
-        // сохраняем cookie без срока.
+      } else if (!trigger.show_once_per_session || trigger.max_shows != null) {
+        // В т.ч. max_shows === 0 («Без ограничений»): после закрытия/отправки нужна cookie, а не только sessionStorage.
         document.cookie = `${cookieName}=${value}; path=/`;
       }
+    }
+
+    /**
+     * Для time_on_page / scroll_depth: saveFormShown вызывается только после закрытия или успешной отправки.
+     * Защита от двойного вызова (submit + закрытие).
+     */
+    persistDeferredShownSave(webform, eventData, overlay) {
+      if (!eventData.deferSaveShownUntilAction || !eventData.trigger) return;
+      if (!overlay || overlay._twcShownPersisted) return;
+      overlay._twcShownPersisted = true;
+      this.saveFormShown(webform, eventData.trigger);
     }
     
     getCookie(name) {
@@ -784,13 +799,16 @@
       // Обработка закрытия формы
       const closeBtn = overlay.querySelector('.webform-close');
       if (closeBtn) {
-        closeBtn.addEventListener('click', () => overlay.remove());
+        closeBtn.addEventListener('click', () => {
+          this.persistDeferredShownSave(webform, eventData, overlay);
+          overlay.remove();
+        });
       }
       const wrapper = overlay.querySelector('.webform-wrapper');
       if (!isBar && wrapper) {
         overlay.addEventListener('click', (e) => {
-          // Закрываем модальное окно, если клик был вне webform-wrapper
           if (e.target === overlay || (wrapper && !wrapper.contains(e.target))) {
+            this.persistDeferredShownSave(webform, eventData, overlay);
             overlay.remove();
           }
         });
@@ -1196,6 +1214,7 @@
 
       // Отправка на API
       this.sendToAPI(webform.id, clientData, items, number, customFields).then(() => {
+        this.persistDeferredShownSave(webform, eventData, overlay);
         const successMessage = overlay.querySelector('.webform-success-message');
         if (successMessage) {
           successMessage.style.display = 'block';
