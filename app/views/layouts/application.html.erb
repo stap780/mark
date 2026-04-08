@@ -103,12 +103,7 @@
                 
                 <div data-accordion-target="content" class="hidden ml-4 space-y-1">
                   <%= link_to_sidebar t('menu.incase_statuses'), account_incase_statuses_path(current_account), active_if: '/incase_statuses' %>
-                  <%= link_to_sidebar t('menu.insales'), account_insales_path(current_account), active_if: '/insales' %>
                   <%= link_to_sidebar t('menu.stock_check_schedule'), account_stock_check_schedules_path(current_account), active_if: '/stock_check_schedules' if show_link?('stock_check_schedule') %>
-                  <%= link_to_sidebar t('menu.telegram'), account_telegram_setups_path(current_account), active_if: '/telegram_setups' %>
-                  <%= link_to_sidebar t('menu.mailganer'), account_mailganers_path(current_account), active_if: '/mailganers' if show_link?('mailganer') %>
-                  <%= link_to_sidebar t('menu.idgtl'), account_idgtls_path(current_account), active_if: '/idgtls' if show_link?('idgtl') %>
-                  <%= link_to_sidebar t('menu.moizvonki'), account_moizvonkis_path(current_account), active_if: '/moizvonkis' if show_link?('moizvonki') %>
                   <%= link_to_sidebar t('menu.users'), account_users_path(current_account), active_if: '/users' %>
                   <%= link_to_sidebar t('subscriptions.subscriptions'), account_subscriptions_path(current_account), active_if: '/subscriptions' unless current_account.partner? %>
                   <%= link_to_sidebar t('payments.payments'), account_payments_path(current_account), active_if: '/payments' unless current_account.partner? %>
@@ -116,6 +111,28 @@
               </div>
 
             <% end %>
+            <% active_settings = ['/insales','/stock_check_schedules','/email_setups','/mailganers','/idgtls','/moizvonkis','/telegram_setups','/insale_status_mappings'].any? { |path| request.path.include?(path) } %>
+            <div data-controller="accordion"
+                data-accordion-open-value="<%= active_settings %>">
+              <button type="button" data-action="click->accordion#toggle"
+                      class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white <%= hover_class %> mb-1 cursor-pointer <%= active_class if active_settings %>">
+                <span class="truncate">Интеграции</span>
+                <svg data-accordion-target="arrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              
+              <div data-accordion-target="content" class="hidden ml-4 space-y-1">
+                <%= link_to_sidebar t('menu.insales'), account_insales_path(current_account), active_if: '/insales' %>
+                <%= link_to_sidebar t('menu.stock_check_schedule'), account_stock_check_schedules_path(current_account), active_if: '/stock_check_schedules' if show_link?('stock_check_schedule') %>
+                <%= link_to_sidebar t('menu.telegram'), account_telegram_setups_path(current_account), active_if: '/telegram_setups' %>
+                <%= link_to_sidebar t('menu.mailganer'), account_mailganers_path(current_account), active_if: '/mailganers' if show_link?('mailganer') %>
+                <%= link_to_sidebar t('menu.idgtl'), account_idgtls_path(current_account), active_if: '/idgtls' if show_link?('idgtl') %>
+                <%= link_to_sidebar t('menu.moizvonki'), account_moizvonkis_path(current_account), active_if: '/moizvonkis' if show_link?('moizvonki') %>
+              </div>
+            </div>
+
+          <% end %>
 
           </nav>
         </div>
