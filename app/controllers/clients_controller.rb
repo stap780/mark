@@ -89,14 +89,24 @@ class ClientsController < ApplicationController
   end
 
   def destroy
-    @client.destroy!
-
+    check_destroy = @client.destroy ? true : false
+    if check_destroy == true
+      flash.now[:success] = t(".success")
+    else
+      flash.now[:notice] = @client.errors.full_messages.join(" ")
+    end
     respond_to do |format|
-      flash.now[:success] = t('.success')
       format.turbo_stream do
-        render turbo_stream: [
-          render_turbo_flash
-        ]
+        if check_destroy == true
+          render turbo_stream: [
+            turbo_stream.remove(dom_id(current_account, dom_id(@client))),
+            render_turbo_flash
+          ]
+        else
+          render turbo_stream: [
+            render_turbo_flash
+          ]
+        end
       end
       format.html { redirect_to account_clients_path(current_account), notice: t('.success'), status: :see_other }
       format.json { head :no_content }

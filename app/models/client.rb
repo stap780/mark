@@ -12,6 +12,8 @@ class Client < ApplicationRecord
 
   validates :name, presence: true
 
+  before_destroy :check_incases_dependency
+
   # Метод для получения заявок со статусом in_progress и типом notify
   # Используется в IncaseNotifyGroupByClient для отправки уведомлений
   def incases_for_notify
@@ -40,9 +42,9 @@ class Client < ApplicationRecord
                         locals: { client: self, current_account: account }
   end
 
-  after_destroy_commit do
-    broadcast_remove_to dom_id(account, :clients), target: dom_id(self, dom_id(account))
-  end
+  # after_destroy_commit do
+  #   broadcast_remove_to dom_id(account, :clients), target: dom_id(self, dom_id(account))
+  # end
 
 
   def self.ransackable_attributes(auth_object = nil)
@@ -62,9 +64,6 @@ class Client < ApplicationRecord
   scope :no_response_after_3, -> {
     no_response_after(3)
   }
-
-
-
 
   def insale_api_update
     ok, msg = account.insales.first.api_work?
@@ -183,5 +182,14 @@ class Client < ApplicationRecord
       .where('conversations.last_outgoing_at < ?', days.days.ago)
       .where('conversations.last_incoming_at IS NULL OR conversations.last_outgoing_at > conversations.last_incoming_at')
   }
+
+  private
+
+  def check_incases_dependency
+    return unless incases.exists?
+
+    errors.add(:base, "Удалить клиента нельзя, так как есть #{incases.count} заявок с ним.")
+    throw(:abort)
+  end
 
 end

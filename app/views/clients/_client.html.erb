@@ -1,4 +1,4 @@
-<%= turbo_frame_tag dom_id(client, dom_id(current_account)), class: "grid grid-cols-[50px_40px_1fr_200px_150px_200px] gap-4 p-4 items-center" do %>
+<%= turbo_frame_tag dom_id(current_account, dom_id(client)), class: "grid grid-cols-[50px_40px_1fr_200px_150px_200px] gap-4 p-4 items-center" do %>
   <div class="truncate"><%= client.id %></div>
   <div>
     <%= link_to insales_info_account_client_path(current_account, client),
@@ -17,6 +17,6 @@
     <%# link_to_conv conversations_account_client_path(current_account, client), data: { turbo_frame: "offcanvas", turbo_prefetch: false }, title: t('.conv_title') %>
     <%= link_to_show account_client_path(current_account, client), data: { turbo: false } %>
     <%= link_to_edit edit_account_client_path(current_account, client), data: { turbo_frame: "offcanvas", turbo_prefetch: false } %>
-    <%= link_to_delete account_client_path(current_account, client), data: { turbo_confirm: t('.delete_confirm') } %>
+    <%= link_to_delete account_client_path(current_account, client), data: { turbo_method: :delete, turbo_confirm: t('.delete_confirm') } %>
   </div>
 <% end %>
