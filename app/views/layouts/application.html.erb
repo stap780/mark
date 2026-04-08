@@ -54,10 +54,7 @@
               <%= link_to_sidebar t('menu.users'), admin_users_path, active_if: '/admin/users' %>
               <%= link_to_sidebar t('admin.plans.plans'), admin_plans_path, active_if: '/admin/plans' %>
               <%= link_to_sidebar t('payments.payments'), admin_payments_path, active_if: '/admin/payments' %>
-              
-              <% if respond_to?(:admin_jobs_path) %>
-                <%= link_to_sidebar t(:jobs), admin_jobs_path, active_if: '/admin/jobs', data: { turbo: false } %>
-              <% end %>
+              <%= link_to_sidebar t(:jobs), admin_jobs_path, active_if: '/admin/jobs', data: { turbo: false } if respond_to?(:admin_jobs_path) %>
 
             <% else %>
 
@@ -66,14 +63,27 @@
               <%= link_to_sidebar t('menu.conversations'), account_conversations_path(current_account), active_if: '/conversations' if show_link?('conversations') %>
               <%= link_to_sidebar t('menu.clients'), account_clients_path(current_account), active_if: '/clients' if show_link?('clients') %>
               <%= link_to_sidebar t('menu.products'), account_products_path(current_account), active_if: '/products' %>
-              <%= link_to_sidebar t('menu.discounts'), account_discounts_path(current_account), active_if: '/discounts' if show_link?('discounts') %>
-              <%= link_to_sidebar t('menu.lists'), account_lists_path(current_account), active_if: '/lists' if show_link?('lists') %>
-              <%= link_to_sidebar t('menu.swatches'), account_swatch_groups_path(current_account), active_if: '/swatch_groups' if show_link?('swatches') %>
-              <%= link_to_sidebar t('menu.webforms'), account_webforms_path(current_account), active_if: '/webforms' if show_link?('webforms') %>
+
+              <% active_services = ['/discounts', '/lists', '/swatch_groups', '/webforms'].any? { |path| request.path.include?(path) } %>
+              <div data-controller="accordion" data-accordion-open-value="<%= active_services %>">
+                <button type="button" data-action="click->accordion#toggle"
+                        class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white <%= hover_class %> mb-1 cursor-pointer <%= active_class if active_services %>">
+                  <span class="truncate">Сервисы</span>
+                  <svg data-accordion-target="arrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                <div data-accordion-target="content" class="hidden ml-4 space-y-1">
+                  <%= link_to_sidebar t('menu.discounts'), account_discounts_path(current_account), active_if: '/discounts' if show_link?('discounts') %>
+                  <%= link_to_sidebar t('menu.lists'), account_lists_path(current_account), active_if: '/lists' if show_link?('lists') %>
+                  <%= link_to_sidebar t('menu.swatches'), account_swatch_groups_path(current_account), active_if: '/swatch_groups' if show_link?('swatches') %>
+                  <%= link_to_sidebar t('menu.webforms'), account_webforms_path(current_account), active_if: '/webforms' if show_link?('webforms') %>
+                </div>
+              </div>
+              
               <% if show_link?('automation_rules') %>
                 <% active_automation = ['/automation_rules', '/message_templates', '/automation_messages'].any? { |path| request.path.include?(path) } %>
-                <div data-controller="accordion" 
-                    data-accordion-open-value="<%= active_automation %>">
+                <div data-controller="accordion" data-accordion-open-value="<%= active_automation %>">
                   <button type="button" data-action="click->accordion#toggle"
                           class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white <%= hover_class %> mb-1 cursor-pointer <%= active_class if active_automation %>">
                     <span class="truncate"><%= t('menu.automation') %></span>
@@ -81,7 +91,6 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                   </button>
-                  
                   <div data-accordion-target="content" class="hidden ml-4 space-y-1">
                     <%= link_to_sidebar t('menu.automation_rules'), account_automation_rules_path(current_account), active_if: '/automation_rules' %>
                     <%= link_to_sidebar t('menu.message_templates'), account_message_templates_path(current_account), active_if: '/message_templates' %>
@@ -90,9 +99,8 @@
                 </div>
               <% end %>
 
-              <% active_settings = ['/insales','/stock_check_schedules','/users','/subscription','/payments','/email_setups','/mailganers','/idgtls','/moizvonkis','/telegram_setups','/insale_status_mappings','/incase_statuses'].any? { |path| request.path.include?(path) } %>
-              <div data-controller="accordion"
-                  data-accordion-open-value="<%= active_settings %>">
+              <% active_settings = ['/incase_statuses','/stock_check_schedules','/users','/subscription','/payments','/email_setups'].any? { |path| request.path.include?(path) } %>
+              <div data-controller="accordion" data-accordion-open-value="<%= active_settings %>">
                 <button type="button" data-action="click->accordion#toggle"
                         class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white <%= hover_class %> mb-1 cursor-pointer <%= active_class if active_settings %>">
                   <span class="truncate"><%= t(:settings) %></span>
@@ -100,7 +108,6 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                   </svg>
                 </button>
-                
                 <div data-accordion-target="content" class="hidden ml-4 space-y-1">
                   <%= link_to_sidebar t('menu.incase_statuses'), account_incase_statuses_path(current_account), active_if: '/incase_statuses' %>
                   <%= link_to_sidebar t('menu.stock_check_schedule'), account_stock_check_schedules_path(current_account), active_if: '/stock_check_schedules' if show_link?('stock_check_schedule') %>
@@ -110,30 +117,25 @@
                 </div>
               </div>
 
-            <% end %>
-            <% active_settings = ['/insales','/stock_check_schedules','/email_setups','/mailganers','/idgtls','/moizvonkis','/telegram_setups','/insale_status_mappings'].any? { |path| request.path.include?(path) } %>
-            <div data-controller="accordion"
-                data-accordion-open-value="<%= active_settings %>">
-              <button type="button" data-action="click->accordion#toggle"
-                      class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white <%= hover_class %> mb-1 cursor-pointer <%= active_class if active_settings %>">
-                <span class="truncate">Интеграции</span>
-                <svg data-accordion-target="arrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-              </button>
-              
-              <div data-accordion-target="content" class="hidden ml-4 space-y-1">
-                <%= link_to_sidebar t('menu.insales'), account_insales_path(current_account), active_if: '/insales' %>
-                <%= link_to_sidebar t('menu.stock_check_schedule'), account_stock_check_schedules_path(current_account), active_if: '/stock_check_schedules' if show_link?('stock_check_schedule') %>
-                <%= link_to_sidebar t('menu.telegram'), account_telegram_setups_path(current_account), active_if: '/telegram_setups' %>
-                <%= link_to_sidebar t('menu.mailganer'), account_mailganers_path(current_account), active_if: '/mailganers' if show_link?('mailganer') %>
-                <%= link_to_sidebar t('menu.idgtl'), account_idgtls_path(current_account), active_if: '/idgtls' if show_link?('idgtl') %>
-                <%= link_to_sidebar t('menu.moizvonki'), account_moizvonkis_path(current_account), active_if: '/moizvonkis' if show_link?('moizvonki') %>
+              <% active_integrations = ['/insales','/mailganers','/idgtls','/moizvonkis','/telegram_setups','/insale_status_mappings'].any? { |path| request.path.include?(path) } %>
+              <div data-controller="accordion" data-accordion-open-value="<%= active_integrations %>">
+                <button type="button" data-action="click->accordion#toggle"
+                        class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white <%= hover_class %> mb-1 cursor-pointer <%= active_class if active_integrations %>">
+                  <span class="truncate">Интеграции</span>
+                  <svg data-accordion-target="arrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                <div data-accordion-target="content" class="hidden ml-4 space-y-1">
+                  <%= link_to_sidebar t('menu.insales'), account_insales_path(current_account), active_if: '/insales' %>
+                  <%= link_to_sidebar t('menu.telegram'), account_telegram_setups_path(current_account), active_if: '/telegram_setups' %>
+                  <%= link_to_sidebar t('menu.mailganer'), account_mailganers_path(current_account), active_if: '/mailganers' if show_link?('mailganer') %>
+                  <%= link_to_sidebar t('menu.idgtl'), account_idgtls_path(current_account), active_if: '/idgtls' if show_link?('idgtl') %>
+                  <%= link_to_sidebar t('menu.moizvonki'), account_moizvonkis_path(current_account), active_if: '/moizvonkis' if show_link?('moizvonki') %>
+                </div>
               </div>
-            </div>
 
-          <% end %>
-
+            <% end %>
           </nav>
         </div>
 
