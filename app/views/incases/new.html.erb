@@ -1,3 +1,11 @@
-<%= render 'shared/offcanvas_inner', title: t('incases.new.heading'), width: '28rem' do %>
-  <%= render 'incases/form', incase: @incase, active_webforms: @active_webforms, client: @client %>
+<% offcanvas_title = @webform&.title.presence || t('incases.new.heading') %>
+<% offcanvas_width = @webform.present? ? '36rem' : '28rem' %>
+<%= render 'shared/offcanvas_inner', title: offcanvas_title, width: offcanvas_width do %>
+  <%= render 'incases/form',
+      incase: @incase,
+      active_webforms: @active_webforms,
+      client: @client,
+      webform: @webform,
+      from_list: @from_list,
+      list: @list %>
 <% end %>

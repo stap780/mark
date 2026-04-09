@@ -5,31 +5,50 @@ class IncasesController < ApplicationController
 
   def new
     default_status = current_account.incase_statuses.find_by(key: "new") || current_account.incase_statuses.first
-    @incase = current_account.incases.build(client_id: params[:client_id], incase_status: default_status)
-    @active_webforms = current_account.webforms.status_active.order(:title)
     @client = current_account.clients.find_by(id: params[:client_id])
+    @webform = nil
+    if params[:webform_id].present?
+      wf = current_account.webforms.status_active.find_by(id: params[:webform_id])
+      @webform = wf if wf&.kind == "custom"
+    end
+    @incase = current_account.incases.build(
+      client_id: params[:client_id],
+      webform_id: @webform&.id,
+      incase_status: default_status,
+      custom_fields: {}
+    )
+    @from_list = false
+    @list = nil
+    if params[:list_id].present? && @client && @webform
+      @list = current_account.lists.find_by(id: params[:list_id])
+      @from_list = @list.present? && @list.list_items.where(client_id: @client.id).exists?
+    end
+    @active_webforms = current_account.webforms.status_active.where(kind: "custom").order(:title)
   end
 
   def create
     default_status = current_account.incase_statuses.find_by(key: "new") || current_account.incase_statuses.first
-    @incase = current_account.incases.build(incase_params.merge(incase_status: default_status))
+    list_id = params[:list_id].presence
+    attrs = incase_params
+    attrs = attrs.except(:items_attributes, "items_attributes") if list_id.present?
+    @incase = current_account.incases.build(attrs.merge(incase_status: default_status))
+    assign_items_from_list!(list_id) if list_id.present?
+
+    if @incase.errors.any?
+      render_incase_create_failure
+      return
+    end
+
     if @incase.save
-      flash.now[:notice] = t('.success')
+      flash.now[:notice] = t(".success")
       respond_to do |format|
         format.turbo_stream do
           render turbo_stream: turbo_close_offcanvas_flash
         end
-        format.html { redirect_to account_incase_path(current_account, @incase), notice: t('.success'), status: :see_other }
+        format.html { redirect_to account_incase_path(current_account, @incase), notice: t(".success"), status: :see_other }
       end
     else
-      @active_webforms = current_account.webforms.status_active.order(:title)
-      @client = @incase.client
-      respond_to do |format|
-        format.turbo_stream do
-          render turbo_stream: turbo_stream.replace(:new_incase_form, partial: "incases/form", locals: { incase: @incase, active_webforms: @active_webforms, client: @client }), status: :unprocessable_entity
-        end
-        format.html { render :new, status: :unprocessable_entity }
-      end
+      render_incase_create_failure
     end
   end
 
@@ -120,8 +139,69 @@ class IncasesController < ApplicationController
   end
 
   def incase_params
-    params.require(:incase).permit(:incase_status_id, :webform_id, :client_id, :number, :display_number, custom_fields: {},
+    raw = params.require(:incase)
+    permitted = raw.permit(:incase_status_id, :webform_id, :client_id, :number, :display_number,
       items_attributes: %i[id quantity price product_id variant_id _destroy])
+    cf = raw[:custom_fields]
+    permitted[:custom_fields] =
+      if cf.is_a?(ActionController::Parameters)
+        cf.to_unsafe_h
+      elsif cf.is_a?(Hash)
+        cf
+      else
+        {}
+      end
+    permitted
+  end
+
+  def assign_items_from_list!(list_id)
+    list = current_account.lists.find_by(id: list_id)
+    client = @incase.client
+    unless list && client&.account_id == current_account.id
+      @incase.errors.add(:base, t("incases.create.from_list_invalid"))
+      return
+    end
+    unless @incase.webform&.kind == "custom"
+      @incase.errors.add(:base, t("incases.create.from_list_custom_only"))
+      return
+    end
+
+    rows = Incases::BuildItemsFromListItems.call(list: list, client: client)
+    if rows.empty?
+      @incase.errors.add(:base, t("incases.create.from_list_empty"))
+      return
+    end
+
+    rows.each { |attrs| @incase.items.build(attrs) }
+  end
+
+  def render_incase_create_failure
+    @active_webforms = current_account.webforms.status_active.where(kind: "custom").order(:title)
+    @client = @incase.client
+    @webform = @incase.webform if @incase.webform&.kind == "custom"
+    @from_list = params[:list_id].present?
+    @list = @from_list ? current_account.lists.find_by(id: params[:list_id]) : nil
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          :new_incase_form,
+          partial: "incases/form",
+          locals: incase_form_locals
+        ), status: :unprocessable_entity
+      end
+      format.html { render :new, status: :unprocessable_entity }
+    end
+  end
+
+  def incase_form_locals
+    {
+      incase: @incase,
+      active_webforms: @active_webforms,
+      client: @client,
+      webform: @webform,
+      from_list: @from_list,
+      list: @list
+    }
   end
 
   def build_chart_data(scope, days)

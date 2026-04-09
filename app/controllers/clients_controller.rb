@@ -13,6 +13,7 @@ class ClientsController < ApplicationController
     @messages = @conversation ? @conversation.messages.order(created_at: :asc).last(30) : []
     @incases = @client.incases.includes(:webform, :incase_status).order(created_at: :desc).limit(20)
     @automation_messages = current_account.automation_messages.where(client: @client).order(created_at: :desc).limit(15)
+    @custom_webforms = current_account.webforms.status_active.where(kind: "custom").order(:title)
   end
 
   def conversation

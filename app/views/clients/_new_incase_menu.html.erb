@@ -1,0 +1,26 @@
+<%# locals: current_account, client, custom_webforms (optional), list (optional) %>
+<% custom_webforms ||= current_account.webforms.status_active.where(kind: "custom").order(:title) %>
+<% list = local_assigns[:list] %>
+<% if custom_webforms.any? %>
+  <div class="relative mb-3 inline-block min-w-[12rem] max-w-full" data-controller="accordion" data-accordion-open-value="false">
+    <button type="button" data-action="click->accordion#toggle"
+            class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg border border-violet-600 text-violet-600 bg-white hover:bg-violet-50 cursor-pointer">
+      <span class="truncate text-left"><%= list.present? ? t('clients.show.new_incase_from_list') : t('incases.new.heading') %></span>
+      <svg data-accordion-target="arrow" class="w-4 h-4 shrink-0 ml-2 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      </svg>
+    </button>
+    <div data-accordion-target="content"
+         class="hidden absolute left-0 top-full z-1 mt-1 min-w-[12rem] w-max max-w-[min(100vw-2rem,24rem)] space-y-0 rounded-lg border border-gray-200 bg-white py-1 shadow-md">
+      <% custom_webforms.each do |w| %>
+        <% url_params = { client_id: client.id, webform_id: w.id } %>
+        <% url_params[:list_id] = list.id if list.present? %>
+        <%= link_to w.title, new_account_incase_path(current_account, url_params),
+            data: { turbo_frame: :offcanvas, turbo_prefetch: false },
+            class: "block px-3 py-2 text-sm text-gray-700 hover:bg-violet-50 rounded-md" %>
+      <% end %>
+    </div>
+  </div>
+<% else %>
+  <p class="text-sm text-gray-500 mb-3"><%= t('clients.show.no_custom_webforms') %></p>
+<% end %>

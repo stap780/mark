@@ -1,3 +1,7 @@
+<% webform = local_assigns[:webform] %>
+<% from_list = local_assigns[:from_list] %>
+<% list = local_assigns[:list] %>
+
 <%= turbo_frame_tag :new_incase_form do %>
   <%= form_with model: incase, url: account_incases_path(current_account), data: { turbo_stream: true }, local: false, class: "space-y-4" do |f| %>
     <% if incase.errors.any? %>
@@ -6,19 +10,27 @@
       </div>
     <% end %>
 
-    <div>
-      <%= f.label :webform_id, t('incases.new.webform'), class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <% if active_webforms.any? %>
-        <%= f.collection_select :webform_id,
-            active_webforms,
-            :id,
-            ->(w) { "#{w.title} (#{w.kind})" },
-            { prompt: t('incases.new.select_webform') },
-            { class: "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm", required: true } %>
-      <% else %>
-        <p class="text-sm text-amber-600"><%= t('incases.new.no_active_webforms') %></p>
-      <% end %>
-    </div>
+    <% if webform.present? %>
+      <%= f.hidden_field :webform_id %>
+      <div>
+        <span class="block text-sm font-medium text-gray-700 mb-1"><%= t('incases.new.webform') %></span>
+        <p class="text-sm text-gray-900"><%= webform.title %></p>
+      </div>
+    <% else %>
+      <div>
+        <%= f.label :webform_id, t('incases.new.webform'), class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <% if active_webforms.any? %>
+          <%= f.collection_select :webform_id,
+              active_webforms,
+              :id,
+              ->(w) { "#{w.title} (#{w.kind})" },
+              { prompt: t('incases.new.select_webform') },
+              { class: "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm", required: true } %>
+        <% else %>
+          <p class="text-sm text-amber-600"><%= t('incases.new.no_active_webforms') %></p>
+        <% end %>
+      </div>
+    <% end %>
 
     <% if client.present? %>
       <div>
@@ -38,8 +50,20 @@
       </div>
     <% end %>
 
+    <% if webform.present? %>
+      <%= render "incases/webform_custom_fields", webform: webform, incase: incase %>
+    <% end %>
+
+    <% if from_list && list.present? %>
+      <%= hidden_field_tag :list_id, list.id %>
+      <div class="rounded-md bg-violet-50 border border-violet-200 p-3 text-sm text-violet-900">
+        <%= t('incases.new.from_list_notice', count: list.list_items.where(client_id: client.id).count) %>
+      </div>
+    <% end %>
+
     <div class="flex justify-start space-x-3 pt-4">
-      <%= f.submit t('incases.new.submit'), class: "inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 text-sm font-medium", disabled: active_webforms.empty? %>
+      <% disable_submit = webform.blank? && active_webforms.empty? %>
+      <%= f.submit t('incases.new.submit'), class: "inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 text-sm font-medium", disabled: disable_submit %>
       <button type="button"
               class="inline-flex items-center px-4 py-2 bg-white text-violet-700 border border-violet-600 rounded-md hover:bg-violet-50 text-sm font-medium"
               data-action="click->offcanvas#close">

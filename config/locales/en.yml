@@ -613,9 +613,13 @@ en:
       select_webform: "Select webform"
       select_client: "Select client"
       submit: "Create incase"
-      no_active_webforms: "No active webforms. Create and activate a webform in Webforms."
+      no_active_webforms: "No active custom webforms. Create and activate a webform in Webforms."
+      from_list_notice: "The incase will include line items from this list (%{count} SKU)."
     create:
       success: "Incase created."
+      from_list_invalid: "Could not attach the list to this client."
+      from_list_custom_only: "Incases with list items are only available for a custom webform."
+      from_list_empty: "No line items could be built from this list (missing variants)."
     index:
       all: "All"
       chart_title: "Incases by day"
@@ -690,6 +694,8 @@ en:
       phone: "Phone"
     show:
       heading: "Client: %{name}"
+      no_custom_webforms: "No active custom webforms. Create a webform with kind «Custom» in Webforms."
+      new_incase_from_list: "Incase from list"
       no_list_items: "No items in lists yet."
       list: "List"
       unnamed_list: "Unnamed"

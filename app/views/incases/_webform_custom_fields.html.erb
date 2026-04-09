@@ -1,0 +1,54 @@
+<%# locals: webform, incase %>
+<% return unless webform %>
+
+<% webform.webform_fields.order(:position).each do |field| %>
+  <% next if %w[button image].include?(field.field_type) %>
+
+  <% fname = "incase[custom_fields][#{field.name}]" %>
+  <% fval = incase.custom_fields[field.name.to_s] || incase.custom_fields[field.name.to_sym] %>
+
+  <% if field.field_type == 'paragraph' %>
+    <div class="text-sm text-gray-700 prose prose-sm max-w-none">
+      <%= field.label.presence || '' %>
+    </div>
+  <% elsif field.field_type == 'text' %>
+    <div>
+      <%= label_tag fname, field.label, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= text_field_tag fname, fval, class: "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm" %>
+    </div>
+  <% elsif field.field_type == 'email' %>
+    <div>
+      <%= label_tag fname, field.label, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= email_field_tag fname, fval, class: "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm" %>
+    </div>
+  <% elsif field.field_type == 'textarea' %>
+    <div>
+      <%= label_tag fname, field.label, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= text_area_tag fname, fval, rows: 3, class: "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm" %>
+    </div>
+  <% elsif field.field_type == 'phone' %>
+    <div>
+      <%= label_tag fname, field.label, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= telephone_field_tag fname, fval, class: "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm" %>
+    </div>
+  <% elsif field.field_type == 'number' %>
+    <div>
+      <%= label_tag fname, field.label, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= number_field_tag fname, fval, class: "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm" %>
+    </div>
+  <% elsif field.field_type == 'checkbox' %>
+    <div class="flex items-center gap-2">
+      <%= hidden_field_tag fname, "0" %>
+      <%= check_box_tag fname, "1", ActiveModel::Type::Boolean.new.cast(fval), class: "rounded border-gray-300" %>
+      <%= label_tag fname, field.label, class: "text-sm text-gray-700" %>
+    </div>
+  <% elsif field.field_type == 'select' %>
+    <div>
+      <%= label_tag fname, field.label, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= select_tag fname,
+          options_for_select(field.select_options_array, fval),
+          include_blank: true,
+          class: "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm" %>
+    </div>
+  <% end %>
+<% end %>
