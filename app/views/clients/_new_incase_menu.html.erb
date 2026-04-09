@@ -4,7 +4,7 @@
 <% if custom_webforms.any? %>
   <div class="relative mb-3 inline-block min-w-[12rem] max-w-full" data-controller="accordion" data-accordion-open-value="false">
     <button type="button" data-action="click->accordion#toggle"
-            class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg border border-violet-600 text-violet-600 bg-white hover:bg-violet-50 cursor-pointer">
+            class="group h-8 flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg border border-violet-600 text-violet-600 bg-white hover:bg-violet-50 cursor-pointer">
       <span class="truncate text-left"><%= list.present? ? t('clients.show.new_incase_from_list') : t('incases.new.heading') %></span>
       <svg data-accordion-target="arrow" class="w-4 h-4 shrink-0 ml-2 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>

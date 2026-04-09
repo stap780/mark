@@ -22,10 +22,7 @@
           <% else %>
             <%= button_to t('conversations.reopen.action'), reopen_account_conversation_path(current_account, conversation), method: :patch, class: "px-2 py-1 text-sm rounded-md bg-violet-600 text-white hover:bg-violet-700", data: { turbo_stream: true, turbo_prefetch: false  } %>
           <% end %>
-          <%= render "clients/new_incase_menu",
-              current_account: current_account,
-              client: client,
-              custom_webforms: nil %>
+          <%= render "clients/new_incase_menu", current_account: current_account, client: client, custom_webforms: nil %>
         </div>
       </div>
     </div>

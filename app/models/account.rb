@@ -102,7 +102,7 @@ class Account < ApplicationRecord
   # Константа с конфигурацией доступных разделов для каждого типа приложения
   PARTNER_APP_SECTIONS = {
     'inswatch' => [
-      'incases', 'clients', 'products', 'swatches'
+      'clients', 'products', 'swatches', 'discounts'
     ],
     'insnotify' => [
       'incases', 'clients', 'products', 'webforms', 'mailganer', 'idgtl', 'moizvonki',
