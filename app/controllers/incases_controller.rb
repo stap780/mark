@@ -166,7 +166,7 @@ class IncasesController < ApplicationController
       return
     end
 
-    rows = Incases::BuildItemsFromListItems.call(list: list, client: client)
+    rows = Incases::BuildItemsFromListItems.new(list: list, client: client).call
     if rows.empty?
       @incase.errors.add(:base, t("incases.create.from_list_empty"))
       return
@@ -250,6 +250,7 @@ class IncasesController < ApplicationController
     end
     { labels: labels, datasets: datasets }
   end
+  
 end
 
 

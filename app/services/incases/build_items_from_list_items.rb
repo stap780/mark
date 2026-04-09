@@ -3,10 +3,6 @@
 module Incases
   # Собирает атрибуты Item для заявки из позиций списка клиента (list_items).
   class BuildItemsFromListItems
-    def self.call(list:, client:)
-      new(list: list, client: client).call
-    end
-
     def initialize(list:, client:)
       @list = list
       @client = client
