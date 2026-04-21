@@ -1,6 +1,6 @@
 /**
  * Webform.js - Конструктор веб-форм
- * Версия: 1.5.0
+ * Версия: 1.5.1
  * Описание: Скрипт для работы с веб-формами на сайте клиента
  */
 
@@ -9,7 +9,7 @@
 
   class WebformManager {
     constructor() {
-      this.version = "1.5.0";
+      this.version = "1.5.1";
       this.status = false;
       this.S3_BASE = "https://s3.twcstorage.ru/ae4cd7ee-b62e0601-19d6-483e-bbf1-416b386e5c23";
       this.API_BASE = "https://app.teletri.ru/api";
@@ -43,6 +43,99 @@
 
     getYandexClientId() {
       return this.getCookie('_ym_uid') || null;
+    }
+
+    /**
+     * Номера счётчиков Яндекс.Метрики на странице (tag.js?id= или ym(…, 'init')).
+     */
+    findYandexCounterIds() {
+      const ids = [];
+      const seen = Object.create(null);
+      const add = (n) => {
+        const v = parseInt(n, 10);
+        if (v && !seen[v]) {
+          seen[v] = true;
+          ids.push(v);
+        }
+      };
+      try {
+        document.querySelectorAll('script[src*="mc.yandex"], script[src*="tag.js"]').forEach((el) => {
+          const src = el.getAttribute('src') || '';
+          const m = src.match(/[?&]id=(\d+)/);
+          if (m) add(m[1]);
+        });
+        document.querySelectorAll('script:not([src])').forEach((el) => {
+          const t = el.textContent || '';
+          let m = t.match(/\bym\s*\(\s*(\d+)\s*,\s*['"]init['"]/);
+          if (m) add(m[1]);
+          m = t.match(/tag\.js\?id=(\d+)/);
+          if (m) add(m[1]);
+        });
+      } catch (err) {
+        this.debugLog('[findYandexCounterIds]', err);
+      }
+      return ids;
+    }
+
+    /**
+     * Client ID Метрики: сначала cookie _ym_uid; если пусто — ym(counterId, 'getClientID') (см. документацию Яндекса).
+     * Синхронное чтение cookie часто пустое до завершения асинхронной инициализации tag.js.
+     * @returns {Promise<string|null>}
+     */
+    resolveYandexClientId() {
+      const fromCookie = this.getYandexClientId();
+      if (fromCookie && String(fromCookie).trim()) {
+        return Promise.resolve(String(fromCookie).trim());
+      }
+
+      if (typeof window.ym !== 'function') {
+        this.debugLog('[resolveYandexClientId] window.ym is not a function yet');
+        return Promise.resolve(null);
+      }
+
+      const counterIds = this.findYandexCounterIds();
+      if (counterIds.length === 0) {
+        this.debugLog('[resolveYandexClientId] No counter id in page scripts');
+        return Promise.resolve(null);
+      }
+
+      return new Promise((resolve) => {
+        let settled = false;
+        const done = (val) => {
+          if (settled) return;
+          settled = true;
+          const s = val != null && String(val).trim() ? String(val).trim() : null;
+          this.debugLog('[resolveYandexClientId] resolved:', s ? '[id]' : '[empty]');
+          resolve(s);
+        };
+        const timeoutMs = 2500;
+        const timer = setTimeout(() => done(null), timeoutMs);
+        let pending = counterIds.length;
+
+        counterIds.forEach((counterId) => {
+          try {
+            window.ym(counterId, 'getClientID', (clientID) => {
+              if (clientID != null && String(clientID).trim() !== '') {
+                clearTimeout(timer);
+                done(String(clientID).trim());
+              } else {
+                pending -= 1;
+                if (pending <= 0) {
+                  clearTimeout(timer);
+                  done(null);
+                }
+              }
+            });
+          } catch (err) {
+            this.debugLog('[resolveYandexClientId] ym error', err);
+            pending -= 1;
+            if (pending <= 0) {
+              clearTimeout(timer);
+              done(null);
+            }
+          }
+        });
+      });
     }
 
     init() {
@@ -760,7 +853,7 @@
       // допускаем отправку, если есть ИЛИ email, ИЛИ валидный телефон (минимум 11 цифр).
       if (items.length > 0 && data && data.contacts && (hasValidEmail || hasValidPhone)) {
         const clientData = { ...data.contacts };
-        const yaClientId = this.getYandexClientId();
+        const yaClientId = await this.resolveYandexClientId();
         if (yaClientId) {
           clientData.ya_client_id = yaClientId;
         }
@@ -922,8 +1015,6 @@
         return false;
       }
 
-      const yaClientId = this.getYandexClientId();
-      
       // Обрабатываем телефон: ищем все поля типа tel и используем первое заполненное
       let phoneValue = '';
       const phoneInputs = form.querySelectorAll('input[type="tel"]');
@@ -1017,10 +1108,6 @@
       // Передаём honeypot-поле на сервер (для дополнительной серверной проверки).
       // Для нормальных пользователей поле всегда пустое.
       clientData.website = honeypotValue || '';
-
-      if (yaClientId) {
-        clientData.ya_client_id = yaClientId;
-      }
 
       // Собираем все пользовательские поля (кроме служебных)
       const customFields = {};
@@ -1191,29 +1278,35 @@
         return false;
       }
 
-      // Формирование items
-      let items = [];
+      this.resolveYandexClientId().then((yaClientId) => {
+        if (yaClientId) {
+          clientData.ya_client_id = yaClientId;
+        }
 
-      if (webform.kind === 'abandoned_cart') {
-        // Для сценария "Брошенная корзина" всегда берём состав корзины из getOrderLines(),
-        // как в тихом сценарии на new_order.
-        items = this.getOrderLines();
-      } else if (eventData.variantId) {
-        // Для остальных сценариев используем variantId из eventData (например, preorder / купить в 1 клик).
-        items.push({
-          type: "Variant",
-          id: eventData.variantId,
-          product_id: eventData.productId || null,
-          quantity: eventData.quantity || 1,
-          price: eventData.price || null
-        });
-      }
+        // Формирование items
+        let items = [];
 
-      // Генерируем number для всех типов форм
-      const number = this.createUniqueId();
+        if (webform.kind === 'abandoned_cart') {
+          // Для сценария "Брошенная корзина" всегда берём состав корзины из getOrderLines(),
+          // как в тихом сценарии на new_order.
+          items = this.getOrderLines();
+        } else if (eventData.variantId) {
+          // Для остальных сценариев используем variantId из eventData (например, preorder / купить в 1 клик).
+          items.push({
+            type: "Variant",
+            id: eventData.variantId,
+            product_id: eventData.productId || null,
+            quantity: eventData.quantity || 1,
+            price: eventData.price || null
+          });
+        }
 
-      // Отправка на API
-      this.sendToAPI(webform.id, clientData, items, number, customFields).then(() => {
+        // Генерируем number для всех типов форм
+        const number = this.createUniqueId();
+
+        // Отправка на API
+        return this.sendToAPI(webform.id, clientData, items, number, customFields);
+      }).then(() => {
         this.persistDeferredShownSave(webform, eventData, overlay);
         const successMessage = overlay.querySelector('.webform-success-message');
         if (successMessage) {

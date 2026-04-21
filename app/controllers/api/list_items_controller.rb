@@ -10,6 +10,8 @@ class Api::ListItemsController < ApplicationController
 
     if external_client_id.present?
       client = resolve_client_by_external_id(external_client_id)
+      sync_yandex_client_id!(client) if client
+
       if client
         @list_items = @list.list_items.where(client_id: client.id)
       else
@@ -33,6 +35,8 @@ class Api::ListItemsController < ApplicationController
     # Resolve client by external client_id via varbind
     client = resolve_client_by_external_id(params[:external_client_id]) if params[:external_client_id]
     return head :unprocessable_entity unless client
+
+    sync_yandex_client_id!(client)
 
     # Resolve item (Product/Variant) by external IDs via varbind
     item = resolve_item_by_external_ids(params[:external_product_id], params[:external_variant_id])
@@ -89,6 +93,15 @@ class Api::ListItemsController < ApplicationController
 
   def set_list_item
     @list_item = @list.list_items.find(params[:id])
+  end
+
+  # Дополнительный параметр из list.js (Яндекс client id), как у веб-форм
+  def sync_yandex_client_id!(client)
+    ya = params[:ya_client_id].presence
+    return unless ya
+    return if client.ya_client == ya
+
+    client.update!(ya_client: ya)
   end
 
   def resolve_client_by_external_id(external_client_id)

@@ -17,9 +17,9 @@
 <div class="flex items-center justify-between mb-4">
   <div>
     <h1 class="text-xl font-semibold"><%= t("incases.index.title") %> <small class="text-sm text-gray-500"><%= @incases.total_entries %></small></h1>
-    <p class="text-sm text-gray-600 mt-1">
-      <%= t("incases.index.filter_total_label") %>:
-      <%= number_to_currency(@incases_total_amount, unit: "₽", separator: ",", delimiter: " ", format: "%n %u") %>
+    <p class="text-sm text-gray-600 mt-1 d-flex flex-col gap-1">
+      <span class="font-semibold"><%= t("incases.index.filter_total_label") %></span>:
+      <span class="font-semibold"><%= number_to_currency(@incases_total_amount, unit: "₽", separator: ",", delimiter: " ", format: "%n %u") %></span>
     </p>
   </div>
 
@@ -37,8 +37,8 @@
           value: params.dig(:q, :client_name_or_client_email_cont),
           placeholder: t('incases.index.search_placeholder'),
           class: "h-8 px-2 border rounded text-sm leading-none",
-          style: "max-width: 200px;" %>
-      <%= f.select :webform_id_eq, @webforms.pluck(:title, :id),
+          style: "max-width: 250px;" %>
+      <%# f.select :webform_id_eq, @webforms.pluck(:title, :id),
           { prompt: t('incases.index.webform')},
           { class: "h-8 px-2 border rounded text-sm leading-none", style: "max-width: 200px;" } %>
       <%= f.select :incase_status_id_eq, current_account.incase_statuses.ordered.map { |s| [s.name, s.id] },

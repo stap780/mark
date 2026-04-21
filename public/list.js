@@ -1,7 +1,7 @@
 /**
  * Modern ES6 Class-based Lists Manager
  * Refactored from list.js with pagination support
- * Version: v_1.4.0
+ * Version: v_1.5.0
  */
 
 // Configuration constants
@@ -10,7 +10,117 @@ const CONFIG = {
   apiBase: 'https://app.teletri.ru/api',
   itemsPerPage: 20,
   maxVisiblePages: 100,
-  version: 'v_1.4.0'
+  version: 'v_1.5.0'
+};
+
+/**
+ * Яндекс Client ID → отправка в API как ya_client_id (Client#ya_client), логика как в webform.js.
+ * Один Promise на страницу (resolveOnce), чтобы не ждать повторно на каждом клике.
+ */
+const YandexClientId = {
+  _promise: null,
+
+  getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  },
+
+  fromCookie() {
+    return this.getCookie('_ym_uid') || null;
+  },
+
+  findYandexCounterIds() {
+    const ids = [];
+    const seen = Object.create(null);
+    const add = (n) => {
+      const v = parseInt(n, 10);
+      if (v && !seen[v]) {
+        seen[v] = true;
+        ids.push(v);
+      }
+    };
+    try {
+      document.querySelectorAll('script[src*="mc.yandex"], script[src*="tag.js"]').forEach((el) => {
+        const src = el.getAttribute('src') || '';
+        const m = src.match(/[?&]id=(\d+)/);
+        if (m) add(m[1]);
+      });
+      document.querySelectorAll('script:not([src])').forEach((el) => {
+        const t = el.textContent || '';
+        let m = t.match(/\bym\s*\(\s*(\d+)\s*,\s*['"]init['"]/);
+        if (m) add(m[1]);
+        m = t.match(/tag\.js\?id=(\d+)/);
+        if (m) add(m[1]);
+      });
+    } catch (err) {
+      /* noop */
+    }
+    return ids;
+  },
+
+  /**
+   * @param {Logger} [logger]
+   * @returns {Promise<string|null>}
+   */
+  resolve(logger) {
+    const fromCookie = this.fromCookie();
+    if (fromCookie && String(fromCookie).trim()) {
+      return Promise.resolve(String(fromCookie).trim());
+    }
+    if (typeof window.ym !== 'function') {
+      logger && logger.log('[YandexClientId] window.ym not available');
+      return Promise.resolve(null);
+    }
+    const counterIds = this.findYandexCounterIds();
+    if (counterIds.length === 0) {
+      logger && logger.log('[YandexClientId] no counter id in page');
+      return Promise.resolve(null);
+    }
+    return new Promise((resolve) => {
+      let settled = false;
+      const done = (val) => {
+        if (settled) return;
+        settled = true;
+        const s = val != null && String(val).trim() ? String(val).trim() : null;
+        logger && logger.log('[YandexClientId]', s ? 'resolved' : 'empty');
+        resolve(s);
+      };
+      const timeoutMs = 2500;
+      const timer = setTimeout(() => done(null), timeoutMs);
+      let pending = counterIds.length;
+      counterIds.forEach((counterId) => {
+        try {
+          window.ym(counterId, 'getClientID', (clientID) => {
+            if (clientID != null && String(clientID).trim() !== '') {
+              clearTimeout(timer);
+              done(String(clientID).trim());
+            } else {
+              pending -= 1;
+              if (pending <= 0) {
+                clearTimeout(timer);
+                done(null);
+              }
+            }
+          });
+        } catch (err) {
+          pending -= 1;
+          if (pending <= 0) {
+            clearTimeout(timer);
+            done(null);
+          }
+        }
+      });
+    });
+  },
+
+  resolveOnce(logger) {
+    if (!this._promise) {
+      this._promise = this.resolve(logger);
+    }
+    return this._promise;
+  }
 };
 
 // Debug logging utility
@@ -689,8 +799,12 @@ class APIClient {
    * Get list items from API
    */
   async getListItems(accountId, listId, externalClientId) {
-    const url = this.buildApiBase(accountId, listId) + `?external_client_id=${encodeURIComponent(externalClientId)}`;
-    this.logger.log('API GET:', url);
+    let url = this.buildApiBase(accountId, listId) + `?external_client_id=${encodeURIComponent(externalClientId)}`;
+    const yaId = await YandexClientId.resolveOnce(this.logger);
+    if (yaId) {
+      url += `&ya_client_id=${encodeURIComponent(yaId)}`;
+    }
+    this.logger.log('API GET:', url.replace(/ya_client_id=[^&]+/, 'ya_client_id=[redacted]'));
     
     try {
       const response = await fetch(url, { method: 'GET', credentials: 'omit' });
@@ -712,8 +826,12 @@ class APIClient {
     params.append('external_client_id', externalClientId);
     params.append('external_product_id', externalProductId);
     if (externalVariantId) params.append('external_variant_id', externalVariantId);
+    const yaId = await YandexClientId.resolveOnce(this.logger);
+    if (yaId) {
+      params.append('ya_client_id', yaId);
+    }
     
-    this.logger.log('API POST:', url, params.toString());
+    this.logger.log('API POST:', url, params.toString().replace(/ya_client_id=[^&]+/, 'ya_client_id=[redacted]'));
     
     try {
       const response = await fetch(url, { 
