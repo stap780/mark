@@ -121,9 +121,10 @@ class ClientsController < ApplicationController
         if check
           flash.now[:success] = t(".success")
           render turbo_stream: [
-            turbo_stream.replace(dom_id(@client, dom_id(current_account)), 
-                partial: "clients/client", 
-                locals: { client: @client, current_account: current_account }),
+            turbo_stream.replace(
+              dom_id(current_account, dom_id(@client)), 
+              partial: "clients/client", 
+              locals: { client: @client, current_account: current_account }),
             render_turbo_flash
           ]
         else

@@ -16,7 +16,7 @@ class Inswatch < ApplicationRecord
     # 1. Создаём или находим аккаунт
     account = Account.find_or_create_by!(name: "Inswatch #{uid} Account") do |acc|
       acc.partner = true
-      logo = "https://insales-static.obs.ru-moscow-1.hc.sbercloud.ru/images/applications/4141349/1762959273-ChatGPT_Image_Nov_10__2025__07_14_15_PM.normal.png"
+      logo = "https://static.insales-cdn.com/images/products/1/3449/2910530937/large_logo-swatch.png"
       acc.settings = { apps: ['inswatch'], logo: logo }
     end
     

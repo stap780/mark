@@ -37,7 +37,7 @@ class Client < ApplicationRecord
 
   after_update_commit do
     broadcast_replace_to dom_id(account, :clients),
-                        target: dom_id(self, dom_id(account)),
+                        target: dom_id(account, dom_id(self)),
                         partial: "clients/client",
                         locals: { client: self, current_account: account }
   end
