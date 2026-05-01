@@ -1,0 +1,28 @@
+<% content_for :title, t(".title") %>
+<div class="flex items-center justify-between mb-4">
+  <div class="flex space-x-2 items-center">
+    <h1 class="text-xl font-semibold"><%= t(".title") %></h1>
+    <%= link_to_info info_account_campaigns_path(current_account) %>
+  </div>
+  <div>
+    <%= link_to_new new_account_campaign_path(current_account), text: t(".new"), data: { turbo_frame: "offcanvas", turbo_prefetch: false } if show_link?("campaigns") %>
+  </div>
+</div>
+
+<%= turbo_stream_from dom_id(current_account, :campaigns) %>
+<div class="bg-white rounded-lg shadow divide-y">
+  <div class="grid grid-cols-[50px_1fr_200px_150px_100px_150px] gap-4 p-4 font-medium text-gray-700">
+    <div aria-hidden="true"></div>
+    <div><%= t(".name") %></div>
+    <div><%= t(".recurring") %></div>
+    <div><%= t(".active") %></div>
+    <div><%= t(".next_run") %></div>
+    <div class="text-right"><span class="sr-only"><%= t(".actions", default: t("automation_rule_steps.action")) %></span></div>
+  </div>
+  <%= turbo_frame_tag dom_id(current_account, :campaigns) do %>
+    <%= render @campaigns %>
+    <% if @campaigns.empty? %>
+      <div class="p-4 text-gray-500"><%= t(".empty") %></div>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,36 @@
+<%# locals: f, rule, input_class %>
+<% vf = "campaigns.filter_fields" %>
+<% kind = campaign_filter_rule_segment_value_type(rule.field) %>
+<% css_select = "#{input_class} min-w-0" %>
+<% css_text = input_class.gsub("bg-white ", "").gsub("bg-white", "") %>
+<% case kind %>
+<% when "webform" %>
+  <%= f.collection_select :value,
+        campaign_filter_segment_webforms_for(rule),
+        :id,
+        :title,
+        { include_blank: t("#{vf}.select_segment_webform") },
+        { class: css_select, data: { "auto-submit-ignore": true } } %>
+<% when "number" %>
+  <%= f.number_field :value,
+        class: "#{input_class} max-w-xs",
+        min: 0,
+        step: 1,
+        data: { "auto-submit-ignore": true } %>
+<% when "boolean" %>
+  <%= f.select :value,
+        [[t("#{vf}.marketing_opt_in_yes"), "true"], [t("#{vf}.marketing_opt_in_no"), "false"]],
+        {},
+        { class: input_class, data: { "auto-submit-ignore": true } } %>
+<% when "string" %>
+  <% if rule.field == "client_email_contains" %>
+    <%= f.text_field :value,
+          placeholder: t("#{vf}.client_email_hint"),
+          class: css_text,
+          data: { "auto-submit-ignore": true } %>
+  <% else %>
+    <%= f.text_field :value, class: css_text, data: { "auto-submit-ignore": true } %>
+  <% end %>
+<% else %>
+  <%= f.text_field :value, class: input_class, data: { "auto-submit-ignore": true } %>
+<% end %>

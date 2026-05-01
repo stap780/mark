@@ -1,0 +1,71 @@
+<%= form_with model: [current_account, campaign], class: "space-y-6" do |f| %>
+  <%= render "shared/errors", object: campaign %>
+
+  <div>
+    <%= f.label :title, class: "block text-sm font-medium text-gray-700" %>
+    <%= f.text_field :title, required: true, class: "mt-1 block w-full border rounded px-3 py-2" %>
+  </div>
+
+  <div>
+    <%= f.label :webform_id, t(".touch_webform"), class: "block text-sm font-medium text-gray-700" %>
+    <%= f.collection_select :webform_id, current_account.webforms.order(:title), :id, :title, {},
+        { class: "mt-1 block w-full border rounded px-3 py-2", required: true } %>
+    <p class="mt-1 text-xs text-gray-500"><%= t(".touch_webform_hint") %></p>
+  </div>
+
+  <div>
+    <p class="block text-sm font-medium text-gray-700 mb-2"><%= t(".segment") %></p>
+    <div class="flex items-center justify-between mb-3 gap-3">
+      <div class="text-sm font-medium text-gray-700"><%= t("automation_conditions.conditions") %></div>
+      <%= link_to_new account_campaign_campaign_filter_rules_path(current_account, campaign), text: t("campaigns.form.new_segment_rule"), data: { turbo_stream: true, turbo_method: :post } %>
+    </div>
+    <div class="grid grid-cols-[2fr_2fr_2fr_100px] gap-2 p-2 border-b border-gray-200 font-medium text-sm text-gray-700 mb-2">
+      <div><%= t("campaigns.filter_fields.column_field") %></div>
+      <div><%= t("campaigns.filter_fields.column_operator") %></div>
+      <div><%= t("campaigns.filter_fields.column_value") %></div>
+      <div aria-hidden="true"></div>
+    </div>
+    <%= turbo_frame_tag dom_id(current_account, dom_id(campaign, :campaign_filter_rules)) do %>
+      <% if campaign.campaign_filter_rules.any? %>
+        <% campaign.campaign_filter_rules.each do |rule| %>
+          <%= render "campaign_filter_rules/campaign_filter_rule", campaign: campaign, rule: rule %>
+        <% end %>
+      <% else %>
+        <%= render "campaign_filter_rules/empty", campaign: campaign %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <%= f.check_box :recurring, class: "h-4 w-4" %>
+    <%= f.label :recurring, t(".recurring"), class: "text-sm text-gray-700" %>
+  </div>
+
+  <div>
+    <%= f.label :time, class: "block text-sm font-medium text-gray-700" %>
+    <% time_options = (0..23).flat_map { |h| [0, 30].map { |m| format("%02d:%02d", h, m) } } %>
+    <%= f.select :time, options_for_select(time_options, campaign.time), { include_blank: t(".not_set") },
+        { class: "mt-1 block w-full border rounded px-3 py-2" } %>
+    <p class="mt-1 text-xs text-gray-500"><%= t(".time_hint") %></p>
+  </div>
+
+  <div>
+    <%= f.label :dedupe_days, class: "block text-sm font-medium text-gray-700" %>
+    <%= f.number_field :dedupe_days, min: 0,
+        class: "mt-1 block w-32 border rounded px-3 py-2",
+        data: { "auto-submit-ignore": true } %>
+    <p class="mt-1 text-xs text-gray-500"><%= t(".dedupe_hint") %></p>
+  </div>
+
+  <div>
+    <%= f.label :notes, class: "block text-sm font-medium text-gray-700" %>
+    <%= f.text_area :notes, rows: 2,
+        class: "mt-1 block w-full border rounded px-3 py-2",
+        data: { "auto-submit-ignore": true } %>
+  </div>
+
+  <div>
+    <%= f.submit t(:save), class: "inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+  </div>
+  
+<% end %>

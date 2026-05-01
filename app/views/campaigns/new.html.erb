@@ -1,0 +1,19 @@
+<%= render "shared/offcanvas_inner", title: t(".title"), width: "28rem" do %>
+  <%= form_with model: [current_account, @campaign], data: { turbo: false }, class: "space-y-4" do |f| %>
+    <%= render "shared/errors", object: @campaign %>
+    <%= f.hidden_field :webform_id, value: Webform.first.id %>
+
+    <div>
+      <%= f.label :title, t("activerecord.attributes.campaign.title"), class: "block text-sm font-medium text-gray-700" %>
+      <%= f.text_field :title, required: true, class: "mt-1 block w-full border rounded px-3 py-2" %>
+    </div>
+
+    <div class="flex items-center space-x-4">
+      <button type="button" data-action="click->offcanvas#close"
+          class="inline-flex items-center px-3 py-1 bg-white text-violet-700 border border-violet-600 rounded-md hover:bg-violet-50">
+        <%= t("cancel") %>
+      </button>
+      <%= f.submit t(:save), class: "inline-flex items-center px-3 py-1 bg-violet-600 text-white rounded-md hover:bg-violet-700" %>
+    </div>
+  <% end %>
+<% end %>

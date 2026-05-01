@@ -219,6 +219,20 @@ Rails.application.routes.draw do
         end
       end
     end
+    resources :campaigns do
+      collection do
+        get :info
+      end
+      member do
+        post :start
+        post :stop
+      end
+      resources :campaign_filter_rules do
+        member do
+          patch :refresh_form
+        end
+      end
+    end
     resources :automation_rules do
       collection do
         get :create_standard_scenarios_form

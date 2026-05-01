@@ -68,9 +68,119 @@ en:
     status: "Status"
     automation: "Automation"
     automation_rules: "Automation Rules"
+    campaigns: "Campaigns"
     message_templates: "Message Templates"
     automation_messages: "Message Statistics"
   
+  campaigns:
+    errors:
+      no_webforms_in_system: "There are no webforms in your account. Create a webform first, then add a campaign."
+    index:
+      title: "Campaigns"
+      new: "New campaign"
+      name: "Name"
+      active: "Status"
+      recurring: "Mode"
+      next_run: "Next run"
+      empty: "No campaigns yet"
+      start: "Start"
+      stop: "Stop"
+    new:
+      title: "New campaign"
+    edit:
+      title: "Campaign \"%{name}\""
+    create:
+      success: "Campaign created"
+    update:
+      success: "Campaign updated"
+    destroy:
+      success: "Campaign deleted"
+      destroyed: "Campaign deleted"
+      confirm: "Delete this campaign?"
+    campaign:
+      status_active: "Running"
+      status_inactive: "Stopped"
+      recurring_scheduled: "Recurring"
+      recurring_one_off: "One-off"
+    form:
+      touch_webform: "Webform for new incases"
+      touch_webform_hint: "New incases created by this campaign use this form."
+      select_webform: "Select webform"
+      segment: "Segment"
+      add_segment_rule: "Add rule"
+      new_segment_rule: "Add segment rule"
+      recurring: "Run on schedule"
+      time_hint: "Time of day for recurring runs"
+      not_set: "Not set"
+      dedupe_hint: "Skip clients who already have an incase for this campaign within this many days."
+      remove_segment_rule_confirm: "Remove this rule?"
+    filter_fields:
+      column_field: "Field"
+      column_operator: "Operator"
+      column_value: "Value"
+      select_segment_webform: "Webform (segment)"
+      client_email_hint: "Email contains…"
+      marketing_opt_in_yes: "Yes"
+      marketing_opt_in_no: "No"
+      marketing_opt_in_value:
+        "true": "Yes"
+        "false": "No"
+      fields:
+        incase_reference_webform: "Segment webform"
+        incase_days_min: "Days since last incase (min)"
+        incase_days_max: "Days since last incase (max)"
+        client_email_contains: "Client email contains"
+        client_email_marketing_opt_in: "Email marketing opt-in"
+      operators:
+        equals: "equals"
+        contains: "contains"
+        greater_than: "greater than"
+        less_than: "less than"
+    start:
+      need_time: "Set a run time for recurring campaigns."
+      started: "Campaign started"
+    stop:
+      stopped: "Campaign stopped"
+    info:
+      title: "Campaign scenarios"
+      intro: "Here you can configure mass mailings: campaigns. This section lets you filter client data and create incases for mailing or notifications. Below are our base scenarios that help clients launch campaigns faster without configuring everything from scratch."
+      scenarios_heading: "Core scenarios"
+      presets_note: "These scenarios will be the basis for presets: the client picks a ready-made scenario, and the system fills in the segment, webform, and recommended automation chain."
+      scenarios:
+        conversion:
+          title: "Site conversion"
+          body: "Move visitors toward product choice and checkout; bring them back after leaving the cart, a category, or a page—via segments on recency/webform types and follow-up automation."
+        abandoned_cart:
+          title: "Abandoned carts"
+          body: "Recover incomplete purchases: segment on abandoned-cart incases and time since order, with a sequence of messages and cart-aware content."
+        subscribers:
+          title: "Subscriber base"
+          body: "Grow and maintain your list: campaigns for opted-in clients, lapsed contacts, or interest-based segments; pair with subscription forms and preference capture."
+        average_order:
+          title: "Average order value"
+          body: "Upsells and cross-sells: target clients with a fitting order history; incases into webforms that pitch bundles, related items, or upgrades."
+        repeat_sales:
+          title: "Repeat purchases"
+          body: "Reactivation and touchpoints: segments such as “has not purchased in N days” or seasonal dates, with recurring campaign runs."
+        loyalty:
+          title: "Brand loyalty"
+          body: "Personal offers and retention: segments by spend, order count, or engagement; incases that kick off automation with perks or targeted promos."
+        reviews:
+          title: "Reviews and feedback"
+          body: "Post-purchase feedback: segment completed orders and delay; automation that opens a review or survey webform."
+
+  campaign_filter_rules:
+    create:
+      success: "Segment rule added"
+    destroy:
+      success: "Segment rule removed"
+    form:
+      select_field: "Field"
+      select_operator: "Operator"
+      select_value: "Value"
+    update:
+      success: "Segment rule updated"
+
   automation_messages:
     global_mailganer_limit_exceeded: "Global Mailganer configuration limit reached (%{limit} emails per month). Sent: %{count}. Limit will reset on %{reset_date}. Configure your own Mailganer in settings to remove this limitation."
     global_limit_warning: "%{remaining} of %{limit} emails remaining through global Mailganer configuration this month. Limit will reset on %{reset_date}. Configure your own Mailganer to remove this limitation."
@@ -183,6 +293,14 @@ en:
         email: "Email"
         phone: "Phone"
         ya_client: "Ya.Client"
+        email_marketing_opt_in: "Email marketing opt-in"
+      campaign:
+        title: "Title"
+        webform_id: "Webform"
+        recurring: "Recurring"
+        time: "Run time"
+        dedupe_days: "Dedupe window (days)"
+        notes: "Notes"
       message_template:
         title: "Title"
         channel: "Channel"

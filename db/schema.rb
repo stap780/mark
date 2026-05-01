@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_17_081223) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_29_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -164,6 +164,39 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_17_081223) do
     t.index ["scheduled_for"], name: "index_automation_rules_on_scheduled_for"
   end
 
+  create_table "campaign_filter_rules", force: :cascade do |t|
+    t.bigint "campaign_id", null: false
+    t.integer "position", default: 0, null: false
+    t.string "target", default: "incase", null: false
+    t.string "field", null: false
+    t.string "operator", default: "equals", null: false
+    t.text "value"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["campaign_id", "position"], name: "index_campaign_filter_rules_on_campaign_id_and_position"
+    t.index ["campaign_id"], name: "index_campaign_filter_rules_on_campaign_id"
+  end
+
+  create_table "campaigns", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "title", null: false
+    t.bigint "webform_id", null: false
+    t.string "time"
+    t.string "recurrence", default: "daily"
+    t.boolean "recurring", default: true, null: false
+    t.boolean "active", default: false, null: false
+    t.datetime "scheduled_for"
+    t.string "active_job_id"
+    t.datetime "last_run_at"
+    t.integer "dedupe_days", default: 35, null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "active"], name: "index_campaigns_on_account_id_and_active"
+    t.index ["account_id"], name: "index_campaigns_on_account_id"
+    t.index ["webform_id"], name: "index_campaigns_on_webform_id"
+  end
+
   create_table "clients", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.string "name"
@@ -176,6 +209,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_17_081223) do
     t.string "telegram_chat_id"
     t.string "telegram_username"
     t.boolean "telegram_block", default: false, null: false
+    t.boolean "email_marketing_opt_in", default: false, null: false
+    t.datetime "email_marketing_opt_in_at"
     t.index ["account_id"], name: "index_clients_on_account_id"
   end
 
@@ -258,9 +293,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_17_081223) do
     t.integer "display_number"
     t.jsonb "custom_fields", default: {}
     t.bigint "incase_status_id", null: false
+    t.bigint "campaign_id"
     t.index ["account_id", "display_number"], name: "index_incases_on_account_id_and_display_number", unique: true, where: "(display_number IS NOT NULL)"
     t.index ["account_id", "number"], name: "index_incases_on_account_id_and_number", unique: true, where: "(number IS NOT NULL)"
     t.index ["account_id"], name: "index_incases_on_account_id"
+    t.index ["campaign_id"], name: "index_incases_on_campaign_id"
     t.index ["client_id"], name: "index_incases_on_client_id"
     t.index ["custom_fields"], name: "index_incases_on_custom_fields", using: :gin
     t.index ["incase_status_id"], name: "index_incases_on_incase_status_id"
@@ -641,6 +678,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_17_081223) do
   add_foreign_key "automation_rule_steps", "automation_rules"
   add_foreign_key "automation_rule_steps", "message_templates"
   add_foreign_key "automation_rules", "accounts"
+  add_foreign_key "campaign_filter_rules", "campaigns", on_delete: :cascade
+  add_foreign_key "campaigns", "accounts"
+  add_foreign_key "campaigns", "webforms"
   add_foreign_key "clients", "accounts"
   add_foreign_key "conversations", "accounts"
   add_foreign_key "conversations", "clients"
@@ -651,6 +691,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_17_081223) do
   add_foreign_key "idgtls", "accounts"
   add_foreign_key "incase_statuses", "accounts"
   add_foreign_key "incases", "accounts"
+  add_foreign_key "incases", "campaigns"
   add_foreign_key "incases", "clients"
   add_foreign_key "incases", "incase_statuses"
   add_foreign_key "incases", "webforms"

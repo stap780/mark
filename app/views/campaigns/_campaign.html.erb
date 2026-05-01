@@ -1,0 +1,40 @@
+<%= turbo_frame_tag dom_id(campaign, dom_id(current_account)),
+      class: "grid grid-cols-[50px_1fr_200px_150px_100px_150px] gap-4 p-4 items-center hover:bg-gray-50" do %>
+  <div aria-hidden="true"></div>
+  <div class="min-w-0">
+    <div class="font-medium text-gray-900 truncate" title="<%= campaign.title %>"><%= campaign.title %></div>
+  </div>
+  <div class="text-sm text-gray-600">
+    <%= campaign.recurring? ? t("campaigns.campaign.recurring_scheduled") : t("campaigns.campaign.recurring_one_off") %>
+  </div>
+  <div>
+    <% if campaign.active? %>
+      <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded"><%= t("campaigns.campaign.status_active") %></span>
+    <% else %>
+      <span class="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded"><%= t("campaigns.campaign.status_inactive") %></span>
+    <% end %>
+  </div>
+  <div class="text-sm text-gray-600 whitespace-nowrap">
+    <% if campaign.recurring? && campaign.scheduled_for.present? %>
+      <%= l(campaign.scheduled_for, format: :short) %>
+    <% else %>
+      <span class="text-gray-400">—</span>
+    <% end %>
+  </div>
+  <div class="flex space-x-2 items-center justify-end">
+    <% if campaign.active? %>
+      <%= button_to t("campaigns.index.stop"),
+          stop_account_campaign_path(current_account, campaign),
+          method: :post,
+          class: "px-3 py-1 rounded-md text-xs text-white bg-gray-600 hover:bg-gray-700" %>
+    <% else %>
+      <%= button_to t("campaigns.index.start"),
+          start_account_campaign_path(current_account, campaign),
+          method: :post,
+          class: "px-3 py-1 rounded-md text-xs text-white bg-green-600 hover:bg-green-700" %>
+    <% end %>
+    <%= link_to_edit edit_account_campaign_path(current_account, campaign), data: { turbo: false } %>
+    <%= link_to_delete account_campaign_path(current_account, campaign),
+        data: { turbo_method: :delete, turbo_confirm: t("campaigns.destroy.confirm") } %>
+  </div>
+<% end %>

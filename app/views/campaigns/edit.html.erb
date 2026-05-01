@@ -1,0 +1,8 @@
+<div class="flex items-center justify-start gap-4 mb-6">
+  <%= link_to_back account_campaigns_path(current_account), data: { turbo: false } %>
+  <h1 class="text-xl font-semibold"><%= t(".title", name: @campaign.title) %></h1>
+</div>
+
+<div class="bg-white rounded-lg shadow p-6 max-w-5xl">
+  <%= render "form", campaign: @campaign %>
+</div>

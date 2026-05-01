@@ -1,0 +1,27 @@
+<%= render "shared/offcanvas_inner", title: t("campaigns.info.title"), width: "50rem" do %>
+  <p class="text-gray-700 mb-6">
+    <%= t("campaigns.info.intro") %>
+  </p>
+
+  <h2 class="text-lg font-semibold mb-4"><%= t("campaigns.info.scenarios_heading") %></h2>
+  <div class="space-y-5">
+    <% %w[
+      conversion
+      abandoned_cart
+      subscribers
+      average_order
+      repeat_sales
+      loyalty
+      reviews
+    ].each do |key| %>
+      <div class="border-l-4 border-violet-500 pl-4">
+        <h3 class="font-semibold text-gray-900"><%= t("campaigns.info.scenarios.#{key}.title") %></h3>
+        <p class="text-sm text-gray-700 mt-1"><%= t("campaigns.info.scenarios.#{key}.body") %></p>
+      </div>
+    <% end %>
+  </div>
+
+  <p class="text-sm text-gray-500 mt-6">
+    <%= t("campaigns.info.presets_note") %>
+  </p>
+<% end %>

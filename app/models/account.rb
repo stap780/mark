@@ -12,6 +12,7 @@ class Account < ApplicationRecord
   has_many :webforms, dependent: :destroy
   has_many :incase_statuses, dependent: :destroy
   has_many :incases, dependent: :destroy
+  has_many :campaigns, dependent: :destroy
   has_many :automation_rules, dependent: :destroy
   has_many :message_templates, dependent: :destroy
   has_many :automation_messages, dependent: :destroy
@@ -106,14 +107,14 @@ class Account < ApplicationRecord
     ],
     'insnotify' => [
       'incases', 'clients', 'products', 'webforms', 'mailganer', 'idgtl', 'moizvonki',
-      'automation_rules', 'stock_check_schedule'
+      'automation_rules', 'campaigns', 'stock_check_schedule'
     ],
     'inssearch' => [
       'products', 'clients', 'webforms', 'automation_rules'
     ],
     'insabandoned' => [
       'incases', 'clients', 'products', 'webforms', 'mailganer', 'idgtl', 'moizvonki',
-      'automation_rules'
+      'automation_rules', 'campaigns'
     ]
   }.freeze
 

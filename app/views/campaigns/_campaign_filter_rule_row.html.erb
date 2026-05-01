@@ -1,0 +1,23 @@
+<% rule = f.object %>
+<% frame_id = "campaign_filter_rule_#{rule.persisted? ? rule.id : turbo_id_for(rule)}" %>
+<%= turbo_frame_tag frame_id, class: "block w-full" do %>
+  <div class="flex gap-2 items-start mb-2">
+    <div class="flex-1 min-w-0">
+      <%= render "campaign_filter_rules/filter_fields", f: f %>
+    </div>
+    <div class="shrink-0 pt-6">
+      <% if rule.persisted? %>
+        <%= link_to t("campaigns.form.remove_segment_rule_short"),
+            account_campaign_campaign_filter_rule_path(current_account, campaign, rule),
+            class: "text-sm text-gray-500 hover:text-red-600",
+            data: { turbo_method: :delete, turbo_confirm: t("campaigns.form.remove_segment_rule_confirm"), turbo_stream: true } %>
+      <% else %>
+        <button type="button"
+            class="text-sm text-gray-500 hover:text-red-600"
+            data-action="click->campaign-filter-rules-list#removeRow">
+          <%= t("campaigns.form.remove_segment_rule_short") %>
+        </button>
+      <% end %>
+    </div>
+  </div>
+<% end %>

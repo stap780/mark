@@ -7,6 +7,7 @@ class Incase < ApplicationRecord
   belongs_to :webform
   belongs_to :client
   belongs_to :incase_status
+  belongs_to :campaign, optional: true
 
   has_many :items, dependent: :destroy
   accepts_nested_attributes_for :items, allow_destroy: true

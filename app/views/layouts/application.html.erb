@@ -82,7 +82,7 @@
               </div>
               
               <% if show_link?('automation_rules') %>
-                <% active_automation = ['/automation_rules', '/message_templates', '/automation_messages'].any? { |path| request.path.include?(path) } %>
+                <% active_automation = ['/campaigns', '/automation_rules', '/message_templates', '/automation_messages'].any? { |path| request.path.include?(path) } %>
                 <div data-controller="accordion" data-accordion-open-value="<%= active_automation %>">
                   <button type="button" data-action="click->accordion#toggle"
                           class="group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg text-white <%= hover_class %> mb-1 cursor-pointer <%= active_class if active_automation %>">
@@ -92,6 +92,7 @@
                     </svg>
                   </button>
                   <div data-accordion-target="content" class="hidden ml-4 space-y-1">
+                    <%= link_to_sidebar t('menu.campaigns'), account_campaigns_path(current_account), active_if: '/campaigns' if show_link?('campaigns') %>
                     <%= link_to_sidebar t('menu.automation_rules'), account_automation_rules_path(current_account), active_if: '/automation_rules' %>
                     <%= link_to_sidebar t('menu.message_templates'), account_message_templates_path(current_account), active_if: '/message_templates' %>
                     <%= link_to_sidebar t('menu.automation_messages'), account_automation_messages_path(current_account), active_if: '/automation_messages' %>

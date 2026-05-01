@@ -1,0 +1,42 @@
+<% rule = campaign_filter_rule %>
+<%= form_with model: [current_account, campaign, rule],
+    url: refresh_form_account_campaign_campaign_filter_rule_path(current_account, campaign, rule),
+    data: {
+      turbo_stream: true,
+      turbo_frame: "offcanvas",
+      controller: "auto-submit",
+      "auto-submit-delay-value": 200
+    },
+    id: dom_id(current_account, dom_id(campaign, dom_id(rule, :form))),
+    class: "space-y-4" do |f| %>
+  <% op_options = campaign_filter_rule_operator_select_options(rule.field) %>
+  <% field_class = "mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white" %>
+
+  <%= render "shared/errors", object: campaign_filter_rule %>
+
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:items-end">
+    <div class="min-w-0">
+      <%= f.label :field, t("campaign_filter_rules.form.select_field"), class: "block text-sm font-medium text-gray-700" %>
+      <%= f.select :field,
+          options_for_select(campaign_filter_rule_field_select_options, rule.field),
+          {},
+          { class: field_class } %>
+    </div>
+    <div class="min-w-0">
+      <%= f.label :operator, t("campaign_filter_rules.form.select_operator"), class: "block text-sm font-medium text-gray-700" %>
+      <%= f.select :operator,
+          options_for_select(op_options, rule.operator),
+          {},
+          { class: field_class, data: { "auto-submit-ignore": true } } %>
+    </div>
+    <div class="min-w-0">
+      <%= f.label :value, t("campaign_filter_rules.form.select_value"), class: "block text-sm font-medium text-gray-700" %>
+      <%= render "campaign_filter_rules/value_field", f: f, rule: rule, input_class: field_class %>
+    </div>
+  </div>
+
+  <div>
+    <%= f.submit t(:save), formaction: account_campaign_campaign_filter_rule_path(current_account, campaign, rule),
+        class: "inline-flex items-center px-4 py-2 bg-violet-600 text-white text-sm rounded-md hover:bg-violet-700"%>
+  </div>
+<% end %>
